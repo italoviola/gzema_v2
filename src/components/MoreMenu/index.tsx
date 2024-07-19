@@ -1,13 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import Icon from 'components/Icon';
-
-import { colors } from 'styles/global.styles';
 import { MenuItem, MoreMenuProps, SubMenuItem } from './interface';
+import { Button, DropDown, SubMenu, SubButton } from './style';
 
-import { Menu, Button, DropDown, SubMenu, SubButton } from './style';
-
-const MoreMenu: React.FC<MoreMenuProps> = ({ menuItems }) => {
+const MoreMenu: React.FC<MoreMenuProps> = ({ menuItems, style }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
   const menuRef = useRef<HTMLElement | null>(null);
@@ -42,46 +38,34 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ menuItems }) => {
   }, [isOpen]);
 
   return (
-    <Menu
-      ref={menuRef as React.RefObject<HTMLButtonElement>}
-      onClick={toggleMenu}
-    >
-      <Icon
-        className="icon-more_vert"
-        color={colors.greyFont}
-        fontSize="28px"
-      />
-      {isOpen && (
-        <DropDown>
-          {menuItems.map((item: MenuItem, index: number) => (
-            <React.Fragment key={item.name}>
-              {item.subItems ? (
-                <Button onClick={(e) => toggleSubMenu(e, index)}>
-                  {item.name}
-                </Button>
-              ) : (
-                <Button onClick={item.action}>{item.name}</Button>
-              )}
-              {openSubMenuIndex === index && item.subItems && (
-                <SubMenu>
-                  {item.subItems.map((subItem: SubMenuItem) => (
-                    <SubButton
-                      key={subItem.name} // Replace 'key={subIndex}' with a unique identifier from the 'subItem' object
-                      onClick={() => {
-                        subItem.action();
-                        setOpenSubMenuIndex(null);
-                      }}
-                    >
-                      {subItem.name}
-                    </SubButton>
-                  ))}
-                </SubMenu>
-              )}
-            </React.Fragment>
-          ))}
-        </DropDown>
-      )}
-    </Menu>
+    <DropDown style={style}>
+      {menuItems.map((item: MenuItem, index: number) => (
+        <React.Fragment key={item.name}>
+          {item.subItems ? (
+            <Button onClick={(e) => toggleSubMenu(e, index)}>
+              {item.name}
+            </Button>
+          ) : (
+            <Button onClick={item.action}>{item.name}</Button>
+          )}
+          {openSubMenuIndex === index && item.subItems && (
+            <SubMenu>
+              {item.subItems.map((subItem: SubMenuItem) => (
+                <SubButton
+                  key={subItem.name} // Replace 'key={subIndex}' with a unique identifier from the 'subItem' object
+                  onClick={() => {
+                    subItem.action();
+                    setOpenSubMenuIndex(null);
+                  }}
+                >
+                  {subItem.name}
+                </SubButton>
+              ))}
+            </SubMenu>
+          )}
+        </React.Fragment>
+      ))}
+    </DropDown>
   );
 };
 

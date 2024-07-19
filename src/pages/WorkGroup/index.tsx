@@ -9,12 +9,16 @@ import Icon from 'components/Icon';
 import Button from 'components/Button';
 import AddOperationForm from 'components/AddOperationForm';
 import ConfirmAction from 'components/ConfirmAction';
+import MoreMenu from 'components/MoreMenu';
 
+import { MenuItem } from 'components/MoreMenu/interface';
 import { grindingWheels } from 'integration/grindingWheels';
 
 import {
   removeContourFromOperation,
+  addContourToOperation,
   deleteOperation,
+  addContour,
 } from 'state/part/partSlice';
 
 import { Contours, Operations } from 'types/part';
@@ -64,7 +68,37 @@ const WorkGroup: React.FC = () => {
     useState<boolean>(false);
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
     useState<boolean>(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState<boolean>(false);
+  const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 });
   const [opIdAux, setOpIdAux] = useState<number>(0);
+
+  const duplicateContour = () => {
+    dispatch(
+      addContour({
+        ...content,
+        name: `${content.name} (Cópia)`,
+        type: content.type as ContourType,
+      }),
+    );
+  };
+
+  const moreMenuItems: MenuItem[] = [
+    {
+      name: 'Adicionar à Sequência',
+      subItems: operations.map((operation) => ({
+        name: operation.name,
+        action: () =>
+          dispatch(
+            addContourToOperation({
+              operationId: operation.id,
+              contourId: content.id,
+            }),
+          ),
+      })),
+    },
+    { name: 'Duplicar', action: duplicateContour },
+    { name: 'Excluir', action: () => setIsModalOpen(true) },
+  ];
 
   const removeFromOperation = (operationId: number, contourId: number) => {
     dispatch(
@@ -77,6 +111,16 @@ const WorkGroup: React.FC = () => {
 
   const handleDeleteOperation = () => {
     dispatch(deleteOperation(opIdAux));
+  };
+
+  const handleMoreMenu = (e: any) => {
+    const rect = e.target.getBoundingClientRect();
+    console.log('MOREMENU', rect.top, rect.height, rect.left);
+    setButtonPosition({
+      top: rect.top + rect.height, // Posiciona logo abaixo do botão
+      left: rect.left, // Alinha à esquerda do botão
+    });
+    setIsMoreMenuOpen(!isMoreMenuOpen); // Alterna a visibilidade
   };
 
   return (
@@ -144,10 +188,26 @@ const WorkGroup: React.FC = () => {
               </Wrap>
             </Button>
           </AddBtn>
+          {isMoreMenuOpen && (
+            <MoreMenu
+              style={{
+                position: 'absolute',
+                top: `${buttonPosition.top + window.scrollY}px`, // Ajusta a posição vertical com o scroll
+                left: `${buttonPosition.left}px`,
+                zIndex: 1000, // Garante que o componente fique acima de outros elementos
+              }}
+              menuItems={moreMenuItems}
+            />
+          )}
           <CContentBlock>
             <div>
               {contours.map((contour) => (
-                <Card key={contour.id} content={contour} variation="contour" />
+                <Card
+                  key={contour.id}
+                  content={contour}
+                  variation="contour"
+                  toggleMoreMenu={(e: any) => handleMoreMenu(e)}
+                />
               ))}
             </div>
           </CContentBlock>

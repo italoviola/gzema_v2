@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 
+import MoreMenu from 'components/MoreMenu';
 import { PageTitle, PageContent, ContentBlock } from 'styles/Components';
+
 import { colors } from 'styles/global.styles';
 
 export const Container = styled.div`
@@ -67,9 +69,13 @@ export const OpItemCards = styled.div`
   border: 1px dashed ${colors.greyDark};
 `;
 
+export const SMoreMenu = styled(MoreMenu)`
+  height: 100px;
+`;
+
 export const CContentBlock = styled(ContentBlock)`
   height: calc(100vh - 308px);
-  overflow: visible;
+  /* overflow: visible; */
 `;
 
 export const SContentBlock = styled(ContentBlock)`

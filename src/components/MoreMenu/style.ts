@@ -1,30 +1,19 @@
 import styled from 'styled-components';
 import { colors, shadows } from 'styles/global.styles';
 
-export const Menu = styled.button`
-  flex-shrink: 0;
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  height: 100%;
-  background-color: ${colors.white};
-  width: 56px;
-`;
-
 export const DropDown = styled.nav`
   width: 150px;
-  position: absolute;
-  top: 100%;
-  right: 0;
+  /* position: absolute; */
+  /* top: 100%; */
+  /* right: 0; */
+  /* transform: translateY(13px); */
   display: flex;
   flex-flow: column nowrap;
   list-style: none;
   padding: 0;
   margin: 0;
   background-color: ${colors.white};
-  z-index: 9999;
+  /* z-index: 9999; */
   border: 1px solid ${colors.greyDark};
   box-shadow: ${shadows.std};
   border-bottom: none;

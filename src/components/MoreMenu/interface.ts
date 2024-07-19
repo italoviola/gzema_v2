@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface SubMenuItem {
   name: string;
   action: () => void;
@@ -11,4 +13,5 @@ export interface MenuItem {
 
 export interface MoreMenuProps {
   menuItems: MenuItem[];
+  style?: React.CSSProperties;
 }

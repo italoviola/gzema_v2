@@ -5,19 +5,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 import Icon from 'components/Icon';
-import MoreMenu from 'components/MoreMenu';
 import GrindingTypeLabel from 'components/GrindingTypeLabel';
 
 import { colors } from 'styles/global.styles';
 
 import {
   addContour,
-  addContourToOperation,
   changeContourPositionAtOperation,
   removeContour,
 } from 'state/part/partSlice';
 import { ContourType, Operations } from 'types/part';
-import { MenuItem } from 'components/MoreMenu/interface';
 import { CardProps } from './interface';
 
 import {
@@ -33,12 +30,14 @@ import {
   Down,
   UpDownContainer,
   Drag,
+  More,
 } from './styles';
 
 const Card: React.FC<CardProps> = ({
   content,
   variation,
   removeFromOperation,
+  toggleMoreMenu,
 }) => {
   const dispatch = useDispatch();
   const operations = useSelector(
@@ -54,34 +53,6 @@ const Card: React.FC<CardProps> = ({
   const excludeContour = () => {
     dispatch(removeContour(content.id));
   };
-
-  const duplicateContour = () => {
-    dispatch(
-      addContour({
-        ...content,
-        name: `${content.name} (Cópia)`,
-        type: content.type as ContourType,
-      }),
-    );
-  };
-
-  const moreMenuItems: MenuItem[] = [
-    {
-      name: 'Adicionar à Sequência',
-      subItems: operations.map((operation) => ({
-        name: operation.name,
-        action: () =>
-          dispatch(
-            addContourToOperation({
-              operationId: operation.id,
-              contourId: content.id,
-            }),
-          ),
-      })),
-    },
-    { name: 'Duplicar', action: duplicateContour },
-    { name: 'Excluir', action: () => setIsModalOpen(true) },
-  ];
 
   const handleMoveUp = () => {
     if (content.operationId) {
@@ -181,7 +152,13 @@ const Card: React.FC<CardProps> = ({
           </Edit>
         )}
         {variation === 'contour' ? (
-          <MoreMenu menuItems={moreMenuItems as MenuItem[]} />
+          <More onClick={toggleMoreMenu}>
+            <Icon
+              className="icon-more_vert"
+              color={colors.greyFont}
+              fontSize="28px"
+            />
+          </More>
         ) : (
           <Remove onClick={removeFromOperation}>
             <Icon className="icon-x" color={colors.white} fontSize="28px" />

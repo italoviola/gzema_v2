@@ -88,13 +88,13 @@ export const LinkStyled = styled(Link)`
   text-decoration: none;
 `;
 
-export const Remove = styled(BaseButton)`
-  background-color: ${colors.red};
+export const More = styled(BaseButton)`
+  background-color: ${colors.white};
   width: 56px;
 `;
 
-export const Menu = styled(BaseButton)`
-  background-color: ${colors.white};
+export const Remove = styled(BaseButton)`
+  background-color: ${colors.red};
   width: 56px;
 `;
 
