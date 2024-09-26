@@ -1,19 +1,22 @@
 import React from 'react';
-import HeaderMenu from 'components/HeaderMenu';
+import SideMenu from 'components/SideMenu';
+import Header from 'components/Header';
 
-import styles from './Layout.module.css';
+import { LayoutContainer, PageContainer, Page } from './styles';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.ReactChild;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className={styles.header}>
-      adasdasds
-      <HeaderMenu />
-      {children}
-    </div>
+    <LayoutContainer>
+      <Header />
+      <PageContainer>
+        <SideMenu />
+        <Page>{children}</Page>
+      </PageContainer>
+    </LayoutContainer>
   );
 };
 

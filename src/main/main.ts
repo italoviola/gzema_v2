@@ -9,11 +9,23 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import Store from 'electron-store';
+import fs from 'fs';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  dialog,
+  globalShortcut,
+  IpcMainInvokeEvent,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { FileObject, SaveObject } from 'types/general';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import { resolveHtmlPath } from './resolveHtmlPath';
+import { appFileExtension } from './appConstants';
 
 class AppUpdater {
   constructor() {
@@ -24,6 +36,8 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+
+const store = new Store();
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -46,7 +60,7 @@ if (isDebug) {
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
 
   return installer
     .default(
@@ -57,10 +71,6 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
-
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
@@ -72,7 +82,10 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728,
+    height: 768,
+    x: 0,
+    y: 0,
+    autoHideMenuBar: true,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -92,6 +105,99 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+  });
+
+  ipcMain.handle(
+    'save-gcode',
+    async (event: IpcMainInvokeEvent, generatedCodes: string[]) => {
+      try {
+        const response = await fetch('http://localhost:8000/save-program', {
+          method: 'POST',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            programs: [...generatedCodes],
+          }),
+        });
+        return await response.json();
+      } catch (error) {
+        throw new Error('Erro ao fazer a chamada de API');
+      }
+    },
+  );
+
+  ipcMain.handle('open-file', async (): Promise<FileObject | null> => {
+    const { filePaths } = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'Arquivos Personalizados', extensions: [appFileExtension] },
+      ],
+    });
+
+    if (filePaths && filePaths.length > 0) {
+      const data = fs.readFileSync(filePaths[0], 'utf-8');
+      const fileName = path.basename(filePaths[0]);
+      return {
+        data: JSON.parse(data),
+        path: filePaths[0],
+        fileName,
+      };
+    }
+
+    return null;
+  });
+
+  ipcMain.handle(
+    'check-file',
+    async (_, filePath: string): Promise<boolean> => {
+      try {
+        if (fs.existsSync(filePath)) return true;
+        return false;
+      } catch (error) {
+        console.error('Erro ao verificar o arquivo', error);
+        return false;
+      }
+    },
+  );
+
+  ipcMain.handle('save-file-as', async (_, content): Promise<SaveObject> => {
+    const { filePath } = await dialog.showSaveDialog({
+      title: 'Salvar como...',
+      filters: [
+        { name: 'Arquivos Personalizados', extensions: [appFileExtension] },
+      ],
+      defaultPath: path.join(app.getPath('documents'), `.${appFileExtension}`),
+    });
+    if (filePath) {
+      try {
+        fs.writeFileSync(filePath, content);
+        return { success: true, saveType: 'saveFileAs', filePath };
+      } catch (error) {
+        console.error('Erro ao salvar o arquivo', error);
+        return { success: false, saveType: 'saveFileAs', filePath };
+      }
+    } else {
+      return { success: false, saveType: 'saveFileAs' };
+    }
+  });
+
+  ipcMain.handle(
+    'save-file',
+    async (_, content, filePath: string): Promise<SaveObject> => {
+      try {
+        fs.writeFileSync(filePath, content);
+        return { success: true, saveType: 'saveFile' };
+      } catch (error) {
+        console.error('Erro ao salvar o arquivo', error);
+        return { success: false, saveType: 'saveFile' };
+      }
+    },
+  );
+
+  ipcMain.handle('quit-app', () => {
+    app.quit();
   });
 
   mainWindow.on('closed', () => {
@@ -116,6 +222,14 @@ const createWindow = async () => {
  * Add event listeners...
  */
 
+ipcMain.on('electron-store-get', async (event, val) => {
+  event.returnValue = store.get(val);
+});
+
+ipcMain.on('electron-store-set', async (event, key, val) => {
+  store.set(key, val);
+});
+
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
@@ -126,12 +240,75 @@ app.on('window-all-closed', () => {
 
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
     createWindow();
-    app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow();
+
+    if (isDebug) {
+      await installExtensions();
+    }
+
+    const shortcuts = [
+      {
+        key: 'CommandOrControl+N',
+        callback: () => {
+          if (mainWindow) mainWindow.webContents.send('shortcut-pressed-n');
+          else console.error('mainWindow not defined');
+        },
+      },
+      {
+        key: 'CommandOrControl+O',
+        callback: () => {
+          if (mainWindow) mainWindow.webContents.send('shortcut-pressed-o');
+          else console.error('mainWindow not defined');
+        },
+      },
+      {
+        key: 'CommandOrControl+S',
+        callback: () => {
+          if (mainWindow) mainWindow.webContents.send('shortcut-pressed-s');
+          else console.error('mainWindow not defined');
+        },
+      },
+      {
+        key: 'CommandOrControl+Shift+S',
+        callback: () => {
+          if (mainWindow)
+            mainWindow.webContents.send('shortcut-pressed-shift-s');
+          else console.error('mainWindow not defined');
+        },
+      },
+      {
+        key: 'CommandOrControl+Q',
+        callback: () => {
+          app.quit();
+        },
+      },
+    ];
+
+    if (mainWindow) {
+      mainWindow.on('focus', () => {
+        shortcuts.forEach(({ key, callback }) => {
+          const ret = globalShortcut.register(key, callback);
+
+          if (!ret)
+            console.log(`Falha ao registrar o atalho de teclado: ${key}`);
+
+          console.log(
+            `Atalho de teclado registrado: ${key}`,
+            globalShortcut.isRegistered(key),
+          );
+        });
+      });
+
+      mainWindow.on('blur', () => {
+        globalShortcut.unregisterAll();
+      });
+    } else {
+      console.error('mainWindow not defined');
+    }
+
+    app.on('will-quit', () => {
+      globalShortcut.unregisterAll();
     });
   })
   .catch(console.log);
