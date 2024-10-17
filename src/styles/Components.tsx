@@ -16,8 +16,10 @@ export const Link = styled(LinkRouter)`
 export const PageTitle = styled.h1`
   font-size: 30px;
   font-weight: bold;
-  margin-bottom: 24px;
   color: ${colors.greyFont};
+  display: block;
+  padding: 0;
+  margin: 15px 24px 15px;
 `;
 
 export const SubTitle = styled.h2`

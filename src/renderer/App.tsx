@@ -11,11 +11,12 @@ import ModalCloseApp from 'components/ModalCloseApp';
 
 // Pages
 import WorkGroup from 'pages/WorkGroup';
+import Visualization from 'pages/Visualization';
 import Contour from 'pages/Contour';
 import OffPage from 'pages/OffPage';
+import Config from 'pages/Config';
 
 import './App.css';
-import Config from 'pages/Config';
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
@@ -73,6 +74,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<OffPage />} />
             <Route path="/workgroup" element={<WorkGroup />} />
+            <Route path="/visualization" element={<Visualization />} />
             <Route path="/contour/:id" element={<Contour />} />
             <Route path="/config" element={<Config />} />
           </Routes>

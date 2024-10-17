@@ -21,11 +21,7 @@ export const Content = styled(PageContent)`
   padding-top: 9px;
 `;
 
-export const Title = styled(PageTitle)`
-  display: block;
-  padding: 0;
-  margin: 15px 24px 15px;
-`;
+export const Title = styled(PageTitle)``;
 
 export const SContentBlock = styled(ContentBlock)`
   margin-bottom: 20px;
