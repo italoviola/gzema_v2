@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import Breadcrumbs from 'components/Breadcrumbs';
+import Chart from 'components/Chart';
 
 import { Container, Content, Title } from './style';
 
@@ -23,7 +24,9 @@ const Visualization: React.FC = () => {
     <Container className={loaded ? 'loaded' : ''}>
       <Breadcrumbs items={breadcrumbsItems} />
       <Title>Visualização</Title>
-      <Content>asdads</Content>
+      <Content>
+        <Chart />
+      </Content>
     </Container>
   );
 };
