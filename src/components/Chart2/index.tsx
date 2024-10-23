@@ -36,26 +36,22 @@ const Chart2: React.FC = () => {
     },
     {
       type: 'polygon',
-      points: [400, 50, 400, -50, 450, 0],
+      points: [400, 50, 440, 30, 440, -30, 400, -50],
       fill: colors.silver,
-    },
-    {
-      type: 'roundedRect',
-      x: 500,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: colors.silver,
-      cornerRadius: [0, 20, 20, 0], // Define o raio dos cantos direitos
     },
     {
       type: 'concaveRoundedRect',
-      x: 650,
-      y: 50,
-      width: 100,
-      height: 100,
+      x: 440,
+      y: -30,
+      width: 10,
+      height: 60,
       fill: colors.silver,
-      cornerRadius: [10, 20, 30, 40], // Define o raio dos cantos
+      cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
+    },
+    {
+      type: 'polygon',
+      points: [450, 20, 450, -20, 500, 0],
+      fill: colors.silver,
     },
   ];
 
@@ -211,7 +207,7 @@ const Chart2: React.FC = () => {
                   height={shape.height}
                   fill={shape.fill}
                   stroke={colors.greyFont}
-                  strokeWidth={2}
+                  strokeWidth={1}
                 />
               );
             }
@@ -224,7 +220,7 @@ const Chart2: React.FC = () => {
                   radius={shape.radius}
                   fill={shape.fill}
                   stroke={colors.greyFont}
-                  strokeWidth={2}
+                  strokeWidth={1}
                 />
               );
             }
@@ -238,7 +234,7 @@ const Chart2: React.FC = () => {
                   points={invertedPoints}
                   fill={shape.fill}
                   stroke={colors.greyFont}
-                  strokeWidth={2}
+                  strokeWidth={1}
                   closed
                 />
               );
@@ -253,7 +249,7 @@ const Chart2: React.FC = () => {
                   height={shape.height}
                   fill={shape.fill}
                   stroke={colors.greyFont}
-                  strokeWidth={2}
+                  strokeWidth={1}
                   cornerRadius={shape.cornerRadius}
                 />
               );
@@ -293,7 +289,7 @@ const Chart2: React.FC = () => {
                   data={pathData}
                   fill={fill}
                   stroke={colors.greyFont}
-                  strokeWidth={2}
+                  strokeWidth={1}
                 />
               );
             }
