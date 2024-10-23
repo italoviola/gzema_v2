@@ -40,19 +40,15 @@ const data3 = [
 
 const Chart: React.FC = () => {
   return (
-    <ScatterChart
-      width={800}
-      height={450}
-      margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-    >
+    <ScatterChart width={800} height={450}>
       <CartesianGrid />
-      <XAxis type="number" dataKey="x" name="X" domain={[0, 400]} />
+      <XAxis type="number" dataKey="x" name="X" domain={[-400, 400]} />
       <YAxis
         type="number"
         dataKey="y"
         name="Y"
         yAxisId="left"
-        domain={[0, 400]}
+        domain={[-400, 400]}
       />
       <Tooltip cursor={{ strokeDasharray: '3 3' }} />
       <Legend />
