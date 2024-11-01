@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Stage, Layer, Line, Text, Rect, Circle, Path } from 'react-konva';
+import CartesianPlane from 'components/CartesianPlane';
 import { colors } from 'styles/global.styles';
 
 const Chart2: React.FC = () => {
@@ -56,9 +57,9 @@ const Chart2: React.FC = () => {
   ];
 
   const points = [
-    { x: 100, y: 100, radius: 5, fill: colors.orangeDark },
-    { x: 150, y: 150, radius: 5, fill: colors.orangeDark },
-    { x: 200, y: 200, radius: 5, fill: colors.orangeDark },
+    { x: 100, y: 100, radius: 4, fill: colors.orangeDark },
+    { x: 150, y: 150, radius: 4, fill: colors.orangeDark },
+    { x: 200, y: 200, radius: 4, fill: colors.orangeDark },
   ];
 
   // Calcule as dimensões máximas necessárias
@@ -108,22 +109,25 @@ const Chart2: React.FC = () => {
 
   const stageWidth = 800;
   const stageHeight = 600;
-  const gridSize = 50;
 
+  const [gridSize, setGridSize] = useState(50);
   const [scale, setScale] = useState(1);
 
   // Função para desenhar as linhas do grid e os rótulos dos eixos
   const drawGrid = () => {
     const lines = [];
+    const adjustedGridSize = gridSize / scale; // Ajusta o tamanho da grade com base na escala
+    const intermediateStep = adjustedGridSize / 5; // Define o passo intermediário
+
     for (
-      let i = -Math.ceil(maxX / gridSize);
-      i <= Math.ceil(maxX / gridSize);
+      let i = -Math.ceil(maxX / adjustedGridSize);
+      i <= Math.ceil(maxX / adjustedGridSize);
       i++
     ) {
       lines.push(
         <Line
           key={`v-${i}`}
-          points={[i * gridSize, -maxY, i * gridSize, maxY]}
+          points={[i * adjustedGridSize, -maxY, i * adjustedGridSize, maxY]}
           stroke="#ddd"
           strokeWidth={1}
         />,
@@ -131,23 +135,40 @@ const Chart2: React.FC = () => {
       lines.push(
         <Text
           key={`v-label-${i}`}
-          x={i * gridSize}
+          x={i * adjustedGridSize}
           y={5}
-          text={`${i * gridSize}`}
+          text={`${i * adjustedGridSize}`}
           fontSize={12}
           fill="black"
         />,
       );
+
+      // Adiciona linhas intermediárias
+      for (let j = 1; j < 5; j++) {
+        lines.push(
+          <Line
+            key={`v-intermediate-${i}-${j}`}
+            points={[
+              i * adjustedGridSize + j * intermediateStep,
+              -maxY,
+              i * adjustedGridSize + j * intermediateStep,
+              maxY,
+            ]}
+            stroke="#eee"
+            strokeWidth={0.5}
+          />,
+        );
+      }
     }
     for (
-      let i = -Math.ceil(maxY / gridSize);
-      i <= Math.ceil(maxY / gridSize);
+      let i = -Math.ceil(maxY / adjustedGridSize);
+      i <= Math.ceil(maxY / adjustedGridSize);
       i++
     ) {
       lines.push(
         <Line
           key={`h-${i}`}
-          points={[-maxX, i * gridSize, maxX, i * gridSize]}
+          points={[-maxX, i * adjustedGridSize, maxX, i * adjustedGridSize]}
           stroke="#ddd"
           strokeWidth={1}
         />,
@@ -156,22 +177,41 @@ const Chart2: React.FC = () => {
         <Text
           key={`h-label-${i}`}
           x={5}
-          y={-i * gridSize} // Inverte a coordenada Y para os rótulos
-          text={`${i * gridSize}`}
+          y={-i * adjustedGridSize} // Inverte a coordenada Y para os rótulos
+          text={`${i * adjustedGridSize}`}
           fontSize={12}
           fill="black"
         />,
       );
+
+      // Adiciona linhas intermediárias
+      for (let j = 1; j < 5; j++) {
+        lines.push(
+          <Line
+            key={`h-intermediate-${i}-${j}`}
+            points={[
+              -maxX,
+              i * adjustedGridSize + j * intermediateStep,
+              maxX,
+              i * adjustedGridSize + j * intermediateStep,
+            ]}
+            stroke="#eee"
+            strokeWidth={0.5}
+          />,
+        );
+      }
     }
     return lines;
   };
 
   const handleZoomIn = () => {
-    setScale(scale * 1.2);
+    setScale(scale * 2);
+    setGridSize(gridSize / 2); // Aumenta o gridSize conforme o zoom in
   };
 
   const handleZoomOut = () => {
-    setScale(scale / 1.2);
+    setScale(scale / 2);
+    setGridSize(gridSize * 2); // Diminui o gridSize conforme o zoom out
   };
 
   return (
@@ -180,6 +220,7 @@ const Chart2: React.FC = () => {
         <button onClick={handleZoomIn}>Zoom In</button>
         <button onClick={handleZoomOut}>Zoom Out</button>
       </div>
+      <CartesianPlane />
       <Stage
         width={stageWidth}
         height={stageHeight}
