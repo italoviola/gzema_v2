@@ -4,12 +4,16 @@ import CartesianPlane from 'components/CartesianPlane';
 import { colors } from 'styles/global.styles';
 
 const Chart2: React.FC = () => {
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [selectedShape, setSelectedShape] = useState<string | null>(null);
+
   // Defina as figuras geométricas e pontos
   const shapes = [
     {
       type: 'polygon',
       points: [0, 0, 50, 50, 50, -50],
       fill: colors.silver,
+      id: 'polygon1',
     },
     {
       type: 'rect',
@@ -18,6 +22,7 @@ const Chart2: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
+      id: 'rect1',
     },
     {
       type: 'rect',
@@ -26,6 +31,7 @@ const Chart2: React.FC = () => {
       width: 150,
       height: 70,
       fill: colors.silver,
+      id: 'rect2',
     },
     {
       type: 'rect',
@@ -34,11 +40,13 @@ const Chart2: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
+      id: 'rect3',
     },
     {
       type: 'polygon',
       points: [400, 50, 440, 30, 440, -30, 400, -50],
       fill: colors.silver,
+      id: 'polygon2',
     },
     {
       type: 'concaveRoundedRect',
@@ -48,23 +56,29 @@ const Chart2: React.FC = () => {
       height: 60,
       fill: colors.silver,
       cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
+      id: 'concaveRoundedRect1',
     },
     {
       type: 'polygon',
       points: [450, 20, 450, -20, 500, 0],
       fill: colors.silver,
+      id: 'polygon3',
     },
   ];
 
   const points = [
-    { x: 100, y: 100, radius: 4, fill: colors.orangeDark },
-    { x: 150, y: 150, radius: 4, fill: colors.orangeDark },
-    { x: 200, y: 200, radius: 4, fill: colors.orangeDark },
+    { x: 100, y: 100, radius: 4, fill: colors.orangeDark, id: 'point1' },
+    { x: 150, y: 150, radius: 4, fill: colors.orangeDark, id: 'point2' },
+    { x: 200, y: 200, radius: 4, fill: colors.orangeDark, id: 'point3' },
   ];
 
+  const handleShapeClick = (id: string) => {
+    setSelectedShape(id);
+  };
+
   // Calcule as dimensões máximas necessárias
-  let maxX = 0;
-  let maxY = 0;
+  let maxX = 300;
+  let maxY = 300;
   shapes.forEach((shape) => {
     if (
       shape.type === 'rect' &&
@@ -92,32 +106,14 @@ const Chart2: React.FC = () => {
     ) {
       maxX = Math.max(maxX, shape.x + shape.width);
       maxY = Math.max(maxY, shape.y + shape.height);
-    } else if (
-      shape.type === 'concaveRoundedRect' &&
-      shape.x !== undefined &&
-      shape.width !== undefined
-    ) {
-      maxX = Math.max(maxX, shape.x + shape.width);
-      maxY = Math.max(maxY, shape.y + shape.height);
     }
   });
 
-  points.forEach((point) => {
-    maxX = Math.max(maxX, point.x);
-    maxY = Math.max(maxY, point.y);
-  });
-
-  const stageWidth = 800;
-  const stageHeight = 600;
-
-  const [gridSize, setGridSize] = useState(50);
-  const [scale, setScale] = useState(1);
-
-  // Função para desenhar as linhas do grid e os rótulos dos eixos
   const drawGrid = () => {
     const lines = [];
-    const adjustedGridSize = gridSize / scale; // Ajusta o tamanho da grade com base na escala
-    const intermediateStep = adjustedGridSize / 5; // Define o passo intermediário
+    const adjustedGridSize = 100; // Tamanho da grade base
+    const intermediateSteps = 10; // Dividimos os valores principais em dez passos
+    const intermediateStepSize = adjustedGridSize / intermediateSteps;
 
     for (
       let i = -Math.ceil(maxX / adjustedGridSize);
@@ -138,28 +134,35 @@ const Chart2: React.FC = () => {
           x={i * adjustedGridSize}
           y={5}
           text={`${i * adjustedGridSize}`}
-          fontSize={12}
+          fontSize={8}
           fill="black"
         />,
       );
 
       // Adiciona linhas intermediárias
-      for (let j = 1; j < 5; j++) {
+      for (let j = 1; j < intermediateSteps; j++) {
+        const intermediateX = i * adjustedGridSize + j * intermediateStepSize;
         lines.push(
           <Line
             key={`v-intermediate-${i}-${j}`}
-            points={[
-              i * adjustedGridSize + j * intermediateStep,
-              -maxY,
-              i * adjustedGridSize + j * intermediateStep,
-              maxY,
-            ]}
+            points={[intermediateX, -maxY, intermediateX, maxY]}
             stroke="#eee"
             strokeWidth={0.5}
           />,
         );
+        lines.push(
+          <Text
+            key={`v-intermediate-label-${i}-${j}`}
+            x={intermediateX}
+            y={5}
+            text={`${Math.round(intermediateX)}`}
+            fontSize={4}
+            fill="gray"
+          />,
+        );
       }
     }
+
     for (
       let i = -Math.ceil(maxY / adjustedGridSize);
       i <= Math.ceil(maxY / adjustedGridSize);
@@ -179,24 +182,30 @@ const Chart2: React.FC = () => {
           x={5}
           y={-i * adjustedGridSize} // Inverte a coordenada Y para os rótulos
           text={`${i * adjustedGridSize}`}
-          fontSize={12}
+          fontSize={8}
           fill="black"
         />,
       );
 
       // Adiciona linhas intermediárias
-      for (let j = 1; j < 5; j++) {
+      for (let j = 1; j < intermediateSteps; j++) {
+        const intermediateY = i * adjustedGridSize + j * intermediateStepSize;
         lines.push(
           <Line
             key={`h-intermediate-${i}-${j}`}
-            points={[
-              -maxX,
-              i * adjustedGridSize + j * intermediateStep,
-              maxX,
-              i * adjustedGridSize + j * intermediateStep,
-            ]}
+            points={[-maxX, intermediateY, maxX, intermediateY]}
             stroke="#eee"
             strokeWidth={0.5}
+          />,
+        );
+        lines.push(
+          <Text
+            key={`h-intermediate-label-${i}-${j}`}
+            x={5}
+            y={-intermediateY}
+            text={`${Math.round(intermediateY)}`}
+            fontSize={4}
+            fill="gray"
           />,
         );
       }
@@ -204,110 +213,62 @@ const Chart2: React.FC = () => {
     return lines;
   };
 
-  const handleZoomIn = () => {
-    setScale(scale * 2);
-    setGridSize(gridSize / 2); // Aumenta o gridSize conforme o zoom in
-  };
-
-  const handleZoomOut = () => {
-    setScale(scale / 2);
-    setGridSize(gridSize * 2); // Diminui o gridSize conforme o zoom out
-  };
-
   return (
     <div>
       <div>
-        <button onClick={handleZoomIn}>Zoom In</button>
-        <button onClick={handleZoomOut}>Zoom Out</button>
+        <button onClick={() => setZoomLevel(zoomLevel + 1)}>Zoom In</button>
+        <button onClick={() => setZoomLevel(Math.max(1, zoomLevel - 1))}>
+          Zoom Out
+        </button>
       </div>
-      <CartesianPlane />
       <Stage
-        width={stageWidth}
-        height={stageHeight}
+        width={800}
+        height={600}
         draggable
-        scaleX={scale}
-        scaleY={scale}
-        x={stageWidth / 2}
-        y={stageHeight / 2}
-        offsetX={stageWidth / 2}
-        offsetY={stageHeight / 2}
+        scaleX={zoomLevel}
+        scaleY={zoomLevel}
+        x={400}
+        y={300}
+        offsetX={400}
+        offsetY={300}
         style={{ border: '1px solid black' }}
       >
         <Layer>
-          {/* Desenha o grid do plano cartesiano */}
           {drawGrid()}
-          {/* Desenha as figuras geométricas */}
-          {shapes.map((shape, index) => {
+          {shapes.map((shape) => {
             if (shape.type === 'rect') {
               return (
                 <Rect
-                  key={index}
+                  key={shape.id}
                   x={shape.x}
-                  y={-shape.y} // Inverte a coordenada Y
+                  y={-shape.y}
                   width={shape.width}
                   height={shape.height}
                   fill={shape.fill}
-                  stroke={colors.greyFont}
-                  strokeWidth={1}
-                />
-              );
-            }
-            if (shape.type === 'circle') {
-              return (
-                <Circle
-                  key={index}
-                  x={shape.x}
-                  y={-shape.y} // Inverte a coordenada Y
-                  radius={shape.radius}
-                  fill={shape.fill}
-                  stroke={colors.greyFont}
-                  strokeWidth={1}
+                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
+                  strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  onClick={() => handleShapeClick(shape.id)}
                 />
               );
             }
             if (shape.type === 'polygon') {
-              const invertedPoints = shape.points.map(
-                (point, i) => (i % 2 === 0 ? point : -point), // Inverte a coordenada Y
-              );
               return (
                 <Line
-                  key={index}
-                  points={invertedPoints}
+                  key={shape.id}
+                  points={shape.points.map((point, i) =>
+                    i % 2 === 0 ? point : -point,
+                  )}
                   fill={shape.fill}
-                  stroke={colors.greyFont}
-                  strokeWidth={1}
+                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
+                  strokeWidth={selectedShape === shape.id ? 2 : 1}
                   closed
-                />
-              );
-            }
-            if (shape.type === 'roundedRect') {
-              return (
-                <Rect
-                  key={index}
-                  x={shape.x}
-                  y={-shape.y} // Inverte a coordenada Y
-                  width={shape.width}
-                  height={shape.height}
-                  fill={shape.fill}
-                  stroke={colors.greyFont}
-                  strokeWidth={1}
-                  cornerRadius={shape.cornerRadius}
+                  onClick={() => handleShapeClick(shape.id)}
                 />
               );
             }
             if (shape.type === 'concaveRoundedRect') {
               const { x, y, width, height, fill, cornerRadius } = shape;
               const [tl, tr, br, bl] = cornerRadius;
-
-              if (
-                x === undefined ||
-                y === undefined ||
-                width === undefined ||
-                height === undefined ||
-                cornerRadius === undefined
-              ) {
-                return null;
-              }
 
               const pathData = `
                 M ${x + tl}, ${y}
@@ -326,23 +287,27 @@ const Chart2: React.FC = () => {
 
               return (
                 <Path
-                  key={index}
+                  key={shape.id}
                   data={pathData}
                   fill={fill}
-                  stroke={colors.greyFont}
-                  strokeWidth={1}
+                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
+                  strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  onClick={() => handleShapeClick(shape.id)}
                 />
               );
             }
+            return null;
           })}
-          {/* Desenha os pontos */}
-          {points.map((point, index) => (
+          {points.map((point) => (
             <Circle
-              key={index}
+              key={point.id}
               x={point.x}
-              y={-point.y} // Inverte a coordenada Y
+              y={-point.y}
               radius={point.radius}
               fill={point.fill}
+              stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
+              strokeWidth={selectedShape === point.id ? 2 : 1}
+              onClick={() => handleShapeClick(point.id)}
             />
           ))}
         </Layer>

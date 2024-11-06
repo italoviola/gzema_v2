@@ -3,6 +3,7 @@ import JXG from 'jsxgraph';
 
 const CartesianPlane: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
+  const isConvex = false; // Defina como true para vértices convexos, false para vértices côncavos
 
   useEffect(() => {
     if (boardRef.current) {
@@ -24,91 +25,136 @@ const CartesianPlane: React.FC = () => {
       });
 
       // Adicione pontos, linhas ou outras figuras geométricas aqui
-      board.create('point', [1, 1], { name: 'A' });
-      board.create('point', [2, 2], { name: 'B' });
+      board.create('point', [1, 1], { name: 'A', fixed: true });
+      board.create('point', [2, 2], { name: 'B', fixed: true });
       board.create(
         'line',
         [
           [1, 1],
           [2, 2],
         ],
-        { straightFirst: false, straightLast: false },
+        { straightFirst: false, straightLast: false, fixed: true },
       );
 
-      // Crie um retângulo
+      // Crie um retângulo com vértices arredondados
       const rectPoints = [
         [3, 3],
-        [6, 3],
-        [6, 6],
-        [3, 6],
+        [5, 3],
+        [5, 5],
+        [3, 5],
       ];
-      board.create('polygon', rectPoints, {
-        fillColor: 'silver',
-        fillOpacity: 0.5,
-      });
-
-      // Crie um retângulo com bordas arredondadas
-      const x = 8;
-      const y = 3;
-      const width = 3;
-      const height = 2;
       const radius = 0.5;
 
-      const roundedRectPoints = [
-        [x + radius, y],
-        [x + width - radius, y],
-        [x + width, y + radius],
-        [x + width, y + height - radius],
-        [x + width - radius, y + height],
-        [x + radius, y + height],
-        [x, y + height - radius],
-        [x, y + radius],
-      ];
+      // Segmentos de linha
+      board.create(
+        'segment',
+        [
+          [rectPoints[0][0] + radius, rectPoints[0][1]],
+          [rectPoints[1][0] - radius, rectPoints[1][1]],
+        ],
+        { fixed: true },
+      );
+      board.create(
+        'segment',
+        [
+          [rectPoints[1][0], rectPoints[1][1] + radius],
+          [rectPoints[2][0], rectPoints[2][1] - radius],
+        ],
+        { fixed: true },
+      );
+      board.create(
+        'segment',
+        [
+          [rectPoints[2][0] - radius, rectPoints[2][1]],
+          [rectPoints[3][0] + radius, rectPoints[3][1]],
+        ],
+        { fixed: true },
+      );
+      board.create(
+        'segment',
+        [
+          [rectPoints[3][0], rectPoints[3][1] - radius],
+          [rectPoints[0][0], rectPoints[0][1] + radius],
+        ],
+        { fixed: true },
+      );
 
-      const arcs = [
+      // Arcos para os cantos arredondados
+      if (isConvex) {
         board.create(
           'arc',
           [
-            [x + width - radius, y + radius],
-            [x + width, y],
-            [x + width, y + radius],
+            [rectPoints[0][0] + radius, rectPoints[0][1] + radius],
+            [rectPoints[0][0], rectPoints[0][1] + radius],
+            [rectPoints[0][0] + radius, rectPoints[0][1]],
           ],
-          { strokeColor: 'lightblue', strokeWidth: 2 },
-        ),
+          { fixed: true },
+        );
         board.create(
           'arc',
           [
-            [x + width - radius, y + height - radius],
-            [x + width, y + height],
-            [x + width - radius, y + height],
+            [rectPoints[1][0] - radius, rectPoints[1][1] + radius],
+            [rectPoints[1][0] - radius, rectPoints[1][1]],
+            [rectPoints[1][0], rectPoints[1][1] + radius],
           ],
-          { strokeColor: 'lightblue', strokeWidth: 2 },
-        ),
+          { fixed: true },
+        );
         board.create(
           'arc',
           [
-            [x + radius, y + height - radius],
-            [x, y + height],
-            [x + radius, y + height],
+            [rectPoints[2][0] - radius, rectPoints[2][1] - radius],
+            [rectPoints[2][0], rectPoints[2][1] - radius],
+            [rectPoints[2][0] - radius, rectPoints[2][1]],
           ],
-          { strokeColor: 'lightblue', strokeWidth: 2 },
-        ),
+          { fixed: true },
+        );
         board.create(
           'arc',
           [
-            [x + radius, y + radius],
-            [x, y],
-            [x + radius, y],
+            [rectPoints[3][0] + radius, rectPoints[3][1] - radius],
+            [rectPoints[3][0] + radius, rectPoints[3][1]],
+            [rectPoints[3][0], rectPoints[3][1] - radius],
           ],
-          { strokeColor: 'lightblue', strokeWidth: 2 },
-        ),
-      ];
-
-      board.create('polygon', roundedRectPoints, {
-        fillColor: 'lightblue',
-        fillOpacity: 0.5,
-        borders: { visible: false },
-      });
+          { fixed: true },
+        );
+      } else {
+        board.create(
+          'arc',
+          [
+            [rectPoints[0][0], rectPoints[0][1]],
+            [rectPoints[0][0] + radius, rectPoints[0][1]],
+            [rectPoints[0][0], rectPoints[0][1] + radius],
+          ],
+          { fixed: true },
+        );
+        board.create(
+          'arc',
+          [
+            [rectPoints[1][0], rectPoints[1][1]],
+            [rectPoints[1][0], rectPoints[1][1] + radius],
+            [rectPoints[1][0] - radius, rectPoints[1][1]],
+          ],
+          { fixed: true },
+        );
+        board.create(
+          'arc',
+          [
+            [rectPoints[2][0], rectPoints[2][1]],
+            [rectPoints[2][0] - radius, rectPoints[2][1]],
+            [rectPoints[2][0], rectPoints[2][1] - radius],
+          ],
+          { fixed: true },
+        );
+        board.create(
+          'arc',
+          [
+            [rectPoints[3][0], rectPoints[3][1]],
+            [rectPoints[3][0], rectPoints[3][1] - radius],
+            [rectPoints[3][0] + radius, rectPoints[3][1]],
+          ],
+          { fixed: true },
+        );
+      }
 
       return () => {
         JXG.JSXGraph.freeBoard(board);
@@ -116,7 +162,13 @@ const CartesianPlane: React.FC = () => {
     }
   }, []);
 
-  return <div ref={boardRef} style={{ width: '800px', height: '600px' }} />;
+  return (
+    <div
+      ref={boardRef}
+      className="jxgbox"
+      style={{ width: '500px', height: '500px' }}
+    />
+  );
 };
 
 export default CartesianPlane;
