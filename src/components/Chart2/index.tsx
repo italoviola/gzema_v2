@@ -1,11 +1,42 @@
 import React, { useState } from 'react';
 import { Stage, Layer, Line, Text, Rect, Circle, Path } from 'react-konva';
-import CartesianPlane from 'components/CartesianPlane';
 import { colors } from 'styles/global.styles';
 
 const Chart2: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+
+  const handleDragMove = (e: any) => {
+    const stage = e.target;
+    const newX = stage.x();
+    const newY = stage.y();
+
+    // Defina os limites do plano cartesiano com base nas linhas desenhadas
+    const minX = -800 * zoomLevel + 1100; // Limite mínimo no eixo X
+    const maxX = 800 * zoomLevel - 300; // Limite máximo no eixo X
+    const minY = -600 * zoomLevel + 800; // Limite mínimo no eixo Y
+    const maxY = 600 * zoomLevel - 300; // Limite máximo no eixo Y
+
+    // Verifique se a nova posição está dentro dos limites
+    if (newX < minX) {
+      stage.x(minX);
+    } else if (newX > maxX) {
+      stage.x(maxX);
+    }
+
+    if (newY < minY) {
+      stage.y(minY);
+    } else if (newY > maxY) {
+      stage.y(maxY);
+    }
+
+    setStagePosition({
+      x: stage.x(),
+      y: stage.y(),
+    });
+  };
 
   // Defina as figuras geométricas e pontos
   const shapes = [
@@ -13,6 +44,7 @@ const Chart2: React.FC = () => {
       type: 'polygon',
       points: [0, 0, 50, 50, 50, -50],
       fill: colors.silver,
+      opacity: 0.7,
       id: 'polygon1',
     },
     {
@@ -22,8 +54,19 @@ const Chart2: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
+      opacity: 0.7,
       id: 'rect1',
     },
+    // {
+    //   type: 'rect',
+    //   x: -200,
+    //   y: -50,
+    //   width: 100,
+    //   height: 800,
+    //   fill: colors.silver,
+    // opacity: 0.7,
+    //   id: 'rect1',
+    // },
     {
       type: 'rect',
       x: 150,
@@ -31,6 +74,7 @@ const Chart2: React.FC = () => {
       width: 150,
       height: 70,
       fill: colors.silver,
+      opacity: 0.7,
       id: 'rect2',
     },
     {
@@ -40,12 +84,14 @@ const Chart2: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
+      opacity: 0.7,
       id: 'rect3',
     },
     {
       type: 'polygon',
       points: [400, 50, 440, 30, 440, -30, 400, -50],
       fill: colors.silver,
+      opacity: 0.7,
       id: 'polygon2',
     },
     {
@@ -55,6 +101,7 @@ const Chart2: React.FC = () => {
       width: 10,
       height: 60,
       fill: colors.silver,
+      opacity: 0.7,
       cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
       id: 'concaveRoundedRect1',
     },
@@ -62,6 +109,7 @@ const Chart2: React.FC = () => {
       type: 'polygon',
       points: [450, 20, 450, -20, 500, 0],
       fill: colors.silver,
+      opacity: 0.7,
       id: 'polygon3',
     },
   ];
@@ -115,6 +163,9 @@ const Chart2: React.FC = () => {
     const intermediateSteps = 10; // Dividimos os valores principais em dez passos
     const intermediateStepSize = adjustedGridSize / intermediateSteps;
 
+    const maxX = 800; // Limite máximo no eixo X
+    const maxY = 600; // Limite máximo no eixo Y
+
     for (
       let i = -Math.ceil(maxX / adjustedGridSize);
       i <= Math.ceil(maxX / adjustedGridSize);
@@ -131,8 +182,8 @@ const Chart2: React.FC = () => {
       lines.push(
         <Text
           key={`v-label-${i}`}
-          x={i * adjustedGridSize}
-          y={5}
+          x={i * adjustedGridSize + 5}
+          y={-5}
           text={`${i * adjustedGridSize}`}
           fontSize={8}
           fill="black"
@@ -142,24 +193,26 @@ const Chart2: React.FC = () => {
       // Adiciona linhas intermediárias
       for (let j = 1; j < intermediateSteps; j++) {
         const intermediateX = i * adjustedGridSize + j * intermediateStepSize;
-        lines.push(
-          <Line
-            key={`v-intermediate-${i}-${j}`}
-            points={[intermediateX, -maxY, intermediateX, maxY]}
-            stroke="#eee"
-            strokeWidth={0.5}
-          />,
-        );
-        lines.push(
-          <Text
-            key={`v-intermediate-label-${i}-${j}`}
-            x={intermediateX}
-            y={5}
-            text={`${Math.round(intermediateX)}`}
-            fontSize={4}
-            fill="gray"
-          />,
-        );
+        if (intermediateX < maxX) {
+          lines.push(
+            <Line
+              key={`v-intermediate-${i}-${j}`}
+              points={[intermediateX, -maxY, intermediateX, maxY]}
+              stroke="#eee"
+              strokeWidth={0.5}
+            />,
+          );
+          lines.push(
+            <Text
+              key={`v-intermediate-label-${i}-${j}`}
+              x={intermediateX + 2}
+              y={2}
+              text={`${Math.round(intermediateX)}`}
+              fontSize={4}
+              fill="gray"
+            />,
+          );
+        }
       }
     }
 
@@ -180,7 +233,7 @@ const Chart2: React.FC = () => {
         <Text
           key={`h-label-${i}`}
           x={5}
-          y={-i * adjustedGridSize} // Inverte a coordenada Y para os rótulos
+          y={-i * adjustedGridSize}
           text={`${i * adjustedGridSize}`}
           fontSize={8}
           fill="black"
@@ -190,24 +243,26 @@ const Chart2: React.FC = () => {
       // Adiciona linhas intermediárias
       for (let j = 1; j < intermediateSteps; j++) {
         const intermediateY = i * adjustedGridSize + j * intermediateStepSize;
-        lines.push(
-          <Line
-            key={`h-intermediate-${i}-${j}`}
-            points={[-maxX, intermediateY, maxX, intermediateY]}
-            stroke="#eee"
-            strokeWidth={0.5}
-          />,
-        );
-        lines.push(
-          <Text
-            key={`h-intermediate-label-${i}-${j}`}
-            x={5}
-            y={-intermediateY}
-            text={`${Math.round(intermediateY)}`}
-            fontSize={4}
-            fill="gray"
-          />,
-        );
+        if (intermediateY < maxY) {
+          lines.push(
+            <Line
+              key={`h-intermediate-${i}-${j}`}
+              points={[-maxX, intermediateY, maxX, intermediateY]}
+              stroke="#eee"
+              strokeWidth={0.5}
+            />,
+          );
+          lines.push(
+            <Text
+              key={`h-intermediate-label-${i}-${j}`}
+              x={5}
+              y={-intermediateY}
+              text={`${Math.round(intermediateY)}`}
+              fontSize={4}
+              fill="gray"
+            />,
+          );
+        }
       }
     }
     return lines;
@@ -222,15 +277,16 @@ const Chart2: React.FC = () => {
         </button>
       </div>
       <Stage
-        width={800}
-        height={600}
+        width={902}
+        height={496}
         draggable
         scaleX={zoomLevel}
         scaleY={zoomLevel}
-        x={400}
-        y={300}
-        offsetX={400}
-        offsetY={300}
+        x={stagePosition.x}
+        y={stagePosition.y}
+        offsetX={cursorPosition.x}
+        offsetY={cursorPosition.y}
+        onDragMove={handleDragMove}
         style={{ border: '1px solid black' }}
       >
         <Layer>
@@ -247,6 +303,7 @@ const Chart2: React.FC = () => {
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  opacity={shape.opacity} // Define a opacidade
                   onClick={() => handleShapeClick(shape.id)}
                 />
               );
@@ -262,6 +319,7 @@ const Chart2: React.FC = () => {
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={selectedShape === shape.id ? 2 : 1}
                   closed
+                  opacity={shape.opacity} // Define a opacidade
                   onClick={() => handleShapeClick(shape.id)}
                 />
               );
@@ -292,6 +350,7 @@ const Chart2: React.FC = () => {
                   fill={fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  opacity={shape.opacity} // Define a opacidade
                   onClick={() => handleShapeClick(shape.id)}
                 />
               );
@@ -307,6 +366,7 @@ const Chart2: React.FC = () => {
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
               strokeWidth={selectedShape === point.id ? 2 : 1}
+              opacity={point.opacity} // Define a opacidade
               onClick={() => handleShapeClick(point.id)}
             />
           ))}
