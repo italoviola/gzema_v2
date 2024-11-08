@@ -166,7 +166,7 @@ const CartesianPlane: React.FC = () => {
     <div
       ref={boardRef}
       className="jxgbox"
-      style={{ width: '500px', height: '500px' }}
+      style={{ position: 'relative', width: '500px', height: '500px' }}
     />
   );
 };

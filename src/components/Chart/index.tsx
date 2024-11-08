@@ -17,10 +17,10 @@ const Chart: React.FC = () => {
     const newY = stage.y();
 
     // Defina os limites do plano cartesiano com base nas linhas desenhadas
-    const minX = -800 * zoomLevel + 1100; // Limite mínimo no eixo X
-    const maxX = 800 * zoomLevel - 300; // Limite máximo no eixo X
-    const minY = -600 * zoomLevel + 800; // Limite mínimo no eixo Y
-    const maxY = 600 * zoomLevel - 300; // Limite máximo no eixo Y
+    const minX = -1500 * zoomLevel + 1100; // Limite mínimo no eixo X
+    const maxX = 1500 * zoomLevel - 300; // Limite máximo no eixo X
+    const minY = -1500 * zoomLevel + 800; // Limite mínimo no eixo Y
+    const maxY = 1500 * zoomLevel - 300; // Limite máximo no eixo Y
 
     // Verifique se a nova posição está dentro dos limites
     if (newX < minX) {
@@ -140,6 +140,7 @@ const Chart: React.FC = () => {
           Zoom Out
         </button>
       </div>
+      {/* <CartesianPlane /> */}
       <Stage
         width={870}
         height={450}
@@ -154,7 +155,7 @@ const Chart: React.FC = () => {
         style={{ border: '1px solid black' }}
       >
         <Layer>
-          <CartesianGrid />
+          <CartesianGrid zoomLevel={zoomLevel} stagePosition={stagePosition} />
         </Layer>
         <Layer>
           {shapes.map((shape) => {
