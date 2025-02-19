@@ -34,6 +34,9 @@ function mountGCodeLine(
       if (/^M\d+$/.test(paramId)) {
         return `M${paramValue} `;
       }
+      if (paramId === 'X' || paramId === 'Z') {
+        return `${paramId}1=${paramValue} `;
+      }
       return `${paramId}${paramValue} `;
     })
     .join('');
