@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { CodeBlock } from 'components/CodePreview/styles';
+import { ToolOptionItem } from 'components/Select/interface';
+
+import useFormattedTools from 'hooks/useFormattedTools';
 
 import {
   mountGCodeWithProgramNumber,
@@ -9,10 +11,9 @@ import {
   getOperationData,
 } from 'integration/mount-gcode';
 import { loadConfig } from 'utils/loadConfig';
-import { loadTools } from 'utils/loadTools';
 
 import { Part, ContourItem } from 'types/part';
-import { Config, GetToolsResponseData } from 'types/api';
+import { Config } from 'types/api';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -25,14 +26,15 @@ import {
   ProgramNumber,
   IconExpand,
   DropdownButtonText,
+  SCodeBlock,
 } from './styles';
 
 const ProgramsToSendList: React.FC = () => {
+  const formattedTools = useFormattedTools();
   const [selectedContourId, setSelectedContourId] = useState<number | null>(
     null,
   );
   const [rangeStart, setRangeStart] = useState<number>(0);
-  const [loadedTools, setLoadedTools] = useState<GetToolsResponseData>([]);
   const part = useSelector((state: { part: Part }) => state.part);
 
   const handleContourClick = (contourId: number) => {
@@ -42,9 +44,7 @@ const ProgramsToSendList: React.FC = () => {
   useEffect(() => {
     async function fetchData() {
       const loadedConfig: Config = await loadConfig();
-      const getTools: GetToolsResponseData = await loadTools();
       setRangeStart(loadedConfig.cnc.delRangeStart);
-      setLoadedTools(getTools);
     }
     fetchData();
   }, []);
@@ -55,7 +55,7 @@ const ProgramsToSendList: React.FC = () => {
       contour,
       Number(rangeStart) + Number(index),
       toolId,
-      loadedTools[toolId - 1].value,
+      formattedTools.find((t: ToolOptionItem) => t.id === toolId)?.value ?? 0,
       getOperationData(part, contour.id, (op) => op.bAxisAngle),
       getOperationData(part, contour.id, (op) => op.xSafetyDistance),
       getOperationData(part, contour.id, (op) => op.zSafetyDistance),
@@ -85,7 +85,7 @@ const ProgramsToSendList: React.FC = () => {
             </DropdownButton>
             {selectedContourId === contour.id && (
               <DropdownContent>
-                <CodeBlock>{mountCodeBlock(contour, index)}</CodeBlock>
+                <SCodeBlock>{mountCodeBlock(contour, index)}</SCodeBlock>
               </DropdownContent>
             )}
           </ListItem>

@@ -21,6 +21,7 @@ import {
 import { ToolOptionItem } from 'components/Select/interface';
 import { Contours, Machining, OperationItem, Operations } from 'types/part';
 
+import { PageTitle } from 'styles/Components';
 import { colors } from 'styles/global.styles';
 
 import dresserImg from '../../../assets/images/dresser.png';
@@ -31,7 +32,6 @@ import {
   Container,
   Content,
   AddBtn,
-  Title,
   TextAdd,
   Wrap,
   OpWrapper,
@@ -126,57 +126,10 @@ const WorkGroup: React.FC = () => {
 
   return (
     <Container>
-      <Modal
-        title={`Cadastrar ${
-          selectedMachining === 1 ? 'Retificação' : 'Dressagem'
-        }`}
-        isOpen={isModalContourOpen}
-        onClose={() => setIsModalContourOpen(false)}
-      >
-        <ContourForm
-          action="add"
-          machining={selectedMachining}
-          onButtonClick={() => setIsModalContourOpen(false)}
-        />
-      </Modal>
-      <Modal
-        title="Adicionar Operação"
-        isOpen={isModalOperationOpen}
-        onClose={() => setIsModalOperationOpen(false)}
-      >
-        <AddOperationForm
-          onButtonClick={() => setIsModalOperationOpen(false)}
-        />
-      </Modal>
-      <Modal
-        title="Editar Operação"
-        isOpen={isModalEditOperationOpen}
-        onClose={() => setIsModalEditOperationOpen(false)}
-      >
-        <AddOperationForm
-          variation="edit"
-          onButtonClick={() => setIsModalEditOperationOpen(false)}
-          operationId={opIdAux}
-        />
-      </Modal>
-      <Modal
-        title="Deseja excluir operação?"
-        isOpen={isModalCofirmDeleteOpOpen}
-        onClose={() => setIsModalCofirmDeleteOpOpen(false)}
-        variation="danger"
-      >
-        <ConfirmAction
-          onConfirm={() => {
-            handleDeleteOperation();
-            setIsModalCofirmDeleteOpOpen(false);
-          }}
-          onCancel={() => setIsModalCofirmDeleteOpOpen(false)}
-        />
-      </Modal>
       <Breadcrumbs items={breadcrumbsItems} />
       <Content>
         <Block>
-          <Title>Contornos</Title>
+          <PageTitle>Contornos</PageTitle>
           <ContourBtnsWrapper>
             <IconBtn>
               <IconButton
@@ -231,7 +184,7 @@ const WorkGroup: React.FC = () => {
           </CContentBlock>
         </Block>
         <Block>
-          <Title>Sequência de Execução</Title>
+          <PageTitle>Sequência de Execução</PageTitle>
           <AddBtn>
             <Button
               onClick={() => setIsModalOperationOpen(true)}
@@ -324,6 +277,53 @@ const WorkGroup: React.FC = () => {
           </OpWrapper>
         </Block>
       </Content>
+      <Modal
+        title={`Cadastrar ${
+          selectedMachining === 1 ? 'Retificação' : 'Dressagem'
+        }`}
+        isOpen={isModalContourOpen}
+        onClose={() => setIsModalContourOpen(false)}
+      >
+        <ContourForm
+          variation="add"
+          machining={selectedMachining}
+          onButtonClick={() => setIsModalContourOpen(false)}
+        />
+      </Modal>
+      <Modal
+        title="Adicionar Operação"
+        isOpen={isModalOperationOpen}
+        onClose={() => setIsModalOperationOpen(false)}
+      >
+        <AddOperationForm
+          onButtonClick={() => setIsModalOperationOpen(false)}
+        />
+      </Modal>
+      <Modal
+        title="Editar Operação"
+        isOpen={isModalEditOperationOpen}
+        onClose={() => setIsModalEditOperationOpen(false)}
+      >
+        <AddOperationForm
+          variation="edit"
+          onButtonClick={() => setIsModalEditOperationOpen(false)}
+          operationId={opIdAux}
+        />
+      </Modal>
+      <Modal
+        title="Deseja excluir operação?"
+        isOpen={isModalCofirmDeleteOpOpen}
+        onClose={() => setIsModalCofirmDeleteOpOpen(false)}
+        variation="danger"
+      >
+        <ConfirmAction
+          onConfirm={() => {
+            handleDeleteOperation();
+            setIsModalCofirmDeleteOpOpen(false);
+          }}
+          onCancel={() => setIsModalCofirmDeleteOpOpen(false)}
+        />
+      </Modal>
     </Container>
   );
 };

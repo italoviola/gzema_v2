@@ -33,6 +33,10 @@ export interface ContourItem {
   machining: Machining;
   type: ContourType;
   activities: Activities;
+  dressingTool?: string;
+  bAxisAngle?: number;
+  xSafetyDistance?: number;
+  zSafetyDistance?: number;
 }
 
 export interface Contours extends Array<ContourItem> {}

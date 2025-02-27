@@ -46,7 +46,16 @@ const partSlice = createSlice({
       action: PayloadAction<
         | Omit<ContourItem, 'id'>
         | (Omit<Partial<Pick<ContourItem, 'activities'>>, 'id'> &
-            Pick<ContourItem, 'name' | 'machining' | 'type'>)
+            Pick<
+              ContourItem,
+              | 'name'
+              | 'machining'
+              | 'type'
+              | 'dressingTool'
+              | 'bAxisAngle'
+              | 'xSafetyDistance'
+              | 'zSafetyDistance'
+            >)
       >,
     ) => {
       const maxId = Math.max(...state.contours.map((contour) => contour.id), 0);
@@ -131,9 +140,9 @@ const partSlice = createSlice({
       }>,
     ) => {
       const { operationId, contourId, direction } = action.payload;
-      const operation = state.operations.find((op) => op.id === operationId); // encontrar a operação correta
+      const operation = state.operations.find((op) => op.id === operationId);
 
-      if (!operation) return; // se a operação não for encontrada, retorne
+      if (!operation) return;
 
       const index = operation.contoursIds.findIndex((id) => id === contourId);
       if (index < 0) return;

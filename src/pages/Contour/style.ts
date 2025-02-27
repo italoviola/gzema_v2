@@ -1,27 +1,68 @@
 import styled from 'styled-components';
-import { PageTitle, PageContent, ContentBlock } from 'styles/Components';
+import { PageTitle, ContentBlock, Link } from 'styles/Components';
 import { colors, measures } from 'styles/global.styles';
 
+import LinkAction from 'components/LinkAction';
 import Icon from 'components/Icon';
 
 export const Container = styled.div`
   width: 100%;
 `;
 
-export const Content = styled(PageContent)``;
+export const BackBtn = styled(Link)`
+  display: inline-block;
+  font-size: 14px;
+  margin-bottom: 4px;
+  padding: 4px 4px 4px 0;
+  color: ${colors.blueLight};
+`;
+
+export const BackBtnContent = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+`;
+
+export const IconBack = styled(Icon)`
+  transform: rotate(-90deg);
+  color: inherit;
+`;
 
 export const PageHead = styled.div`
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const TitleContainer = styled.div`
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+`;
+
+export const DressingLabelsContainer = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+`;
+
+export const DressingLabels = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: left;
+  gap: ${measures.gutter};
+  color: ${colors.greyFont};
+`;
+
+export const DressingItem = styled.div`
+  margin-bottom: 24px;
+`;
+
+export const SLinkAction = styled(LinkAction)`
+  font-weight: bold;
+  color: ${colors.blueDark};
 `;
 
 export const Title = styled(PageTitle)`

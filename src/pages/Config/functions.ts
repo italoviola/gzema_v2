@@ -2,7 +2,7 @@ import { defaultConfig } from 'utils/loadConfig';
 import { validateIp } from 'utils/constants';
 import { FieldKeys, FormState, RenderFieldProps } from './interface';
 
-export const initialState = {
+export const initialState: FormState = {
   ip: {
     value: defaultConfig.network.ip,
     edit: false,
@@ -45,8 +45,68 @@ export const initialState = {
     error: false,
     message: undefined,
   },
+  tool1fixedDiamondQtd: {
+    value: defaultConfig.tools.tool1fixedDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool1refractableDiamondQtd: {
+    value: defaultConfig.tools.tool1refractableDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool1dressingDiscQtd: {
+    value: defaultConfig.tools.tool1dressingDiscQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool1fixedDressingRollerQtd: {
+    value: defaultConfig.tools.tool1fixedDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool1sCtrlMovableDressingRollerQtd: {
+    value: defaultConfig.tools.tool1sCtrlMovableDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
   tool2Var: {
     value: defaultConfig.tools.tool2Var,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool2fixedDiamondQtd: {
+    value: defaultConfig.tools.tool2fixedDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool2refractableDiamondQtd: {
+    value: defaultConfig.tools.tool2refractableDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool2dressingDiscQtd: {
+    value: defaultConfig.tools.tool2dressingDiscQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool2fixedDressingRollerQtd: {
+    value: defaultConfig.tools.tool2fixedDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool2sCtrlMovableDressingRollerQtd: {
+    value: defaultConfig.tools.tool2sCtrlMovableDressingRollerQtd,
     edit: false,
     error: false,
     message: undefined,
@@ -57,8 +117,68 @@ export const initialState = {
     error: false,
     message: undefined,
   },
+  tool3fixedDiamondQtd: {
+    value: defaultConfig.tools.tool3fixedDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool3refractableDiamondQtd: {
+    value: defaultConfig.tools.tool3refractableDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool3dressingDiscQtd: {
+    value: defaultConfig.tools.tool3dressingDiscQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool3fixedDressingRollerQtd: {
+    value: defaultConfig.tools.tool3fixedDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool3sCtrlMovableDressingRollerQtd: {
+    value: defaultConfig.tools.tool3sCtrlMovableDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
   tool4Var: {
     value: defaultConfig.tools.tool4Var,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool4fixedDiamondQtd: {
+    value: defaultConfig.tools.tool4fixedDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool4refractableDiamondQtd: {
+    value: defaultConfig.tools.tool4refractableDiamondQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool4dressingDiscQtd: {
+    value: defaultConfig.tools.tool4dressingDiscQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool4fixedDressingRollerQtd: {
+    value: defaultConfig.tools.tool4fixedDressingRollerQtd,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  tool4sCtrlMovableDressingRollerQtd: {
+    value: defaultConfig.tools.tool4sCtrlMovableDressingRollerQtd,
     edit: false,
     error: false,
     message: undefined,
@@ -104,28 +224,148 @@ export const fieldsCNCProps: RenderFieldProps = [
 
 export const fieldsToolsProps: RenderFieldProps = [
   {
-    label: 'Variável PCode do Rebolo 1',
+    label: 'Variável do Rebolo 1',
     name: 'tool1Var',
     type: 'number',
     placeholder: '50010',
   },
   {
-    label: 'Variável PCode do Rebolo 2',
+    label: 'Variável Qtd. Diamante Fixo do Rebolo 1',
+    name: 'tool1fixedDiamondQtd',
+    type: 'number',
+    placeholder: '50011',
+  },
+  {
+    label: 'Variável Qtd. Diamante Abatível do Rebolo 1',
+    name: 'tool1refractableDiamondQtd',
+    type: 'number',
+    placeholder: '50012',
+  },
+  {
+    label: 'Variável Qtd. Disco Dressador do Rebolo 1',
+    name: 'tool1dressingDiscQtd',
+    type: 'number',
+    placeholder: '50013',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Fixo do Rebolo 1',
+    name: 'tool1fixedDressingRollerQtd',
+    type: 'number',
+    placeholder: '50014',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Móvel c/ Servo do Rebolo 1',
+    name: 'tool1sCtrlMovableDressingRollerQtd',
+    type: 'number',
+    placeholder: '50015',
+  },
+  {
+    label: 'Variável do Rebolo 2',
     name: 'tool2Var',
     type: 'number',
     placeholder: '50020',
   },
   {
-    label: 'Variável PCode do Rebolo 3',
+    label: 'Variável Qtd. Diamante Fixo do Rebolo 2',
+    name: 'tool2fixedDiamondQtd',
+    type: 'number',
+    placeholder: '50021',
+  },
+  {
+    label: 'Variável Qtd. Diamante Abatível do Rebolo 2',
+    name: 'tool2refractableDiamondQtd',
+    type: 'number',
+    placeholder: '50022',
+  },
+  {
+    label: 'Variável Qtd. Disco Dressador do Rebolo 2',
+    name: 'tool2dressingDiscQtd',
+    type: 'number',
+    placeholder: '50023',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Fixo do Rebolo 2',
+    name: 'tool2fixedDressingRollerQtd',
+    type: 'number',
+    placeholder: '50024',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Móvel c/ Servo do Rebolo 2',
+    name: 'tool2sCtrlMovableDressingRollerQtd',
+    type: 'number',
+    placeholder: '50025',
+  },
+  {
+    label: 'Variável do Rebolo 3',
     name: 'tool3Var',
     type: 'number',
     placeholder: '50030',
   },
   {
-    label: 'Variável PCode do Rebolo 4',
+    label: 'Variável Qtd. Diamante Fixo do Rebolo 3',
+    name: 'tool3fixedDiamondQtd',
+    type: 'number',
+    placeholder: '50031',
+  },
+  {
+    label: 'Variável Qtd. Diamante Abatível do Rebolo 3',
+    name: 'tool3refractableDiamondQtd',
+    type: 'number',
+    placeholder: '50032',
+  },
+  {
+    label: 'Variável Qtd. Disco Dressador do Rebolo 3',
+    name: 'tool3dressingDiscQtd',
+    type: 'number',
+    placeholder: '50033',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Fixo do Rebolo 3',
+    name: 'tool3fixedDressingRollerQtd',
+    type: 'number',
+    placeholder: '50034',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Móvel c/ Servo do Rebolo 3',
+    name: 'tool3sCtrlMovableDressingRollerQtd',
+    type: 'number',
+    placeholder: '50035',
+  },
+  {
+    label: 'Variável do Rebolo 4',
     name: 'tool4Var',
     type: 'number',
     placeholder: '50040',
+  },
+  {
+    label: 'Variável Qtd. Diamante Fixo do Rebolo 4',
+    name: 'tool4fixedDiamondQtd',
+    type: 'number',
+    placeholder: '50041',
+  },
+  {
+    label: 'Variável Qtd. Diamante Abatível do Rebolo 4',
+    name: 'tool4refractableDiamondQtd',
+    type: 'number',
+    placeholder: '50042',
+  },
+  {
+    label: 'Variável Qtd. Disco Dressador do Rebolo 4',
+    name: 'tool4dressingDiscQtd',
+    type: 'number',
+    placeholder: '50043',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Fixo do Rebolo 4',
+    name: 'tool4fixedDressingRollerQtd',
+    type: 'number',
+    placeholder: '50044',
+  },
+  {
+    label: 'Variável Qtd. Rolo Dressador Móvel c/ Servo do Rebolo 4',
+    name: 'tool4sCtrlMovableDressingRollerQtd',
+    type: 'number',
+    placeholder: '50045',
   },
 ];
 
@@ -167,7 +407,10 @@ export const validateField = (
           message: 'ID do programa inicial maior que o ID do programa final',
         };
       }
-      return { isValid: true, message: undefined };
+      return {
+        isValid: true,
+        message: undefined,
+      };
     }
     case 'delRangeEnd': {
       const numValue = Number(value);
@@ -183,51 +426,51 @@ export const validateField = (
           message: 'ID do programa final menor que o ID do programa inicial',
         };
       }
-      return { isValid: true, message: undefined };
-    }
-    case 'pmcAddress': {
-      const numValue = Number(value);
       return {
-        isValid: numValue >= 0 && numValue <= 9999,
-        message: 'Endereço PMC inválido',
+        isValid: true,
+        message: undefined,
       };
     }
-    case 'pmcAddressBit': {
-      const numValue = parseInt(value.toString(), 10);
-      return {
-        isValid: !Number.isNaN(numValue) && numValue >= 0 && numValue <= 7,
-        message: 'Bit inválido',
-      };
-    }
-    case 'tool1Var': {
+    case 'tool1Var':
+    case 'tool1fixedDiamondQtd':
+    case 'tool1refractableDiamondQtd':
+    case 'tool1dressingDiscQtd':
+    case 'tool1fixedDressingRollerQtd':
+    case 'tool1sCtrlMovableDressingRollerQtd':
+    case 'tool2Var':
+    case 'tool2fixedDiamondQtd':
+    case 'tool2refractableDiamondQtd':
+    case 'tool2dressingDiscQtd':
+    case 'tool2fixedDressingRollerQtd':
+    case 'tool2sCtrlMovableDressingRollerQtd':
+    case 'tool3Var':
+    case 'tool3fixedDiamondQtd':
+    case 'tool3refractableDiamondQtd':
+    case 'tool3dressingDiscQtd':
+    case 'tool3fixedDressingRollerQtd':
+    case 'tool3sCtrlMovableDressingRollerQtd':
+    case 'tool4Var':
+    case 'tool4fixedDiamondQtd':
+    case 'tool4refractableDiamondQtd':
+    case 'tool4dressingDiscQtd':
+    case 'tool4fixedDressingRollerQtd':
+    case 'tool4sCtrlMovableDressingRollerQtd': {
       const numValue = Number(value);
+      if (numValue < 0) {
+        return {
+          isValid: false,
+          message: 'Valor não pode ser negativo',
+        };
+      }
       return {
-        isValid: numValue >= 0,
-        message: 'Variável PCode inválida',
-      };
-    }
-    case 'tool2Var': {
-      const numValue = Number(value);
-      return {
-        isValid: numValue >= 0,
-        message: 'Variável PCode inválida',
-      };
-    }
-    case 'tool3Var': {
-      const numValue = Number(value);
-      return {
-        isValid: numValue >= 0,
-        message: 'Variável PCode inválida',
-      };
-    }
-    case 'tool4Var': {
-      const numValue = Number(value);
-      return {
-        isValid: numValue >= 0,
-        message: 'Variável PCode inválida',
+        isValid: true,
+        message: undefined,
       };
     }
     default:
-      return { isValid: false, message: 'Campo inválido' };
+      return {
+        isValid: true,
+        message: undefined,
+      };
   }
 };

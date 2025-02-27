@@ -39,12 +39,45 @@ export interface Cnc {
   pmcAddressBit: number;
 }
 
+export interface DressingQtdVars {
+  fixedDiamond: number;
+  refractableDiamond: number;
+  dressingDisc: number;
+  fixedDressingRoller: number;
+  sCtrlMovableDressingRoller: number;
+}
+
 export interface Tools {
   tool1Var: number;
+  tool1fixedDiamondQtd: number;
+  tool1refractableDiamondQtd: number;
+  tool1dressingDiscQtd: number;
+  tool1fixedDressingRollerQtd: number;
+  tool1sCtrlMovableDressingRollerQtd: number;
   tool2Var: number;
+  tool2fixedDiamondQtd: number;
+  tool2refractableDiamondQtd: number;
+  tool2dressingDiscQtd: number;
+  tool2fixedDressingRollerQtd: number;
+  tool2sCtrlMovableDressingRollerQtd: number;
   tool3Var: number;
+  tool3fixedDiamondQtd: number;
+  tool3refractableDiamondQtd: number;
+  tool3dressingDiscQtd: number;
+  tool3fixedDressingRollerQtd: number;
+  tool3sCtrlMovableDressingRollerQtd: number;
   tool4Var: number;
+  tool4fixedDiamondQtd: number;
+  tool4refractableDiamondQtd: number;
+  tool4dressingDiscQtd: number;
+  tool4fixedDressingRollerQtd: number;
+  tool4sCtrlMovableDressingRollerQtd: number;
 }
+
+export type DressingToolsQtds = Omit<
+  Tools,
+  'tool1Var' | 'tool2Var' | 'tool3Var' | 'tool4Var'
+>;
 
 export interface Config {
   network: Network;
