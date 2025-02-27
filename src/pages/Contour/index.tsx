@@ -506,10 +506,10 @@ const Contour: React.FC = () => {
                         const toolName = formData.dressingTool.replace(
                           /\d+$/,
                           '',
-                        ); // Remove sufixo numérico
+                        ); // Remove numerical sufix
                         const translatedToolName =
                           toolNames[toolName as keyof typeof toolNames];
-                        const toolNumber = formData.dressingTool.match(/\d+$/); // Captura o sufixo numérico
+                        const toolNumber = formData.dressingTool.match(/\d+$/); // Captura o numerical sufix
                         return `${translatedToolName} ${toolNumber}`;
                       })()}
                     </InfoLabel>
