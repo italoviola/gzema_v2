@@ -252,38 +252,42 @@ const ContourForm: React.FC<FormProps> = ({
           </Field>
         </>
       )}
-      <Field>
-        <FormField
-          name="bAxisAngle"
-          label="Ângulo Eixo B"
-          type="number"
-          placeholder="Valor do ângulo..."
-          fieldState={formData.bAxisAngle as FieldState}
-          handleInputChange={handleChange}
-        />
-      </Field>
-      <HorizontalField>
-        <Field>
-          <FormField
-            name="xSafetyDistance"
-            label="Distância de Segurança X"
-            type="number"
-            placeholder="Valor da distância..."
-            fieldState={formData.xSafetyDistance as FieldState}
-            handleInputChange={handleChange}
-          />
-        </Field>
-        <Field>
-          <FormField
-            name="zSafetyDistance"
-            label="Distância de Segurança Z"
-            type="number"
-            placeholder="Valor da distância..."
-            fieldState={formData.zSafetyDistance as FieldState}
-            handleInputChange={handleChange}
-          />
-        </Field>
-      </HorizontalField>
+      {machining === MACHINING_DRESSING && (
+        <>
+          <Field>
+            <FormField
+              name="bAxisAngle"
+              label="Ângulo Eixo B"
+              type="number"
+              placeholder="Valor do ângulo..."
+              fieldState={formData.bAxisAngle as FieldState}
+              handleInputChange={handleChange}
+            />
+          </Field>
+          <HorizontalField>
+            <Field>
+              <FormField
+                name="xSafetyDistance"
+                label="Distância de Segurança X"
+                type="number"
+                placeholder="Valor da distância..."
+                fieldState={formData.xSafetyDistance as FieldState}
+                handleInputChange={handleChange}
+              />
+            </Field>
+            <Field>
+              <FormField
+                name="zSafetyDistance"
+                label="Distância de Segurança Z"
+                type="number"
+                placeholder="Valor da distância..."
+                fieldState={formData.zSafetyDistance as FieldState}
+                handleInputChange={handleChange}
+              />
+            </Field>
+          </HorizontalField>
+        </>
+      )}
       {variation === 'add' &&
         machining === MACHINING_DRESSING &&
         formData.type.value && (
@@ -321,7 +325,7 @@ const ContourForm: React.FC<FormProps> = ({
                       return (
                         <Field key={tool.name}>
                           {[...Array(tool.value)].map((_, i) => (
-                            <RadioButton style={{ fontSize: '16px' }} key={i}>
+                            <RadioButton style={{ fontSize: '16px' }}>
                               <input
                                 type="radio"
                                 value={`${noPrefixToolName.replace('Qtd', '')}${
