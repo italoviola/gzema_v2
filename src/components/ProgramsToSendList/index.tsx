@@ -9,6 +9,7 @@ import {
   mountGCodeWithProgramNumber,
   orderedContours,
   getOperationData,
+  generateMapProgram,
 } from 'integration/mount-gcode';
 import { loadConfig } from 'utils/loadConfig';
 
@@ -65,6 +66,27 @@ const ProgramsToSendList: React.FC = () => {
   return (
     <Container>
       <List>
+        <ListItem key="map-program">
+          <DropdownButton onClick={() => handleContourClick(-1)}>
+            <IconWrapper isOpen={selectedContourId === -1}>
+              <IconExpand
+                className="icon-expand_less"
+                color={colors.black}
+                fontSize="18px"
+              />
+            </IconWrapper>
+            <DropdownButtonText>
+              <ProgramNumber>{rangeStart}</ProgramNumber>
+              {': '}
+              Map Program
+            </DropdownButtonText>
+          </DropdownButton>
+          {selectedContourId === -1 && (
+            <DropdownContent>
+              <SCodeBlock>{generateMapProgram(part, rangeStart)}</SCodeBlock>
+            </DropdownContent>
+          )}
+        </ListItem>
         {orderedContours(part).map((contour: ContourItem, index: number) => (
           <ListItem key={contour.id}>
             <DropdownButton onClick={() => handleContourClick(contour.id)}>
@@ -77,7 +99,7 @@ const ProgramsToSendList: React.FC = () => {
               </IconWrapper>
               <DropdownButtonText>
                 <ProgramNumber>
-                  {Number(rangeStart) + Number(index)}
+                  {Number(rangeStart) + Number(index) + 1}
                 </ProgramNumber>
                 {': '}
                 {contour.name}

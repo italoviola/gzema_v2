@@ -103,9 +103,6 @@ function generateLines(
   const jobLine = jobValue
     ? `N${incrementLineNumber()} #50002=${jobValue}\n`
     : '';
-  const bAxisAngleLine = bAxisAngleValue
-    ? `N${incrementLineNumber()} #${toolVar}1=${bAxisAngleValue}\n`
-    : '';
   const xSafetyDistanceLine = xSafetyDistanceValue
     ? `N${incrementLineNumber()} #${toolVar}2=${xSafetyDistanceValue}\n`
     : '';
@@ -125,7 +122,7 @@ function generateLines(
       incrementLineNumber,
     )}`;
   });
-  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${bAxisAngleLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${macroRefLine}${gCodeOutput}\n`;
+  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${macroRefLine}${gCodeOutput}\n`;
 
   return gCodeOutput;
 }
@@ -190,12 +187,44 @@ function getOperationData<T>(
   return callback(operation);
 }
 
+function generateMapProgram(part: Part, rangeStart: number): string {
+  const header = `O${rangeStart}(Map Program)`;
+  const varNumbers = {
+    grindingItemsQtd: 50005,
+    dressingItemsQtd: 50006,
+    bAxisAngle: 50100,
+  };
+
+  const grindingItemsCount = part.contours.filter(
+    (contour) => contour.machining === MACHINING_GRINDING,
+  ).length;
+
+  const dressingItemsCount = part.contours.filter(
+    (contour) => contour.machining === MACHINING_DRESSING,
+  ).length;
+
+  const grindingItemsLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
+  const dressingItemsLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
+
+  const operationsLines = part.operations
+    .map((operation, index) => {
+      const { bAxisAngle } = operation;
+
+      const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
+
+      return `${bAxisAngleLine}\n`;
+    })
+    .join('');
+
+  return `${header}\n${grindingItemsLine}\n${dressingItemsLine}\n${operationsLines}`;
+}
+
 function generateGCodeForPart(
   part: Part,
   rangeStart: number,
   formattedTools: ToolOptions,
 ): string[] {
-  const gCodeStrings: string[] = [];
+  const gCodeStrings: string[] = [`${generateMapProgram(part, rangeStart)}`];
 
   orderedContours(part).forEach((contour: ContourItem, index: number) => {
     const toolId = getOperationData(
@@ -206,7 +235,7 @@ function generateGCodeForPart(
 
     const gCode = mountGCodeWithProgramNumber(
       contour,
-      Number(rangeStart) + index,
+      Number(rangeStart) + 1 + index, // use plus one to make Map Program be the first on the range
       toolId,
       Array.isArray(formattedTools)
         ? formattedTools.find((t) => t.id === toolId)?.value ?? 0
@@ -235,4 +264,5 @@ export {
   generateGCodeForPart,
   orderedContours,
   mountGCodeWithProgramNumber,
+  generateMapProgram,
 };
