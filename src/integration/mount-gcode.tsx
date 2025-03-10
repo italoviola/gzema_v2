@@ -48,6 +48,22 @@ function mountGCodeLine(
   return gCodeLine;
 }
 
+function getDressingToolNumber(toolName: string, toolId: number): string {
+  const suffix = parseInt(toolName.slice(-1), 10);
+
+  const baseNames = {
+    fixedDiamond: `5${toolId}50${suffix}`,
+    refractableDiamond: `5${toolId}51${suffix}`,
+    dressingDisc: `5${toolId}52${suffix}`,
+    fixedDressingRoller: `5${toolId}53${suffix}`,
+    sCtrlMovableDressingRoller: `5${toolId}54${suffix}`,
+  };
+
+  const baseName = toolName.replace(/[1-4]$/, '') as keyof typeof baseNames;
+
+  return `${baseNames[baseName]}`;
+}
+
 function generateLines(
   contour: ContourItem,
   toolId?: number,
@@ -96,12 +112,12 @@ function generateLines(
   const toolIdLine = toolId
     ? `N${incrementLineNumber()} #50001=${toolId}\n`
     : '';
-  const toolTypeLine = toolType
-    ? `N${incrementLineNumber()} #${toolVar}0=${toolType}\n`
-    : '';
   // jobLine refers to if it is a grinding OD/ID or dressing OD/ID operation
   const jobLine = jobValue
     ? `N${incrementLineNumber()} #50002=${jobValue}\n`
+    : '';
+  const toolTypeLine = toolType
+    ? `N${incrementLineNumber()} #${toolVar}0=${toolType}\n`
     : '';
   const xSafetyDistanceLine = xSafetyDistanceValue
     ? `N${incrementLineNumber()} #${toolVar}2=${xSafetyDistanceValue}\n`
@@ -111,6 +127,13 @@ function generateLines(
     : '';
   const macroRefLine = macroRef
     ? `N${incrementLineNumber()} ${macroRef}\n`
+    : '';
+  // dressing tools lines
+  const dressingToolLine = contour.dressingTool
+    ? `N${incrementLineNumber()} #${getDressingToolNumber(
+        contour.dressingTool,
+        toolId ?? 0,
+      )}=1 (${contour.dressingTool})\n`
     : '';
 
   let gCodeOutput = '';
@@ -122,7 +145,7 @@ function generateLines(
       incrementLineNumber,
     )}`;
   });
-  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${macroRefLine}${gCodeOutput}\n`;
+  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
 
   return gCodeOutput;
 }
@@ -151,7 +174,7 @@ function mountGCodeWithProgramNumber(
     xSafetyDistanceValue,
     zSafetyDistanceValue,
   );
-  const gCodeTemplate = `\nO${programNumber}(${removeAccents(
+  const gCodeTemplate = `O${programNumber}(${removeAccents(
     contour.name,
   )})\n${gCodeOutput}%`;
 
@@ -195,13 +218,33 @@ function generateMapProgram(part: Part, rangeStart: number): string {
     bAxisAngle: 50100,
   };
 
-  const grindingItemsCount = part.contours.filter(
-    (contour) => contour.machining === MACHINING_GRINDING,
-  ).length;
+  const grindingItemsCount = part.operations.reduce((count, operation) => {
+    return (
+      count +
+      operation.contoursIds.filter(
+        (contourId) =>
+          part.contours.find(
+            (contour) =>
+              contour.id === contourId &&
+              contour.machining === MACHINING_GRINDING,
+          ) !== undefined,
+      ).length
+    );
+  }, 0);
 
-  const dressingItemsCount = part.contours.filter(
-    (contour) => contour.machining === MACHINING_DRESSING,
-  ).length;
+  const dressingItemsCount = part.operations.reduce((count, operation) => {
+    return (
+      count +
+      operation.contoursIds.filter(
+        (contourId) =>
+          part.contours.find(
+            (contour) =>
+              contour.id === contourId &&
+              contour.machining === MACHINING_DRESSING,
+          ) !== undefined,
+      ).length
+    );
+  }, 0);
 
   const grindingItemsLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
   const dressingItemsLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
