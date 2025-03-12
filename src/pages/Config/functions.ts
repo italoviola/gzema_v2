@@ -39,6 +39,18 @@ export const initialState: FormState = {
     error: false,
     message: undefined,
   },
+  notationPattern: {
+    value: defaultConfig.cnc.notationPattern,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  hasBAxis: {
+    value: defaultConfig.cnc.hasBAxis,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
   tool1Var: {
     value: defaultConfig.tools.tool1Var,
     edit: false,
@@ -219,6 +231,18 @@ export const fieldsCNCProps: RenderFieldProps = [
     name: 'pmcAddressBit',
     type: 'number',
     placeholder: '0',
+  },
+  {
+    label: 'Padrão de Notação (Zema ou Junker)',
+    name: 'notationPattern',
+    type: 'number',
+    placeholder: '50009',
+  },
+  {
+    label: 'Possui Eixo B',
+    name: 'hasBAxis',
+    type: 'number',
+    placeholder: '50010',
   },
 ];
 

@@ -1,10 +1,11 @@
 import styled from 'styled-components';
-import Input from 'components/Input';
 
-import { colors } from 'styles/global.styles';
+import Input from 'components/Input';
+import Button from 'components/Button';
+
+import { colors, shadows } from 'styles/global.styles';
 
 import { ContentBlock, SubTitle } from 'styles/Components';
-import Button from 'components/Button';
 
 export const Container = styled.div`
   width: 100%;
@@ -12,6 +13,17 @@ export const Container = styled.div`
 `;
 
 export const SContentBlock = styled(ContentBlock)`
+  margin-bottom: 20px;
+  max-height: 100%;
+`;
+
+export const SContentBlockBtn = styled.div`
+  margin-bottom: 20px;
+  max-height: 100%;
+  box-shadow: ${shadows.std};
+`;
+
+export const SContentBlockSpinner = styled.div`
   margin-bottom: 20px;
   max-height: 100%;
 `;
@@ -39,7 +51,8 @@ export const ContentText = styled.div<{ color: string }>`
 
 export const SButton = styled(Button)`
   width: auto;
-  align-self: flex-start;
+  /* align-self: flex-start; */
+  margin-bottom: 15px;
 `;
 
 export const SSubTitle = styled(SubTitle)`

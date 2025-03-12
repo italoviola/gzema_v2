@@ -37,6 +37,13 @@ export interface Cnc {
   delRangeEnd: number;
   pmcAddress: number;
   pmcAddressBit: number;
+  notationPattern: number;
+  hasBAxis: number;
+}
+
+export interface StoredCncData {
+  notationPattern: number;
+  hasBAxis: number;
 }
 
 export interface DressingQtdVars {
