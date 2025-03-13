@@ -75,116 +75,179 @@ const Config: React.FC = () => {
       const loadedTools: Tools = await loadTools();
       const loadedCncData: StoredCncData = await loadCncData();
 
-      const updateFormState = (key: keyof FormState, value: any) => ({
-        ...formState[key],
-        value: value || formState[key].value,
-      });
-
-      setFormState(() => ({
-        ip: updateFormState('ip', loadedConfig.network.ip),
-        port: updateFormState('port', loadedConfig.network.port),
-        delRangeStart: updateFormState(
-          'delRangeStart',
-          loadedConfig.cnc.delRangeStart,
-        ),
-        delRangeEnd: updateFormState(
-          'delRangeEnd',
-          loadedConfig.cnc.delRangeEnd,
-        ),
-        pmcAddress: updateFormState('pmcAddress', loadedConfig.cnc.pmcAddress),
-        pmcAddressBit: updateFormState(
-          'pmcAddressBit',
-          loadedConfig.cnc.pmcAddressBit,
-        ),
-        notationPattern: updateFormState(
-          'notationPattern',
-          loadedConfig.cnc.notationPattern,
-        ),
-        hasBAxis: updateFormState('hasBAxis', loadedConfig.cnc.hasBAxis),
-        tool1Var: updateFormState('tool1Var', loadedConfig.tools.tool1Var),
-        tool1fixedDiamondQtd: updateFormState(
-          'tool1fixedDiamondQtd',
-          loadedConfig.tools.tool1fixedDiamondQtd,
-        ),
-        tool1refractableDiamondQtd: updateFormState(
-          'tool1refractableDiamondQtd',
-          loadedConfig.tools.tool1refractableDiamondQtd,
-        ),
-        tool1dressingDiscQtd: updateFormState(
-          'tool1dressingDiscQtd',
-          loadedConfig.tools.tool1dressingDiscQtd,
-        ),
-        tool1fixedDressingRollerQtd: updateFormState(
-          'tool1fixedDressingRollerQtd',
-          loadedConfig.tools.tool1fixedDressingRollerQtd,
-        ),
-        tool1sCtrlMovableDressingRollerQtd: updateFormState(
-          'tool1sCtrlMovableDressingRollerQtd',
-          loadedConfig.tools.tool1sCtrlMovableDressingRollerQtd,
-        ),
-        tool2Var: updateFormState('tool2Var', loadedConfig.tools.tool2Var),
-        tool2fixedDiamondQtd: updateFormState(
-          'tool2fixedDiamondQtd',
-          loadedConfig.tools.tool2fixedDiamondQtd,
-        ),
-        tool2refractableDiamondQtd: updateFormState(
-          'tool2refractableDiamondQtd',
-          loadedConfig.tools.tool2refractableDiamondQtd,
-        ),
-        tool2dressingDiscQtd: updateFormState(
-          'tool2dressingDiscQtd',
-          loadedConfig.tools.tool2dressingDiscQtd,
-        ),
-        tool2fixedDressingRollerQtd: updateFormState(
-          'tool2fixedDressingRollerQtd',
-          loadedConfig.tools.tool2fixedDressingRollerQtd,
-        ),
-        tool2sCtrlMovableDressingRollerQtd: updateFormState(
-          'tool2sCtrlMovableDressingRollerQtd',
-          loadedConfig.tools.tool2sCtrlMovableDressingRollerQtd,
-        ),
-        tool3Var: updateFormState('tool3Var', loadedConfig.tools.tool3Var),
-        tool3fixedDiamondQtd: updateFormState(
-          'tool3fixedDiamondQtd',
-          loadedConfig.tools.tool3fixedDiamondQtd,
-        ),
-        tool3refractableDiamondQtd: updateFormState(
-          'tool3refractableDiamondQtd',
-          loadedConfig.tools.tool3refractableDiamondQtd,
-        ),
-        tool3dressingDiscQtd: updateFormState(
-          'tool3dressingDiscQtd',
-          loadedConfig.tools.tool3dressingDiscQtd,
-        ),
-        tool3fixedDressingRollerQtd: updateFormState(
-          'tool3fixedDressingRollerQtd',
-          loadedConfig.tools.tool3fixedDressingRollerQtd,
-        ),
-        tool3sCtrlMovableDressingRollerQtd: updateFormState(
-          'tool3sCtrlMovableDressingRollerQtd',
-          loadedConfig.tools.tool3sCtrlMovableDressingRollerQtd,
-        ),
-        tool4Var: updateFormState('tool4Var', loadedConfig.tools.tool4Var),
-        tool4fixedDiamondQtd: updateFormState(
-          'tool4fixedDiamondQtd',
-          loadedConfig.tools.tool4fixedDiamondQtd,
-        ),
-        tool4refractableDiamondQtd: updateFormState(
-          'tool4refractableDiamondQtd',
-          loadedConfig.tools.tool4refractableDiamondQtd,
-        ),
-        tool4dressingDiscQtd: updateFormState(
-          'tool4dressingDiscQtd',
-          loadedConfig.tools.tool4dressingDiscQtd,
-        ),
-        tool4fixedDressingRollerQtd: updateFormState(
-          'tool4fixedDressingRollerQtd',
-          loadedConfig.tools.tool4fixedDressingRollerQtd,
-        ),
-        tool4sCtrlMovableDressingRollerQtd: updateFormState(
-          'tool4sCtrlMovableDressingRollerQtd',
-          loadedConfig.tools.tool4sCtrlMovableDressingRollerQtd,
-        ),
+      setFormState((prevState) => ({
+        ...prevState,
+        ip: {
+          ...prevState.ip,
+          value: loadedConfig.network.ip || prevState.ip.value,
+        },
+        port: {
+          ...prevState.port,
+          value: loadedConfig.network.port || prevState.port.value,
+        },
+        delRangeStart: {
+          ...prevState.delRangeStart,
+          value:
+            loadedConfig.cnc.delRangeStart || prevState.delRangeStart.value,
+        },
+        delRangeEnd: {
+          ...prevState.delRangeEnd,
+          value: loadedConfig.cnc.delRangeEnd || prevState.delRangeEnd.value,
+        },
+        pmcAddress: {
+          ...prevState.pmcAddress,
+          value: loadedConfig.cnc.pmcAddress || prevState.pmcAddress.value,
+        },
+        pmcAddressBit: {
+          ...prevState.pmcAddressBit,
+          value:
+            loadedConfig.cnc.pmcAddressBit || prevState.pmcAddressBit.value,
+        },
+        notationPattern: {
+          ...prevState.notationPattern,
+          value:
+            loadedConfig.cnc.notationPattern || prevState.notationPattern.value,
+        },
+        hasBAxis: {
+          ...prevState.hasBAxis,
+          value: loadedConfig.cnc.hasBAxis || prevState.hasBAxis.value,
+        },
+        tool1Var: {
+          ...prevState.tool1Var,
+          value: loadedConfig.tools.tool1Var || prevState.tool1Var.value,
+        },
+        tool1fixedDiamondQtd: {
+          ...prevState.tool1fixedDiamondQtd,
+          value:
+            loadedConfig.tools.tool1fixedDiamondQtd ||
+            prevState.tool1fixedDiamondQtd.value,
+        },
+        tool1refractableDiamondQtd: {
+          ...prevState.tool1refractableDiamondQtd,
+          value:
+            loadedConfig.tools.tool1refractableDiamondQtd ||
+            prevState.tool1refractableDiamondQtd.value,
+        },
+        tool1dressingDiscQtd: {
+          ...prevState.tool1dressingDiscQtd,
+          value:
+            loadedConfig.tools.tool1dressingDiscQtd ||
+            prevState.tool1dressingDiscQtd.value,
+        },
+        tool1fixedDressingRollerQtd: {
+          ...prevState.tool1fixedDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool1fixedDressingRollerQtd ||
+            prevState.tool1fixedDressingRollerQtd.value,
+        },
+        tool1sCtrlMovableDressingRollerQtd: {
+          ...prevState.tool1sCtrlMovableDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool1sCtrlMovableDressingRollerQtd ||
+            prevState.tool1sCtrlMovableDressingRollerQtd.value,
+        },
+        tool2Var: {
+          ...prevState.tool2Var,
+          value: loadedConfig.tools.tool2Var || prevState.tool2Var.value,
+        },
+        tool2fixedDiamondQtd: {
+          ...prevState.tool2fixedDiamondQtd,
+          value:
+            loadedConfig.tools.tool2fixedDiamondQtd ||
+            prevState.tool2fixedDiamondQtd.value,
+        },
+        tool2refractableDiamondQtd: {
+          ...prevState.tool2refractableDiamondQtd,
+          value:
+            loadedConfig.tools.tool2refractableDiamondQtd ||
+            prevState.tool2refractableDiamondQtd.value,
+        },
+        tool2dressingDiscQtd: {
+          ...prevState.tool2dressingDiscQtd,
+          value:
+            loadedConfig.tools.tool2dressingDiscQtd ||
+            prevState.tool2dressingDiscQtd.value,
+        },
+        tool2fixedDressingRollerQtd: {
+          ...prevState.tool2fixedDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool2fixedDressingRollerQtd ||
+            prevState.tool2fixedDressingRollerQtd.value,
+        },
+        tool2sCtrlMovableDressingRollerQtd: {
+          ...prevState.tool2sCtrlMovableDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool2sCtrlMovableDressingRollerQtd ||
+            prevState.tool2sCtrlMovableDressingRollerQtd.value,
+        },
+        tool3Var: {
+          ...prevState.tool3Var,
+          value: loadedConfig.tools.tool3Var || prevState.tool3Var.value,
+        },
+        tool3fixedDiamondQtd: {
+          ...prevState.tool3fixedDiamondQtd,
+          value:
+            loadedConfig.tools.tool3fixedDiamondQtd ||
+            prevState.tool3fixedDiamondQtd.value,
+        },
+        tool3refractableDiamondQtd: {
+          ...prevState.tool3refractableDiamondQtd,
+          value:
+            loadedConfig.tools.tool3refractableDiamondQtd ||
+            prevState.tool3refractableDiamondQtd.value,
+        },
+        tool3dressingDiscQtd: {
+          ...prevState.tool3dressingDiscQtd,
+          value:
+            loadedConfig.tools.tool3dressingDiscQtd ||
+            prevState.tool3dressingDiscQtd.value,
+        },
+        tool3fixedDressingRollerQtd: {
+          ...prevState.tool3fixedDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool3fixedDressingRollerQtd ||
+            prevState.tool3fixedDressingRollerQtd.value,
+        },
+        tool3sCtrlMovableDressingRollerQtd: {
+          ...prevState.tool3sCtrlMovableDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool3sCtrlMovableDressingRollerQtd ||
+            prevState.tool3sCtrlMovableDressingRollerQtd.value,
+        },
+        tool4Var: {
+          ...prevState.tool4Var,
+          value: loadedConfig.tools.tool4Var || prevState.tool4Var.value,
+        },
+        tool4fixedDiamondQtd: {
+          ...prevState.tool4fixedDiamondQtd,
+          value:
+            loadedConfig.tools.tool4fixedDiamondQtd ||
+            prevState.tool4fixedDiamondQtd.value,
+        },
+        tool4refractableDiamondQtd: {
+          ...prevState.tool4refractableDiamondQtd,
+          value:
+            loadedConfig.tools.tool4refractableDiamondQtd ||
+            prevState.tool4refractableDiamondQtd.value,
+        },
+        tool4dressingDiscQtd: {
+          ...prevState.tool4dressingDiscQtd,
+          value:
+            loadedConfig.tools.tool4dressingDiscQtd ||
+            prevState.tool4dressingDiscQtd.value,
+        },
+        tool4fixedDressingRollerQtd: {
+          ...prevState.tool4fixedDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool4fixedDressingRollerQtd ||
+            prevState.tool4fixedDressingRollerQtd.value,
+        },
+        tool4sCtrlMovableDressingRollerQtd: {
+          ...prevState.tool4sCtrlMovableDressingRollerQtd,
+          value:
+            loadedConfig.tools.tool4sCtrlMovableDressingRollerQtd ||
+            prevState.tool4sCtrlMovableDressingRollerQtd.value,
+        },
       }));
 
       setToolsData(loadedTools);
@@ -193,7 +256,7 @@ const Config: React.FC = () => {
     };
 
     fetchData();
-  }, [formState]);
+  }, []);
 
   const handleSubmit = async (event?: FormEvent) => {
     event?.preventDefault();

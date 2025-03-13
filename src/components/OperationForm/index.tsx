@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Select from 'components/Select';
@@ -8,9 +8,13 @@ import { addOperation, editOperation } from 'state/part/partSlice';
 
 import useFormattedTools from 'hooks/useFormattedTools';
 
-// Types
+import { loadCncData } from 'utils/loadCncData';
+import { B_AXIS_NO_SPIN } from 'utils/constants';
+
 import { Operations } from 'types/part';
+import { StoredCncData } from 'types/api';
 import { FormProps, IFormData } from './interface';
+
 import { Container, Field, HorizontalField, SButton } from './style';
 
 const initialFormData: IFormData = {
@@ -29,10 +33,20 @@ const OperationForm: React.FC<FormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
   let formValues: IFormData = initialFormData;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const loadedCncData: StoredCncData = await loadCncData();
+      setCncData(loadedCncData);
+    };
+
+    fetchData();
+  }, []);
 
   if (variation === 'edit') {
     const operation = operations.find((op) => op.id === operationId);
@@ -159,16 +173,20 @@ const OperationForm: React.FC<FormProps> = ({
           options={formattedTools}
         />
       </Field>
-      <Field>
-        <FormField
-          name="bAxisAngle"
-          label="Ângulo Eixo B"
-          type="number"
-          placeholder="Valor do ângulo..."
-          fieldState={formData.bAxisAngle}
-          handleInputChange={handleChange}
-        />
-      </Field>
+      {cncData.hasBAxis !== B_AXIS_NO_SPIN ? (
+        <Field>
+          <FormField
+            name="bAxisAngle"
+            label="Ângulo Eixo B"
+            type="number"
+            placeholder="Valor do ângulo..."
+            fieldState={formData.bAxisAngle}
+            handleInputChange={handleChange}
+          />
+        </Field>
+      ) : (
+        ''
+      )}
       <HorizontalField>
         <Field>
           <FormField

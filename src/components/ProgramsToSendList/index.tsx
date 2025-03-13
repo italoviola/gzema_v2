@@ -12,9 +12,10 @@ import {
   generateMapProgram,
 } from 'integration/mount-gcode';
 import { loadConfig } from 'utils/loadConfig';
+import { loadCncData } from 'utils/loadCncData';
 
 import { Part, ContourItem } from 'types/part';
-import { Config } from 'types/api';
+import { Config, StoredCncData } from 'types/api';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -35,6 +36,9 @@ const ProgramsToSendList: React.FC = () => {
   const [selectedContourId, setSelectedContourId] = useState<number | null>(
     null,
   );
+  const [loadedCncData, setLoadedCncData] = useState<StoredCncData>(
+    {} as StoredCncData,
+  );
   const [rangeStart, setRangeStart] = useState<number>(0);
   const part = useSelector((state: { part: Part }) => state.part);
 
@@ -45,7 +49,10 @@ const ProgramsToSendList: React.FC = () => {
   useEffect(() => {
     async function fetchData() {
       const loadedConfig: Config = await loadConfig();
+      const cncData: StoredCncData = await loadCncData();
+
       setRangeStart(loadedConfig.cnc.delRangeStart);
+      setLoadedCncData(cncData);
     }
     fetchData();
   }, []);
@@ -57,9 +64,9 @@ const ProgramsToSendList: React.FC = () => {
       Number(rangeStart) + Number(index),
       toolId,
       formattedTools.find((t: ToolOptionItem) => t.id === toolId)?.value ?? 0,
-      getOperationData(part, contour.id, (op) => op.bAxisAngle),
       getOperationData(part, contour.id, (op) => op.xSafetyDistance),
       getOperationData(part, contour.id, (op) => op.zSafetyDistance),
+      loadedCncData,
     );
   };
 
@@ -83,7 +90,9 @@ const ProgramsToSendList: React.FC = () => {
           </DropdownButton>
           {selectedContourId === -1 && (
             <DropdownContent>
-              <SCodeBlock>{generateMapProgram(part, rangeStart)}</SCodeBlock>
+              <SCodeBlock>
+                {generateMapProgram(part, rangeStart, loadedCncData)}
+              </SCodeBlock>
             </DropdownContent>
           )}
         </ListItem>

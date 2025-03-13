@@ -1,3 +1,9 @@
+import {
+  NOTATION_JUNKER,
+  NOTATION_ZEMA,
+  B_AXIS_NO_SPIN,
+} from 'utils/constants';
+
 //  Response data types for the API
 export interface ResponseDataItem {
   programCode: string;
@@ -41,9 +47,18 @@ export interface Cnc {
   hasBAxis: number;
 }
 
+enum NotationPattern {
+  ZEMA = NOTATION_JUNKER,
+  JUNKER = NOTATION_ZEMA,
+}
+
+enum BAxisSpin {
+  NO_SPIN = B_AXIS_NO_SPIN,
+}
+
 export interface StoredCncData {
-  notationPattern: number;
-  hasBAxis: number;
+  notationPattern: NotationPattern;
+  hasBAxis: BAxisSpin;
 }
 
 export interface DressingQtdVars {

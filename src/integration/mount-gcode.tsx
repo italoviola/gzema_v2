@@ -1,11 +1,15 @@
 import { ContourItem, ActivitiyItem, Part, OperationItem } from 'types/part';
 import {
+  B_AXIS_NO_SPIN,
   MACHINING_DRESSING,
   MACHINING_GRINDING,
+  NOTATION_JUNKER,
   TYPE_EXTERNAL,
   TYPE_INTERNAL,
 } from 'utils/constants';
+
 import { ToolOptions } from 'components/Select/interface';
+import { StoredCncData } from 'types/api';
 
 const macroRef = 'G65 P7001';
 
@@ -17,6 +21,7 @@ function mountGCodeLine(
   activity: ActivitiyItem,
   isLastLine: boolean,
   incrementLineNumber: () => string,
+  loadedCncData: StoredCncData,
 ): string {
   const a = activity.actionCode ? `${activity.actionCode} ` : 'G01 G90 ';
 
@@ -34,7 +39,10 @@ function mountGCodeLine(
       if (/^M\d+$/.test(paramId)) {
         return `M${paramValue} `;
       }
-      if (paramId === 'X' || paramId === 'Z') {
+      if (
+        (paramId === 'X' || paramId === 'Z') &&
+        loadedCncData.notationPattern === NOTATION_JUNKER
+      ) {
         return `${paramId}1=${paramValue} `;
       }
       return `${paramId}${paramValue} `;
@@ -66,9 +74,9 @@ function getDressingToolNumber(toolName: string, toolId: number): string {
 
 function generateLines(
   contour: ContourItem,
+  loadedCncData: StoredCncData,
   toolId?: number,
   toolType?: number,
-  bAxisAngleValue?: number,
   xSafetyDistanceValue?: number,
   zSafetyDistanceValue?: number,
 ): string {
@@ -143,6 +151,7 @@ function generateLines(
       element,
       isLastLine,
       incrementLineNumber,
+      loadedCncData,
     )}`;
   });
   gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
@@ -150,8 +159,11 @@ function generateLines(
   return gCodeOutput;
 }
 
-function mountGCode(contour: ContourItem): string {
-  const gCodeOutput = generateLines(contour);
+function mountGCode(
+  contour: ContourItem,
+  loadedCncData: StoredCncData,
+): string {
+  const gCodeOutput = generateLines(contour, loadedCncData);
   const gCodeTemplate = `(${removeAccents(contour.name)})\n${gCodeOutput}%`;
 
   return gCodeTemplate;
@@ -162,15 +174,15 @@ function mountGCodeWithProgramNumber(
   programNumber: number,
   toolId: number,
   toolType: number,
-  bAxisAngleValue: number,
   xSafetyDistanceValue: number,
   zSafetyDistanceValue: number,
+  loadedCncData: StoredCncData,
 ): string {
   const gCodeOutput = generateLines(
     contour,
+    loadedCncData,
     toolId,
     toolType,
-    bAxisAngleValue,
     xSafetyDistanceValue,
     zSafetyDistanceValue,
   );
@@ -210,7 +222,11 @@ function getOperationData<T>(
   return callback(operation);
 }
 
-function generateMapProgram(part: Part, rangeStart: number): string {
+function generateMapProgram(
+  part: Part,
+  rangeStart: number,
+  loadedCncData: StoredCncData,
+): string {
   const header = `O${rangeStart}(Map Program)`;
   const varNumbers = {
     grindingItemsQtd: 50005,
@@ -251,10 +267,10 @@ function generateMapProgram(part: Part, rangeStart: number): string {
 
   const operationsLines = part.operations
     .map((operation, index) => {
+      if (loadedCncData.hasBAxis === B_AXIS_NO_SPIN) return '';
+
       const { bAxisAngle } = operation;
-
       const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
-
       return `${bAxisAngleLine}\n`;
     })
     .join('');
@@ -266,8 +282,11 @@ function generateGCodeForPart(
   part: Part,
   rangeStart: number,
   formattedTools: ToolOptions,
+  loadedCncData: StoredCncData,
 ): string[] {
-  const gCodeStrings: string[] = [`${generateMapProgram(part, rangeStart)}`];
+  const gCodeStrings: string[] = [
+    `${generateMapProgram(part, rangeStart, loadedCncData)}`,
+  ];
 
   orderedContours(part).forEach((contour: ContourItem, index: number) => {
     const toolId = getOperationData(
@@ -283,7 +302,6 @@ function generateGCodeForPart(
       Array.isArray(formattedTools)
         ? formattedTools.find((t) => t.id === toolId)?.value ?? 0
         : 0,
-      getOperationData(part, contour.id, (operation) => operation.bAxisAngle),
       getOperationData(
         part,
         contour.id,
@@ -294,6 +312,7 @@ function generateGCodeForPart(
         contour.id,
         (operation) => operation.zSafetyDistance,
       ),
+      loadedCncData,
     );
     gCodeStrings.push(gCode);
   });

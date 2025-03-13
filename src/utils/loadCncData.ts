@@ -1,9 +1,9 @@
 import { StoredCncData } from 'types/api';
+import { B_AXIS_NO_SPIN, NOTATION_ZEMA } from './constants';
 
-// When refering to the tools, we use index the array index. Index 0 is tool 1, index 1 is tool 2, and so on.
 export const defaultData: StoredCncData = {
-  notationPattern: 0,
-  hasBAxis: 0,
+  notationPattern: NOTATION_ZEMA,
+  hasBAxis: B_AXIS_NO_SPIN,
 };
 
 export const loadCncData = async () => {
