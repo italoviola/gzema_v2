@@ -10,7 +10,6 @@ export type ContourType = typeof TYPE_EXTERNAL | typeof TYPE_INTERNAL;
 export type Machining = typeof MACHINING_GRINDING | typeof MACHINING_DRESSING;
 
 // Interfaces
-
 export interface ActionParamItem {
   id: string;
   fakeId?: string;
@@ -52,8 +51,26 @@ export interface OperationItem {
 
 export interface Operations extends Array<OperationItem> {}
 
+export interface GWDressingToolsDataItem {
+  name: string;
+  bAxisAngle: number;
+}
+
+export interface GWDressingToolsData extends Array<GWDressingToolsDataItem> {}
+
+export interface GrindingWheelsItem {
+  id: number;
+  label: string;
+  xSafetyDistance: number;
+  zSafetyDistance: number;
+  dressingToolsData: GWDressingToolsData;
+}
+
+export interface GrindingWheels extends Array<GrindingWheelsItem> {}
+
 export interface Part {
   id: string;
   contours: Contours;
   operations: Operations;
+  grindingWheels: GrindingWheels;
 }

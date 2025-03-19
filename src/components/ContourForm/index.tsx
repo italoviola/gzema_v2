@@ -274,7 +274,7 @@ const ContourForm: React.FC<FormProps> = ({
 
                       return (
                         <Field key={tool.name}>
-                          {[...Array(tool.value)].map((_, i) => (
+                          {[...Array(tool.quantity)].map((_, i) => (
                             <RadioButton style={{ fontSize: '16px' }}>
                               <input
                                 type="radio"

@@ -40,7 +40,7 @@ const useFormattedDressingTools = () => {
             const toolId = Number(name.match(/tool(\d)/)?.[1]);
             return {
               name,
-              value: tools[prop],
+              quantity: tools[prop],
               toolId,
             };
           });

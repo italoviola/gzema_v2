@@ -1,26 +1,25 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import TabMenu from 'components/TabMenu';
-
-import useFormattedTools from 'hooks/useFormattedTools';
-import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
-
-import { TabMenuProps } from 'components/TabMenu/interface';
+import useRelatedTools from 'hooks/useRelatedTools';
 
 import { Container } from './styles';
 
 const GrindingData: React.FC = () => {
-  const formattedTools = useFormattedTools();
-  const fDressingTools = useFormattedDressingTools();
+  const dressingToolNames = useRelatedTools();
 
-  useEffect(() => {
-    console.log(fDressingTools);
-  }, [fDressingTools]);
-
-  const tabItems = formattedTools.map((tool) => ({
-    label: tool.label,
-    content: <div>{tool.label}</div>,
-  })) as TabMenuProps['items'];
+  const tabItems = Object.entries(dressingToolNames).map(
+    ([toolKey, toolNames]) => ({
+      label: toolKey,
+      content: (
+        <ul>
+          {toolNames.map((name) => (
+            <li>{name}</li>
+          ))}
+        </ul>
+      ),
+    }),
+  );
 
   return (
     <Container>
