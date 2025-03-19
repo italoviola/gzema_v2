@@ -35,8 +35,6 @@ export interface ContourItem {
   activities: Activities;
   dressingTool?: string;
   bAxisAngle?: number;
-  xSafetyDistance?: number;
-  zSafetyDistance?: number;
 }
 
 export interface Contours extends Array<ContourItem> {}

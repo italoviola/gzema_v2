@@ -16,8 +16,6 @@ import { addContour, editContour } from 'state/part/partSlice';
 
 import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
 
-import { HorizontalField } from 'components/OperationForm/style';
-
 import toolNames from 'mockdata/pt-br/dressingTools.json';
 
 import { FieldState } from 'components/FormField/interface';
@@ -69,16 +67,6 @@ const ContourForm: React.FC<FormProps> = ({
         type: { value: contour.type, error: false, message: undefined },
         bAxisAngle: {
           value: contour.bAxisAngle,
-          error: false,
-          message: undefined,
-        },
-        xSafetyDistance: {
-          value: contour.xSafetyDistance,
-          error: false,
-          message: undefined,
-        },
-        zSafetyDistance: {
-          value: contour.zSafetyDistance,
           error: false,
           message: undefined,
         },
@@ -175,8 +163,6 @@ const ContourForm: React.FC<FormProps> = ({
       type: Number(formData.type.value) as ContourType,
       dressingTool: formData.dressingTool?.value as string,
       bAxisAngle: Number(formData.bAxisAngle?.value) as number,
-      xSafetyDistance: Number(formData.xSafetyDistance?.value) as number,
-      zSafetyDistance: Number(formData.zSafetyDistance?.value) as number,
     };
 
     if (variation === 'add') {
@@ -252,42 +238,6 @@ const ContourForm: React.FC<FormProps> = ({
           </Field>
         </>
       )}
-      {machining === MACHINING_DRESSING && (
-        <>
-          <Field>
-            <FormField
-              name="bAxisAngle"
-              label="Ângulo Eixo B"
-              type="number"
-              placeholder="Valor do ângulo..."
-              fieldState={formData.bAxisAngle as FieldState}
-              handleInputChange={handleChange}
-            />
-          </Field>
-          <HorizontalField>
-            <Field>
-              <FormField
-                name="xSafetyDistance"
-                label="Distância de Segurança X"
-                type="number"
-                placeholder="Valor da distância..."
-                fieldState={formData.xSafetyDistance as FieldState}
-                handleInputChange={handleChange}
-              />
-            </Field>
-            <Field>
-              <FormField
-                name="zSafetyDistance"
-                label="Distância de Segurança Z"
-                type="number"
-                placeholder="Valor da distância..."
-                fieldState={formData.zSafetyDistance as FieldState}
-                handleInputChange={handleChange}
-              />
-            </Field>
-          </HorizontalField>
-        </>
-      )}
       {variation === 'add' &&
         machining === MACHINING_DRESSING &&
         formData.type.value && (
@@ -347,6 +297,18 @@ const ContourForm: React.FC<FormProps> = ({
             </Field>
           </>
         )}
+      {machining === MACHINING_DRESSING && (
+        <Field>
+          <FormField
+            name="bAxisAngle"
+            label="Ângulo Eixo B"
+            type="number"
+            placeholder="Valor do ângulo..."
+            fieldState={formData.bAxisAngle as FieldState}
+            handleInputChange={handleChange}
+          />
+        </Field>
+      )}
       <Button onClick={handleClick}>
         {variation === 'add' ? 'Cadastrar' : 'Editar'}
       </Button>

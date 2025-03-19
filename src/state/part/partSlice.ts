@@ -48,13 +48,7 @@ const partSlice = createSlice({
         | (Omit<Partial<Pick<ContourItem, 'activities'>>, 'id'> &
             Pick<
               ContourItem,
-              | 'name'
-              | 'machining'
-              | 'type'
-              | 'dressingTool'
-              | 'bAxisAngle'
-              | 'xSafetyDistance'
-              | 'zSafetyDistance'
+              'name' | 'machining' | 'type' | 'dressingTool' | 'bAxisAngle'
             >)
       >,
     ) => {
