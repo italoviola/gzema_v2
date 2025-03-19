@@ -75,9 +75,10 @@ export const SContentBlock = styled(ContentBlock)`
   margin-bottom: 15px;
 `;
 
-export const ContourBtnsWrapper = styled.div`
+export const BtnsWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
+  gap: 10px;
 `;
 
 export const AddBtn = styled.div`
@@ -101,7 +102,7 @@ export const Wrap = styled.div`
 
 export const TextAdd = styled.p`
   margin-left: 5px;
-  line-height: 100%;
+  line-height: 27px;
   font-size: 18px;
 `;
 
@@ -117,7 +118,6 @@ export const SButton = styled.button`
 `;
 
 export const IconButton = styled.button<{ bgColor: string; shadow?: boolean }>`
-  margin: 0 10px 0 0;
   padding: 0;
   border: 0;
   background-color: ${({ bgColor }) => bgColor};

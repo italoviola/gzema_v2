@@ -1,6 +1,6 @@
 import Icon from 'components/Icon';
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 export const Overlay = styled.div`
   position: fixed;
@@ -21,6 +21,7 @@ export const ModalContainer = styled.div`
   transform: translate(-50%, -50%);
   background-color: white;
   padding: 20px;
+  border-radius: ${measures.borderRadius};
 `;
 
 export const Header = styled.div`
