@@ -1,28 +1,20 @@
+import Button from 'components/Button';
 import styled from 'styled-components';
+import { ContentBlock } from 'styles/Components';
+import { measures } from 'styles/global.styles';
 
 export const Container = styled.div``;
 
 export const TabMenuContainer = styled.div`
   display: flex;
-  border-bottom: 1px solid #ccc;
 `;
 
-export const Tab = styled.button<{ active: boolean }>`
-  padding: 10px 20px;
-  cursor: pointer;
-  background: ${({ active }) => (active ? '#fff' : '#f1f1f1')};
-  border: none;
-  border-bottom: ${({ active }) => (active ? '2px solid #000' : 'none')};
-  outline: none;
-
-  &:hover {
-    background: #e1e1e1;
-  }
+export const Tab = styled(Button)`
+  font-weight: bold;
+  // n funciona?
+  border-radius: 0 0 ${measures.borderRadius} ${measures.borderRadius};
 `;
 
-export const TabContent = styled.div`
-  padding: 20px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-top: none;
+export const SContentBlock = styled(ContentBlock)`
+  max-height: 100%;
 `;

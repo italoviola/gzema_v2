@@ -51,6 +51,7 @@ export interface OperationItem {
 
 export interface Operations extends Array<OperationItem> {}
 
+// aqui
 export interface GWDressingToolsDataItem {
   name: string;
   bAxisAngle: number;

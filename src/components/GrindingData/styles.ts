@@ -1,28 +1,23 @@
 import styled from 'styled-components';
+import { SubTitle } from 'styles/Components';
+import { colors } from 'styles/global.styles';
 
 export const Container = styled.div``;
 
-export const TabMenu = styled.div`
-  display: flex;
-  border-bottom: 1px solid #ccc;
+export const MachiningContainer = styled.div`
+  margin-bottom: 24px;
 `;
 
-export const Tab = styled.button<{ active: boolean }>`
-  padding: 10px 20px;
-  cursor: pointer;
-  background: ${({ active }) => (active ? '#fff' : '#f1f1f1')};
-  border: none;
-  border-bottom: ${({ active }) => (active ? '2px solid #000' : 'none')};
-  outline: none;
-
-  &:hover {
-    background: #e1e1e1;
-  }
+export const SSubTitle = styled(SubTitle)`
+  margin-bottom: 12px;
 `;
 
-export const TabContent = styled.div`
-  padding: 20px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-top: none;
+export const Field = styled.div`
+  margin-bottom: 12px;
+`;
+
+export const ToolName = styled.p`
+  color: ${colors.blue};
+  font-size: 18px;
+  margin-bottom: 12px;
 `;

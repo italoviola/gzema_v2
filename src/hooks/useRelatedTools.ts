@@ -21,6 +21,7 @@ const useRelatedTools = () => {
 
       acc[`tool${tool.id}`] = dressingTools.flatMap((dressingTool) =>
         [...Array(dressingTool.quantity)].map((_, i) => {
+          // tipar os nomes pra garantir??
           const noPrefixToolName = dressingTool.name
             .replace(/tool[1-4]/, '')
             .replace('Qtd', '');

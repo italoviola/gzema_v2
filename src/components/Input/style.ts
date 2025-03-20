@@ -1,13 +1,22 @@
 import styled from 'styled-components';
 import { colors } from 'styles/global.styles';
 
-export const Container = styled.div``;
+interface Direction {
+  direction: 'row' | 'column';
+}
 
-export const Label = styled.label`
+export const Container = styled.div<Direction>`
+  display: flex;
+  flex-direction: ${({ direction }) => direction || 'row'};
+`;
+
+export const Label = styled.label<Direction>`
   display: block;
   font-size: 18px;
   color: ${colors.greyFont};
-  margin-bottom: 12px;
+  margin-bottom: ${({ direction }) => (direction === 'row' ? 0 : '12px')};
+  align-self: ${({ direction }) =>
+    direction === 'row' ? 'center' : 'flex-start'};
 `;
 
 export const SInput = styled.input<{ error?: boolean }>`

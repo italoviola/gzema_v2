@@ -12,6 +12,7 @@ const Input: React.FC<InputProps> = ({
   value,
   onChange,
   error = false,
+  direction = 'column',
   ...rest
 }) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,8 +20,8 @@ const Input: React.FC<InputProps> = ({
   };
 
   return (
-    <Container className={className}>
-      {label && <Label>{label}</Label>}
+    <Container className={className} direction={direction}>
+      {label && <Label direction={direction}>{label}</Label>}
       <SInput
         type={type}
         name={name}

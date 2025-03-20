@@ -477,7 +477,7 @@ const Config: React.FC = () => {
 
     return (
       <React.Fragment key={name}>
-        <Label>{label}:</Label>
+        <Label direction="column">{label}:</Label>
         {formState[name].error && <Message>{formState[name].message}</Message>}
         <Field>
           <SInput
