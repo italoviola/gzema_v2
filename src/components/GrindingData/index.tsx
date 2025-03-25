@@ -1,77 +1,154 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import TabMenu from 'components/TabMenu';
-import Input from 'components/Input';
+import Icon from 'components/Icon';
 
 import useRelatedTools from 'hooks/useRelatedTools';
-import { GrindingWheelsItem } from 'types/part';
 
 import transaltedToolNames from 'mockdata/pt-br/dressingTools.json';
+
+import { EditButton } from 'pages/Config/styles';
+import { colors } from 'styles/global.styles';
+
+import { FormState } from './interface';
 
 import {
   Container,
   Field,
+  FieldContent,
   MachiningContainer,
+  SInput,
   SSubTitle,
   ToolName,
 } from './styles';
 
 const GrindingData: React.FC = () => {
   const dressingToolNames = useRelatedTools();
-  const [formData, setFormData] = useState<{ [key: string]: string }>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
+  // Inicializa o estado formState com base em dressingToolNames
+  const initialFormState: FormState = Object.entries(dressingToolNames).reduce(
+    (acc, [toolKey, toolNames]) => {
+      acc[`xSafeDistance-${toolKey}`] = {
+        value: '',
+        edit: false,
+        error: false,
+        message: undefined,
+      };
+      acc[`zSafeDistance-${toolKey}`] = {
+        value: '',
+        edit: false,
+        error: false,
+        message: undefined,
+      };
+      toolNames.forEach((name) => {
+        acc[`bAxisAngle-${toolKey}-${name}`] = {
+          value: '',
+          edit: false,
+          error: false,
+          message: undefined,
+        };
+      });
+      return acc;
+    },
+    {} as FormState,
+  );
+
+  const [formState, setFormState] = useState<FormState>(initialFormState);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target as {
+      name: keyof FormState;
+      value: string | number;
+    };
+
+    let newValue: string | number;
+    if (name === 'ip') {
+      newValue = value;
+    } else if (Number.isNaN(Number(value))) {
+      newValue = value;
+    } else {
+      newValue = Number(value);
+    }
+
+    setFormState((prevState) => ({
+      ...prevState,
+      [name]: {
+        ...prevState[name],
+        value: newValue,
+      },
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const grindingWheelsData: GrindingWheelsItem[] = Object.entries(
-      dressingToolNames,
-    ).map(([toolKey, toolNames], index) => ({
-      id: index + 1,
-      label: toolKey,
-      xSafetyDistance: Number(formData[`xSafeDistance-${toolKey}`]) || 0,
-      zSafetyDistance: Number(formData[`zSafeDistance-${toolKey}`]) || 0,
-      dressingToolsData: toolNames.map((name) => ({
-        name,
-        bAxisAngle: Number(formData[`bAxisAngle-${name}`]) || 0,
-      })),
+  const toggleEdit = (field: string) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      [field]: {
+        ...prevState[field],
+        edit: !prevState[field]?.edit, // Verifica se o campo existe antes de acessar
+        error: false,
+        message: undefined,
+      },
     }));
-    console.log('Grinding Wheels Data:', grindingWheelsData);
   };
 
-  useEffect(() => {
-    console.log(dressingToolNames);
-  }, [dressingToolNames]);
+  // Render functions
+  const renderEditIcon = (field: string) => {
+    return formState[field]?.edit ? (
+      <Icon
+        className="icon-check_circle"
+        color={colors.greyFont}
+        fontSize="28px"
+      />
+    ) : (
+      <Icon className="icon-create" color={colors.greyFont} fontSize="28px" />
+    );
+  };
 
   const tabItems = Object.entries(dressingToolNames).map(
     ([toolKey, toolNames]) => ({
       label: toolKey,
       content: (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => e.preventDefault()}>
           <MachiningContainer>
             <SSubTitle>Retificação</SSubTitle>
-            <Input
-              label="Distância Segura X"
-              direction="row"
-              type="number"
-              name={`xSafeDistance-${toolKey}`}
-              value={formData[`xSafeDistance-${toolKey}`] || ''}
-              onChange={handleChange}
-            />
-            <Input
-              label="Distância Segura Y"
-              direction="row"
-              type="number"
-              name={`zSafeDistance-${toolKey}`}
-              value={formData[`zSafeDistance-${toolKey}`] || ''}
-              onChange={handleChange}
-            />
+            <Field>
+              <FieldContent>
+                <SInput
+                  label="Distância Segura X"
+                  direction="row"
+                  type="number"
+                  name={`xSafeDistance-${toolKey}`}
+                  value={formState[`xSafeDistance-${toolKey}`]?.value || ''}
+                  onChange={handleInputChange}
+                  disabled={!formState[`xSafeDistance-${toolKey}`]?.edit}
+                />
+                <EditButton
+                  type="button"
+                  onClick={() => toggleEdit(`xSafeDistance-${toolKey}`)}
+                >
+                  {renderEditIcon(`xSafeDistance-${toolKey}`)}
+                </EditButton>
+              </FieldContent>
+            </Field>
+            <Field>
+              <FieldContent>
+                <SInput
+                  label="Distância Segura Y"
+                  direction="row"
+                  type="number"
+                  name={`zSafeDistance-${toolKey}`}
+                  value={formState[`zSafeDistance-${toolKey}`]?.value || ''}
+                  onChange={handleInputChange}
+                  disabled={!formState[`zSafeDistance-${toolKey}`]?.edit}
+                />
+                <EditButton
+                  type="button"
+                  onClick={() => toggleEdit(`zSafeDistance-${toolKey}`)}
+                >
+                  {renderEditIcon(`zSafeDistance-${toolKey}`)}
+                </EditButton>
+              </FieldContent>
+            </Field>
           </MachiningContainer>
           <MachiningContainer>
             <SSubTitle>Dressagem</SSubTitle>
@@ -84,23 +161,35 @@ const GrindingData: React.FC = () => {
               const toolNumber = name.match(/\d+$/);
 
               return (
-                <Field>
+                <Field key={name}>
                   <ToolName>{`${translatedToolName} ${toolNumber}`}</ToolName>
-                  <div key={name}>
-                    <Input
+                  <FieldContent>
+                    <SInput
                       label="Ângulo Eixo B"
                       direction="row"
                       type="number"
-                      name={`bAxisAngle-${name}`}
-                      value={formData[`bAxisAngle-${name}`] || ''}
-                      onChange={handleChange}
+                      name={`bAxisAngle-${toolKey}-${name}`}
+                      value={
+                        formState[`bAxisAngle-${toolKey}-${name}`]?.value || ''
+                      }
+                      onChange={handleInputChange}
+                      disabled={
+                        !formState[`bAxisAngle-${toolKey}-${name}`]?.edit
+                      }
                     />
-                  </div>
+                    <EditButton
+                      type="button"
+                      onClick={() =>
+                        toggleEdit(`bAxisAngle-${toolKey}-${name}`)
+                      }
+                    >
+                      {renderEditIcon(`bAxisAngle-${toolKey}-${name}`)}
+                    </EditButton>
+                  </FieldContent>
                 </Field>
               );
             })}
           </MachiningContainer>
-          <button type="submit">Submit</button>
         </form>
       ),
     }),
