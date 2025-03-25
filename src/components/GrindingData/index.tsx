@@ -2,10 +2,19 @@ import React, { useState } from 'react';
 
 import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
+import TranslatedToolName from 'components/TranslatedToolName';
 
 import useRelatedTools from 'hooks/useRelatedTools';
+import useFormattedTools from 'hooks/useFormattedTools';
 
-import transaltedToolNames from 'mockdata/pt-br/dressingTools.json';
+import transaltedDressingToolsNames from 'mockdata/pt-br/dressingTools.json';
+
+import {
+  GrindingWheels,
+  GrindingWheelsItem,
+  GWDressingToolsData,
+  GWDressingToolsDataItem,
+} from 'types/part';
 
 import { EditButton } from 'pages/Config/styles';
 import { colors } from 'styles/global.styles';
@@ -27,24 +36,25 @@ import {
 
 const GrindingData: React.FC = () => {
   const dressingToolNames = useRelatedTools();
+  const formattedTools = useFormattedTools(); // Obtém os labels formatados
 
   // Inicializa o estado formState com base em dressingToolNames
   const initialFormState: FormState = Object.entries(dressingToolNames).reduce(
     (acc, [toolKey, toolNames]) => {
-      acc[`xSafeDistance-${toolKey}`] = {
+      acc[`${toolKey}-xSafeDistance`] = {
         value: '',
         edit: false,
         error: false,
         message: undefined,
       };
-      acc[`zSafeDistance-${toolKey}`] = {
+      acc[`${toolKey}-zSafeDistance`] = {
         value: '',
         edit: false,
         error: false,
         message: undefined,
       };
       toolNames.forEach((name) => {
-        acc[`bAxisAngle-${toolKey}-${name}`] = {
+        acc[`${toolKey}-${name}-bAxisAngle`] = {
           value: '',
           edit: false,
           error: false,
@@ -57,6 +67,39 @@ const GrindingData: React.FC = () => {
   );
 
   const [formState, setFormState] = useState<FormState>(initialFormState);
+
+  const handleSubmit = () => {
+    const grindingWheels: GrindingWheels = Object.entries(
+      dressingToolNames,
+    ).map(([toolKey, toolNames]): GrindingWheelsItem => {
+      const toolId = parseInt(toolKey.replace('tool', ''), 10);
+
+      const xSafetyDistance = formState[`${toolKey}-xSafeDistance`]?.value || 0;
+      const zSafetyDistance = formState[`${toolKey}-zSafeDistance`]?.value || 0;
+
+      const dressingToolsData: GWDressingToolsData = toolNames.map(
+        (name): GWDressingToolsDataItem => {
+          const bAxisAngle =
+            formState[`${toolKey}-${name}-bAxisAngle`]?.value || 0;
+
+          return {
+            name,
+            bAxisAngle: Number(bAxisAngle),
+          };
+        },
+      );
+
+      return {
+        id: toolId,
+        label: `Tool ${toolId}`,
+        xSafetyDistance: Number(xSafetyDistance),
+        zSafetyDistance: Number(zSafetyDistance),
+        dressingToolsData,
+      };
+    });
+
+    console.log('GrindingWheels', grindingWheels);
+  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target as {
@@ -92,6 +135,7 @@ const GrindingData: React.FC = () => {
         message: undefined,
       },
     }));
+    handleSubmit();
   };
 
   // Render functions
@@ -108,97 +152,100 @@ const GrindingData: React.FC = () => {
   };
 
   const tabItems = Object.entries(dressingToolNames).map(
-    ([toolKey, toolNames]) => ({
-      label: toolKey,
-      content: (
-        <form onSubmit={(e) => e.preventDefault()}>
-          <GrindingContainer>
-            <SSubTitle>Retificação</SSubTitle>
-            <GrindingField>
-              <FieldContent>
-                <SInput
-                  label="Distância Segura X: "
-                  direction="row"
-                  type="number"
-                  name={`xSafeDistance-${toolKey}`}
-                  value={formState[`xSafeDistance-${toolKey}`]?.value || ''}
-                  onChange={handleInputChange}
-                  disabled={!formState[`xSafeDistance-${toolKey}`]?.edit}
-                />
-                <EditButton
-                  type="button"
-                  onClick={() => toggleEdit(`xSafeDistance-${toolKey}`)}
-                >
-                  {renderEditIcon(`xSafeDistance-${toolKey}`)}
-                </EditButton>
-              </FieldContent>
-            </GrindingField>
-            <GrindingField>
-              <FieldContent>
-                <SInput
-                  label="Distância Segura Y: "
-                  direction="row"
-                  type="number"
-                  name={`zSafeDistance-${toolKey}`}
-                  value={formState[`zSafeDistance-${toolKey}`]?.value || ''}
-                  onChange={handleInputChange}
-                  disabled={!formState[`zSafeDistance-${toolKey}`]?.edit}
-                />
-                <EditButton
-                  type="button"
-                  onClick={() => toggleEdit(`zSafeDistance-${toolKey}`)}
-                >
-                  {renderEditIcon(`zSafeDistance-${toolKey}`)}
-                </EditButton>
-              </FieldContent>
-            </GrindingField>
-          </GrindingContainer>
-          <DressingContainer>
-            <SSubTitle>Dressagem</SSubTitle>
-            <Dressing>
-              {toolNames.map((name) => {
-                const toolName = name.replace(/\d+$/, '');
-                const translatedToolName =
-                  transaltedToolNames[
-                    toolName as keyof typeof transaltedToolNames
-                  ];
-                const toolNumber = name.match(/\d+$/);
+    ([toolKey, toolNames]) => {
+      const tool = formattedTools.find((t) => `tool${t.id}` === toolKey);
+      const label = tool ? tool.label : toolKey;
 
-                return (
-                  <DressingField key={name}>
-                    <ToolName>{`${translatedToolName} ${toolNumber}`}</ToolName>
-                    <FieldContent>
-                      <SInput
-                        label="Ângulo Eixo B: "
-                        direction="row"
-                        type="number"
-                        name={`bAxisAngle-${toolKey}-${name}`}
-                        value={
-                          formState[`bAxisAngle-${toolKey}-${name}`]?.value ||
-                          ''
-                        }
-                        onChange={handleInputChange}
-                        disabled={
-                          !formState[`bAxisAngle-${toolKey}-${name}`]?.edit
-                        }
-                      />
-                      <EditButton
-                        type="button"
-                        onClick={() =>
-                          toggleEdit(`bAxisAngle-${toolKey}-${name}`)
-                        }
-                      >
-                        {renderEditIcon(`bAxisAngle-${toolKey}-${name}`)}
-                      </EditButton>
-                    </FieldContent>
-                  </DressingField>
-                );
-              })}
-            </Dressing>
-          </DressingContainer>
-        </form>
-      ),
-    }),
+      return {
+        label,
+        content: (
+          <form onSubmit={(e) => e.preventDefault()}>
+            <GrindingContainer>
+              <SSubTitle>Retificação</SSubTitle>
+              <GrindingField>
+                <FieldContent>
+                  <SInput
+                    label="Distância Segura X: "
+                    direction="row"
+                    type="number"
+                    name={`${toolKey}-xSafeDistance`}
+                    value={formState[`${toolKey}-xSafeDistance`]?.value || ''}
+                    onChange={handleInputChange}
+                    disabled={!formState[`${toolKey}-xSafeDistance`]?.edit}
+                  />
+                  <EditButton
+                    type="button"
+                    onClick={() => toggleEdit(`${toolKey}-xSafeDistance`)}
+                  >
+                    {renderEditIcon(`${toolKey}-xSafeDistance`)}
+                  </EditButton>
+                </FieldContent>
+              </GrindingField>
+              <GrindingField>
+                <FieldContent>
+                  <SInput
+                    label="Distância Segura Y: "
+                    direction="row"
+                    type="number"
+                    name={`${toolKey}-zSafeDistance`}
+                    value={formState[`${toolKey}-zSafeDistance`]?.value || ''}
+                    onChange={handleInputChange}
+                    disabled={!formState[`${toolKey}-zSafeDistance`]?.edit}
+                  />
+                  <EditButton
+                    type="button"
+                    onClick={() => toggleEdit(`${toolKey}-zSafeDistance`)}
+                  >
+                    {renderEditIcon(`${toolKey}-zSafeDistance`)}
+                  </EditButton>
+                </FieldContent>
+              </GrindingField>
+            </GrindingContainer>
+            <DressingContainer>
+              <SSubTitle>Dressagem</SSubTitle>
+              <Dressing>
+                {toolNames.map((name) => {
+                  return (
+                    <DressingField key={name}>
+                      <ToolName>
+                        <TranslatedToolName
+                          name={name}
+                          translatedToolNames={transaltedDressingToolsNames}
+                        />
+                      </ToolName>
+                      <FieldContent>
+                        <SInput
+                          label="Ângulo Eixo B: "
+                          direction="row"
+                          type="number"
+                          name={`${toolKey}-${name}-bAxisAngle`}
+                          value={
+                            formState[`${toolKey}-${name}-bAxisAngle`]?.value ||
+                            ''
+                          }
+                          onChange={handleInputChange}
+                          disabled={
+                            !formState[`${toolKey}-${name}-bAxisAngle`]?.edit
+                          }
+                        />
+                        <EditButton
+                          type="button"
+                          onClick={() =>
+                            toggleEdit(`${toolKey}-${name}-bAxisAngle`)
+                          }
+                        >
+                          {renderEditIcon(`${toolKey}-${name}-bAxisAngle`)}
+                        </EditButton>
+                      </FieldContent>
+                    </DressingField>
+                  );
+                })}
+              </Dressing>
+            </DressingContainer>
+          </form>
+        ),
+      };
+    },
   );
 
   return (

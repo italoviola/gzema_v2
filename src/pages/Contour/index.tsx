@@ -12,6 +12,7 @@ import ContourForm from 'components/ContourForm';
 import CodePreview from 'components/CodePreview';
 import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
+import TranslatedToolName from 'components/TranslatedToolName';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
 import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
@@ -493,16 +494,10 @@ const Contour: React.FC = () => {
                   />
                   {formData.dressingTool && (
                     <InfoLabel fontSize="14px" color={colors.blue}>
-                      {(() => {
-                        const toolName = formData.dressingTool.replace(
-                          /\d+$/,
-                          '',
-                        ); // Remove numerical sufix
-                        const translatedToolName =
-                          toolNames[toolName as keyof typeof toolNames];
-                        const toolNumber = formData.dressingTool.match(/\d+$/); // Captura o numerical sufix
-                        return `${translatedToolName} ${toolNumber}`;
-                      })()}
+                      <TranslatedToolName
+                        name={formData.dressingTool}
+                        translatedToolNames={toolNames}
+                      />
                     </InfoLabel>
                   )}
                   <CodePreviewBtn>

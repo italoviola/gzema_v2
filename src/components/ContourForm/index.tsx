@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ContourType, Machining, Contours } from 'types/part';
 
 import FormField from 'components/FormField';
+import TranslatedToolName from 'components/TranslatedToolName';
 import { Message } from 'components/FormField/style';
 
 import {
@@ -251,26 +252,23 @@ const ContourForm: React.FC<FormProps> = ({
                     <Field>
                       <Label>Rebolo {index + 1}</Label>
                     </Field>
-                    {dToolNames.map((name) => {
-                      const toolName = name.replace(/\d+$/, '');
-                      const translatedToolName =
-                        toolNames[toolName as keyof typeof toolNames];
-                      const toolNumber = name.match(/\d+$/);
-                      return (
-                        <Field key={`${toolKey}-${name}`}>
-                          <RadioButton style={{ fontSize: '16px' }}>
-                            <input
-                              type="radio"
-                              value={name}
-                              name="dressingTool"
-                              onChange={(e) => handleChange(e)}
-                            />
-                            <span />
-                            {`${translatedToolName} ${toolNumber}`}
-                          </RadioButton>
-                        </Field>
-                      );
-                    })}
+                    {dToolNames.map((name) => (
+                      <Field key={`${toolKey}-${name}`}>
+                        <RadioButton style={{ fontSize: '16px' }}>
+                          <input
+                            type="radio"
+                            value={name}
+                            name="dressingTool"
+                            onChange={(e) => handleChange(e)}
+                          />
+                          <span />
+                          <TranslatedToolName
+                            name={name}
+                            translatedToolNames={toolNames}
+                          />
+                        </RadioButton>
+                      </Field>
+                    ))}
                   </div>
                 );
               },
