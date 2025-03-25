@@ -14,9 +14,12 @@ import { FormState } from './interface';
 
 import {
   Container,
-  Field,
+  Dressing,
+  DressingContainer,
+  DressingField,
   FieldContent,
-  MachiningContainer,
+  GrindingContainer,
+  GrindingField,
   SInput,
   SSubTitle,
   ToolName,
@@ -109,12 +112,12 @@ const GrindingData: React.FC = () => {
       label: toolKey,
       content: (
         <form onSubmit={(e) => e.preventDefault()}>
-          <MachiningContainer>
+          <GrindingContainer>
             <SSubTitle>Retificação</SSubTitle>
-            <Field>
+            <GrindingField>
               <FieldContent>
                 <SInput
-                  label="Distância Segura X"
+                  label="Distância Segura X: "
                   direction="row"
                   type="number"
                   name={`xSafeDistance-${toolKey}`}
@@ -129,11 +132,11 @@ const GrindingData: React.FC = () => {
                   {renderEditIcon(`xSafeDistance-${toolKey}`)}
                 </EditButton>
               </FieldContent>
-            </Field>
-            <Field>
+            </GrindingField>
+            <GrindingField>
               <FieldContent>
                 <SInput
-                  label="Distância Segura Y"
+                  label="Distância Segura Y: "
                   direction="row"
                   type="number"
                   name={`zSafeDistance-${toolKey}`}
@@ -148,48 +151,51 @@ const GrindingData: React.FC = () => {
                   {renderEditIcon(`zSafeDistance-${toolKey}`)}
                 </EditButton>
               </FieldContent>
-            </Field>
-          </MachiningContainer>
-          <MachiningContainer>
+            </GrindingField>
+          </GrindingContainer>
+          <DressingContainer>
             <SSubTitle>Dressagem</SSubTitle>
-            {toolNames.map((name) => {
-              const toolName = name.replace(/\d+$/, '');
-              const translatedToolName =
-                transaltedToolNames[
-                  toolName as keyof typeof transaltedToolNames
-                ];
-              const toolNumber = name.match(/\d+$/);
+            <Dressing>
+              {toolNames.map((name) => {
+                const toolName = name.replace(/\d+$/, '');
+                const translatedToolName =
+                  transaltedToolNames[
+                    toolName as keyof typeof transaltedToolNames
+                  ];
+                const toolNumber = name.match(/\d+$/);
 
-              return (
-                <Field key={name}>
-                  <ToolName>{`${translatedToolName} ${toolNumber}`}</ToolName>
-                  <FieldContent>
-                    <SInput
-                      label="Ângulo Eixo B"
-                      direction="row"
-                      type="number"
-                      name={`bAxisAngle-${toolKey}-${name}`}
-                      value={
-                        formState[`bAxisAngle-${toolKey}-${name}`]?.value || ''
-                      }
-                      onChange={handleInputChange}
-                      disabled={
-                        !formState[`bAxisAngle-${toolKey}-${name}`]?.edit
-                      }
-                    />
-                    <EditButton
-                      type="button"
-                      onClick={() =>
-                        toggleEdit(`bAxisAngle-${toolKey}-${name}`)
-                      }
-                    >
-                      {renderEditIcon(`bAxisAngle-${toolKey}-${name}`)}
-                    </EditButton>
-                  </FieldContent>
-                </Field>
-              );
-            })}
-          </MachiningContainer>
+                return (
+                  <DressingField key={name}>
+                    <ToolName>{`${translatedToolName} ${toolNumber}`}</ToolName>
+                    <FieldContent>
+                      <SInput
+                        label="Ângulo Eixo B: "
+                        direction="row"
+                        type="number"
+                        name={`bAxisAngle-${toolKey}-${name}`}
+                        value={
+                          formState[`bAxisAngle-${toolKey}-${name}`]?.value ||
+                          ''
+                        }
+                        onChange={handleInputChange}
+                        disabled={
+                          !formState[`bAxisAngle-${toolKey}-${name}`]?.edit
+                        }
+                      />
+                      <EditButton
+                        type="button"
+                        onClick={() =>
+                          toggleEdit(`bAxisAngle-${toolKey}-${name}`)
+                        }
+                      >
+                        {renderEditIcon(`bAxisAngle-${toolKey}-${name}`)}
+                      </EditButton>
+                    </FieldContent>
+                  </DressingField>
+                );
+              })}
+            </Dressing>
+          </DressingContainer>
         </form>
       ),
     }),

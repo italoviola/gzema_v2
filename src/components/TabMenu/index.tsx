@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { colors } from 'styles/global.styles';
+import { colors, shadows } from 'styles/global.styles';
 
 import { TabMenuProps } from './interface';
 
@@ -19,8 +19,10 @@ const TabMenu: React.FC<TabMenuProps> = ({ items }) => {
         {items.map((item, index) => (
           <Tab
             onClick={() => setActiveTab(index)}
-            color={activeTab === index ? colors.blue : colors.white}
-            bgColor={activeTab === index ? colors.grey : colors.blue}
+            color={activeTab === index ? colors.blue : colors.greyFont}
+            bgColor={activeTab === index ? colors.grey : colors.greyMedium}
+            shadow={activeTab === index ? 'none' : `${shadows.inBottom}`}
+            weight={activeTab === index ? 'bold' : 'normal'}
           >
             {item.label}
           </Tab>
