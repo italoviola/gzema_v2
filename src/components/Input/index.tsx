@@ -29,6 +29,7 @@ const Input: React.FC<InputProps> = ({
         placeholder={placeholder}
         onChange={handleChange}
         error={error}
+        direction={direction}
         {...rest}
       />
     </Container>
