@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
@@ -6,6 +7,7 @@ import TranslatedToolName from 'components/TranslatedToolName';
 
 import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
+import { setGrindingWheelData } from 'state/part/partSlice';
 
 import transaltedDressingToolsNames from 'mockdata/pt-br/dressingTools.json';
 
@@ -35,38 +37,57 @@ import {
 } from './styles';
 
 const GrindingData: React.FC = () => {
+  const dispatch = useDispatch();
   const dressingToolNames = useRelatedTools();
-  const formattedTools = useFormattedTools(); // Obtém os labels formatados
+  const formattedTools = useFormattedTools();
+  const [formState, setFormState] = useState<FormState>({});
 
-  // Inicializa o estado formState com base em dressingToolNames
-  const initialFormState: FormState = Object.entries(dressingToolNames).reduce(
-    (acc, [toolKey, toolNames]) => {
-      acc[`${toolKey}-xSafeDistance`] = {
-        value: '',
-        edit: false,
-        error: false,
-        message: undefined,
-      };
-      acc[`${toolKey}-zSafeDistance`] = {
-        value: '',
-        edit: false,
-        error: false,
-        message: undefined,
-      };
-      toolNames.forEach((name) => {
-        acc[`${toolKey}-${name}-bAxisAngle`] = {
-          value: '',
+  const selectorGrindingWheels = useSelector(
+    (state: { part: { grindingWheels: GrindingWheels } }) =>
+      state.part.grindingWheels,
+  );
+
+  useEffect(() => {
+    // Inicializa o estado apenas se estiver vazio
+    if (Object.keys(formState).length === 0) {
+      const initialFormState: FormState = Object.entries(
+        dressingToolNames,
+      ).reduce((acc, [toolKey, toolNames]) => {
+        const toolId = parseInt(toolKey.replace('tool', ''), 10);
+        const grindingWheel = selectorGrindingWheels.find(
+          (wheel) => wheel.id === toolId,
+        );
+
+        acc[`${toolKey}-xSafeDistance`] = {
+          value: grindingWheel?.xSafetyDistance || '',
           edit: false,
           error: false,
           message: undefined,
         };
-      });
-      return acc;
-    },
-    {} as FormState,
-  );
+        acc[`${toolKey}-zSafeDistance`] = {
+          value: grindingWheel?.zSafetyDistance || '',
+          edit: false,
+          error: false,
+          message: undefined,
+        };
+        toolNames.forEach((name) => {
+          const dressingToolData = grindingWheel?.dressingToolsData.find(
+            (tool) => tool.name === name,
+          );
 
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+          acc[`${toolKey}-${name}-bAxisAngle`] = {
+            value: dressingToolData?.bAxisAngle || '',
+            edit: false,
+            error: false,
+            message: undefined,
+          };
+        });
+        return acc;
+      }, {} as FormState);
+
+      setFormState(initialFormState);
+    }
+  }, [dressingToolNames, selectorGrindingWheels, formState]);
 
   const handleSubmit = () => {
     const grindingWheels: GrindingWheels = Object.entries(
@@ -98,7 +119,23 @@ const GrindingData: React.FC = () => {
       };
     });
 
-    console.log('GrindingWheels', grindingWheels);
+    console.log('form component state', grindingWheels);
+
+    dispatch(setGrindingWheelData(grindingWheels));
+
+    // grindingWheels.forEach((wheel) => {
+    //   console.log('wheel', wheel);
+    //   dispatch(
+    //     editGrindingWheelData({
+    //       id: wheel.id,
+    //       changes: {
+    //         xSafetyDistance: wheel.xSafetyDistance,
+    //         zSafetyDistance: wheel.zSafetyDistance,
+    //         dressingToolsData: wheel.dressingToolsData,
+    //       },
+    //     }),
+    //   );
+    // });
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {

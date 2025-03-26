@@ -1,11 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-import { Part, ContourItem, ActivitiyItem, OperationItem } from 'types/part';
 
-interface EditContourPayload {
-  id: number;
-  changes: Partial<ContourItem>;
-}
+import {
+  Part,
+  ContourItem,
+  ActivitiyItem,
+  OperationItem,
+  GrindingWheels,
+  GrindingWheelsItem,
+} from 'types/part';
 
 const initialActivity: ActivitiyItem = {
   id: 1,
@@ -35,12 +38,16 @@ export const initialState: Part = {
       zSafetyDistance: 0,
     },
   ],
+  grindingWheels: [],
 };
 
 const partSlice = createSlice({
   name: 'parts',
   initialState,
   reducers: {
+    replacePart: (_, action: PayloadAction<Part>) => {
+      return action.payload;
+    },
     addContour: (
       state,
       action: PayloadAction<
@@ -58,6 +65,36 @@ const partSlice = createSlice({
         id: maxId + 1,
         activities: action.payload.activities ?? [initialActivity],
       });
+    },
+    editContour: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        changes: Partial<ContourItem>;
+      }>,
+    ) => {
+      const { id, changes } = action.payload;
+      const index = state.contours.findIndex((contour) => contour.id === id);
+      if (index !== -1) {
+        state.contours[index] = {
+          ...state.contours[index],
+          ...changes,
+        };
+      }
+    },
+    removeContour: (state, action: PayloadAction<number>) => {
+      const contourIdToRemove = action.payload;
+
+      state.contours = state.contours.filter(
+        (contour) => contour.id !== contourIdToRemove,
+      );
+
+      state.operations = state.operations.map((operation) => ({
+        ...operation,
+        contoursIds: operation.contoursIds.filter(
+          (id) => id !== contourIdToRemove,
+        ),
+      }));
     },
     addOperation: (
       state,
@@ -154,29 +191,26 @@ const partSlice = createSlice({
         operation.contoursIds[index + 1] = temp;
       }
     },
-    replacePart: (_, action: PayloadAction<Part>) => {
-      return action.payload;
+    setGrindingWheelData: (state, action: PayloadAction<GrindingWheels>) => {
+      state.grindingWheels = action.payload;
     },
-    removeContour: (state, action: PayloadAction<number>) => {
-      const contourIdToRemove = action.payload;
-
-      state.contours = state.contours.filter(
-        (contour) => contour.id !== contourIdToRemove,
-      );
-
-      state.operations = state.operations.map((operation) => ({
-        ...operation,
-        contoursIds: operation.contoursIds.filter(
-          (id) => id !== contourIdToRemove,
-        ),
-      }));
-    },
-    editContour: (state, action: PayloadAction<EditContourPayload>) => {
+    editGrindingWheelData: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        changes: Partial<
+          Pick<
+            GrindingWheelsItem,
+            'xSafetyDistance' | 'zSafetyDistance' | 'dressingToolsData'
+          >
+        >;
+      }>,
+    ) => {
       const { id, changes } = action.payload;
-      const index = state.contours.findIndex((contour) => contour.id === id);
+      const index = state.grindingWheels.findIndex((wheel) => wheel.id === id);
       if (index !== -1) {
-        state.contours[index] = {
-          ...state.contours[index],
+        state.grindingWheels[index] = {
+          ...state.grindingWheels[index],
           ...changes,
         };
       }
@@ -195,6 +229,8 @@ export const {
   addContourToOperation,
   removeContourFromOperation,
   changeContourPositionAtOperation,
+  setGrindingWheelData,
+  editGrindingWheelData,
 } = partSlice.actions;
 
 export default partSlice.reducer;
