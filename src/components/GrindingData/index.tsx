@@ -55,48 +55,47 @@ const GrindingData: React.FC = () => {
   }, [selectorGrindingWheels]);
 
   useEffect(() => {
-    // TEM UM BUG AQUI que esta setando os edits pro estado inicial quando alterados pra true no botao edit
-
-    // Inicializa o estado local apenas se estiver vazio
-    const initialFormState: FormState = Object.entries(
-      dressingToolNames,
-    ).reduce((acc, [toolKey, toolNames]) => {
-      const toolId = parseInt(toolKey.replace('tool', ''), 10);
-      const grindingWheel = selectorGrindingWheels.find(
-        (wheel) => wheel.id === toolId,
-      );
-
-      acc[`${toolKey}-xSafetyDistance`] = {
-        value: grindingWheel?.xSafetyDistance || 0,
-        edit: false,
-        error: false,
-        message: undefined,
-      };
-      acc[`${toolKey}-zSafetyDistance`] = {
-        value: grindingWheel?.zSafetyDistance || 0,
-        edit: false,
-        error: false,
-        message: undefined,
-      };
-      toolNames.forEach((name) => {
-        const dressingToolData = grindingWheel?.dressingToolsData.find(
-          (tool) => tool.name === name,
+    if (Object.keys(formState).length === 0) {
+      const initialFormState: FormState = Object.entries(
+        dressingToolNames,
+      ).reduce((acc, [toolKey, toolNames]) => {
+        const toolId = parseInt(toolKey.replace('tool', ''), 10);
+        const grindingWheel = selectorGrindingWheels.find(
+          (wheel) => wheel.id === toolId,
         );
 
-        acc[`${toolKey}-${name}-bAxisAngle`] = {
-          value: dressingToolData?.bAxisAngle || 0,
+        acc[`${toolKey}-xSafetyDistance`] = {
+          value: grindingWheel?.xSafetyDistance || 0,
           edit: false,
           error: false,
           message: undefined,
         };
-      });
-      return acc;
-    }, {} as FormState);
+        acc[`${toolKey}-zSafetyDistance`] = {
+          value: grindingWheel?.zSafetyDistance || 0,
+          edit: false,
+          error: false,
+          message: undefined,
+        };
+        toolNames.forEach((name) => {
+          const dressingToolData = grindingWheel?.dressingToolsData.find(
+            (tool) => tool.name === name,
+          );
 
-    console.log('initialFormState', initialFormState);
+          acc[`${toolKey}-${name}-bAxisAngle`] = {
+            value: dressingToolData?.bAxisAngle || 0,
+            edit: false,
+            error: false,
+            message: undefined,
+          };
+        });
+        return acc;
+      }, {} as FormState);
 
-    setFormState(initialFormState);
-  }, [dressingToolNames, selectorGrindingWheels]);
+      console.log('initialFormState', initialFormState);
+
+      setFormState(initialFormState);
+    }
+  }, [dressingToolNames, formState, selectorGrindingWheels]);
 
   useEffect(() => {
     // TRANSFORMAR EM HOOK
