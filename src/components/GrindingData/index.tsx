@@ -89,6 +89,55 @@ const GrindingData: React.FC = () => {
     }
   }, [dressingToolNames, selectorGrindingWheels, formState]);
 
+  const handleSubmit = () => {
+    const grindingWheels: GrindingWheels = Object.entries(
+      dressingToolNames,
+    ).map(([toolKey, toolNames]): GrindingWheelsItem => {
+      const toolId = parseInt(toolKey.replace('tool', ''), 10);
+
+      const xSafetyDistance = formState[`${toolKey}-xSafeDistance`]?.value || 0;
+      const zSafetyDistance = formState[`${toolKey}-zSafeDistance`]?.value || 0;
+
+      const dressingToolsData: GWDressingToolsData = toolNames.map(
+        (name): GWDressingToolsDataItem => {
+          const bAxisAngle =
+            formState[`${toolKey}-${name}-bAxisAngle`]?.value || 0;
+
+          return {
+            name,
+            bAxisAngle: Number(bAxisAngle),
+          };
+        },
+      );
+
+      return {
+        id: toolId,
+        label: `Tool ${toolId}`,
+        xSafetyDistance: Number(xSafetyDistance),
+        zSafetyDistance: Number(zSafetyDistance),
+        dressingToolsData,
+      };
+    });
+
+    console.log('form component state', grindingWheels);
+
+    dispatch(setGrindingWheelData(grindingWheels));
+
+    // grindingWheels.forEach((wheel) => {
+    //   console.log('wheel', wheel);
+    //   dispatch(
+    //     editGrindingWheelData({
+    //       id: wheel.id,
+    //       changes: {
+    //         xSafetyDistance: wheel.xSafetyDistance,
+    //         zSafetyDistance: wheel.zSafetyDistance,
+    //         dressingToolsData: wheel.dressingToolsData,
+    //       },
+    //     }),
+    //   );
+    // });
+  };
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target as {
       name: keyof FormState;
@@ -96,7 +145,9 @@ const GrindingData: React.FC = () => {
     };
 
     let newValue: string | number;
-    if (Number.isNaN(Number(value))) {
+    if (name === 'ip') {
+      newValue = value;
+    } else if (Number.isNaN(Number(value))) {
       newValue = value;
     } else {
       newValue = Number(value);
@@ -111,65 +162,17 @@ const GrindingData: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (field: string, value: string | number) => {
-    const [toolKey, property] = field.split('-');
-
-    const toolId = parseInt(toolKey.replace('tool', ''), 10);
-
-    const updatedGrindingWheels: GrindingWheels = selectorGrindingWheels.map(
-      (wheel: GrindingWheelsItem): GrindingWheelsItem => {
-        if (wheel.id === toolId) {
-          if (property === 'xSafeDistance' || property === 'zSafeDistance') {
-            return {
-              ...wheel,
-              [property]: Number(value),
-            };
-          }
-          const updatedDressingToolsData: GWDressingToolsData =
-            wheel.dressingToolsData.map(
-              (toolData: GWDressingToolsDataItem): GWDressingToolsDataItem => {
-                if (toolData.name === property) {
-                  return {
-                    ...toolData,
-                    bAxisAngle: Number(value),
-                  };
-                }
-                return toolData;
-              },
-            );
-
-          return {
-            ...wheel,
-            dressingToolsData: updatedDressingToolsData,
-          };
-        }
-        return wheel;
-      },
-    );
-
-    dispatch(setGrindingWheelData(updatedGrindingWheels));
-  };
-
   const toggleEdit = (field: string) => {
-    setFormState((prevState) => {
-      const isEditing = !prevState[field]?.edit;
-
-      const updatedState = {
-        ...prevState,
-        [field]: {
-          ...prevState[field],
-          edit: isEditing,
-          error: false,
-          message: undefined,
-        },
-      };
-
-      if (!isEditing) {
-        handleSubmit(field, updatedState[field]?.value);
-      }
-
-      return updatedState;
-    });
+    setFormState((prevState) => ({
+      ...prevState,
+      [field]: {
+        ...prevState[field],
+        edit: !prevState[field]?.edit, // Verifica se o campo existe antes de acessar
+        error: false,
+        message: undefined,
+      },
+    }));
+    handleSubmit();
   };
 
   // Render functions
