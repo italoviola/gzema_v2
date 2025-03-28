@@ -27,6 +27,7 @@ import {
   GrindingContainer,
   GrindingField,
   SInput,
+  Message,
   SSubTitle,
   ToolName,
 } from './styles';
@@ -83,6 +84,14 @@ const GrindingData: React.FC = () => {
   const toggleEdit = (field: string) => {
     setFormState((prevState) => {
       const isEditing = prevState[field]?.edit;
+      const currentValue = prevState[field]?.value;
+
+      if (
+        typeof currentValue === 'string' &&
+        (currentValue.endsWith('.') || prevState[field]?.error)
+      ) {
+        return prevState;
+      }
 
       const updatedState = {
         ...prevState,
@@ -105,21 +114,26 @@ const GrindingData: React.FC = () => {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target as {
       name: keyof FormState;
-      value: string | number;
+      value: string;
     };
 
-    let newValue: string | number;
-    if (Number.isNaN(Number(value))) {
-      newValue = value;
-    } else {
-      newValue = Number(value);
-    }
+    const isValidDecimal = /^(\d+(\.\d*)?|\.\d+)$/.test(value);
 
     setFormState((prevState) => ({
       ...prevState,
       [name]: {
         ...prevState[name],
-        value: newValue,
+        value,
+        error: value === '' || !isValidDecimal,
+        message: (() => {
+          if (value === '') {
+            return 'O campo não pode estar vazio.';
+          }
+          if (!isValidDecimal) {
+            return 'Insira um número decimal válido.';
+          }
+          return undefined;
+        })(),
       },
     }));
   };
@@ -149,15 +163,21 @@ const GrindingData: React.FC = () => {
             <GrindingContainer>
               <SSubTitle>Retificação</SSubTitle>
               <GrindingField>
+                {formState[`${toolKey}-xSafetyDistance`]?.error && (
+                  <Message>
+                    {formState[`${toolKey}-xSafetyDistance`]?.message}
+                  </Message>
+                )}
                 <FieldContent>
                   <SInput
                     label="Distância Segura X: "
                     direction="row"
                     type="number"
                     name={`${toolKey}-xSafetyDistance`}
-                    value={formState[`${toolKey}-xSafetyDistance`]?.value || ''}
+                    value={formState[`${toolKey}-xSafetyDistance`]?.value}
                     onChange={handleInputChange}
                     disabled={!formState[`${toolKey}-xSafetyDistance`]?.edit}
+                    error={formState[`${toolKey}-xSafetyDistance`]?.error}
                   />
                   <EditButton
                     type="button"
@@ -168,15 +188,21 @@ const GrindingData: React.FC = () => {
                 </FieldContent>
               </GrindingField>
               <GrindingField>
+                {formState[`${toolKey}-zSafetyDistance`]?.error && (
+                  <div style={{ color: 'red' }}>
+                    {formState[`${toolKey}-zSafetyDistance`]?.message}
+                  </div>
+                )}
                 <FieldContent>
                   <SInput
-                    label="Distância Segura Y: "
+                    label="Distância Segura Z: "
                     direction="row"
                     type="number"
                     name={`${toolKey}-zSafetyDistance`}
-                    value={formState[`${toolKey}-zSafetyDistance`]?.value || ''}
+                    value={formState[`${toolKey}-zSafetyDistance`]?.value}
                     onChange={handleInputChange}
                     disabled={!formState[`${toolKey}-zSafetyDistance`]?.edit}
+                    error={formState[`${toolKey}-zSafetyDistance`]?.error}
                   />
                   <EditButton
                     type="button"
@@ -199,6 +225,11 @@ const GrindingData: React.FC = () => {
                           translatedToolNames={transaltedDressingToolsNames}
                         />
                       </ToolName>
+                      {formState[`${toolKey}-${name}-bAxisAngle`]?.error && (
+                        <div style={{ color: 'red' }}>
+                          {formState[`${toolKey}-${name}-bAxisAngle`]?.message}
+                        </div>
+                      )}
                       <FieldContent>
                         <SInput
                           label="Ângulo Eixo B: "
@@ -206,12 +237,14 @@ const GrindingData: React.FC = () => {
                           type="number"
                           name={`${toolKey}-${name}-bAxisAngle`}
                           value={
-                            formState[`${toolKey}-${name}-bAxisAngle`]?.value ||
-                            ''
+                            formState[`${toolKey}-${name}-bAxisAngle`]?.value
                           }
                           onChange={handleInputChange}
                           disabled={
                             !formState[`${toolKey}-${name}-bAxisAngle`]?.edit
+                          }
+                          error={
+                            formState[`${toolKey}-${name}-bAxisAngle`]?.error
                           }
                         />
                         <EditButton

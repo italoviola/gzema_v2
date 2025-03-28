@@ -52,6 +52,12 @@ export const SInput = styled(Input)`
   flex-grow: 1;
 `;
 
+export const Message = styled.div`
+  font-size: 14px;
+  color: ${colors.red};
+  margin-bottom: 6px;
+`;
+
 export const EditButton = styled.button`
   flex-shrink: 0;
   background: none;

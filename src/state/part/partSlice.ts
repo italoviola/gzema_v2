@@ -229,15 +229,11 @@ const partSlice = createSlice({
         (wheel) => wheel.id === id,
       );
 
-      console.log('grindingWheel', grindingWheel);
-
       if (!grindingWheel) {
-        console.log('here 1');
         return;
       }
 
       if (property === 'xSafetyDistance' || property === 'zSafetyDistance') {
-        console.log('here 2');
         grindingWheel[property] = value;
       } else if (property === 'bAxisAngle' && dressingToolName) {
         const dressingTool = grindingWheel.dressingToolsData.find(
@@ -246,8 +242,6 @@ const partSlice = createSlice({
         if (dressingTool) {
           dressingTool.bAxisAngle = value;
         }
-      } else {
-        console.log('here 3');
       }
     },
   },
