@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TabMenu from 'components/TabMenu';
@@ -7,25 +7,17 @@ import TranslatedToolName from 'components/TranslatedToolName';
 
 import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
-import {
-  editGrindingWheelProperty,
-  setGrindingWheelData,
-} from 'state/part/partSlice';
+import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
+
+import { editGrindingWheelProperty } from 'state/part/partSlice';
 
 import transaltedDressingToolsNames from 'mockdata/pt-br/dressingTools.json';
 
-import {
-  GrindingWheels,
-  GrindingWheelsItem,
-  GWDressingToolsData,
-  GWDressingToolsDataItem,
-} from 'types/part';
+import { GrindingWheels } from 'types/part';
 
 import { EditButton } from 'pages/Config/styles';
 import { colors } from 'styles/global.styles';
-
 import { FormState } from './interface';
-
 import {
   Container,
   Dressing,
@@ -38,6 +30,7 @@ import {
   SSubTitle,
   ToolName,
 } from './styles';
+import useInitializeFormState from './useInitializeFormState';
 
 const GrindingData: React.FC = () => {
   const dispatch = useDispatch();
@@ -50,86 +43,18 @@ const GrindingData: React.FC = () => {
       state.part.grindingWheels,
   );
 
-  useEffect(() => {
-    console.log('selectorGrindingWheels', selectorGrindingWheels);
-  }, [selectorGrindingWheels]);
-
-  useEffect(() => {
-    if (Object.keys(formState).length === 0) {
-      const initialFormState: FormState = Object.entries(
-        dressingToolNames,
-      ).reduce((acc, [toolKey, toolNames]) => {
-        const toolId = parseInt(toolKey.replace('tool', ''), 10);
-        const grindingWheel = selectorGrindingWheels.find(
-          (wheel) => wheel.id === toolId,
-        );
-
-        acc[`${toolKey}-xSafetyDistance`] = {
-          value: grindingWheel?.xSafetyDistance || 0,
-          edit: false,
-          error: false,
-          message: undefined,
-        };
-        acc[`${toolKey}-zSafetyDistance`] = {
-          value: grindingWheel?.zSafetyDistance || 0,
-          edit: false,
-          error: false,
-          message: undefined,
-        };
-        toolNames.forEach((name) => {
-          const dressingToolData = grindingWheel?.dressingToolsData.find(
-            (tool) => tool.name === name,
-          );
-
-          acc[`${toolKey}-${name}-bAxisAngle`] = {
-            value: dressingToolData?.bAxisAngle || 0,
-            edit: false,
-            error: false,
-            message: undefined,
-          };
-        });
-        return acc;
-      }, {} as FormState);
-
-      console.log('initialFormState', initialFormState);
-
-      setFormState(initialFormState);
-    }
-  }, [dressingToolNames, formState, selectorGrindingWheels]);
-
-  useEffect(() => {
-    // TRANSFORMAR EM HOOK
-    // Inicializa o estado global se o grindingWheels estiver vazio
-    if (selectorGrindingWheels.length === 0 && formattedTools.length > 0) {
-      const initialGrindingWheels: GrindingWheels = formattedTools.map(
-        (tool) => {
-          const dressingTools = dressingToolNames[`tool${tool.id}`] || [];
-          const dressingToolsData: GWDressingToolsData = dressingTools.map(
-            (name) => ({
-              name,
-              bAxisAngle: 0,
-            }),
-          );
-
-          return {
-            id: tool.id,
-            label: tool.label,
-            xSafetyDistance: 0,
-            zSafetyDistance: 0,
-            dressingToolsData,
-          };
-        },
-      );
-
-      dispatch(setGrindingWheelData(initialGrindingWheels));
-    }
-  }, [
+  useInitializeFormState(
     dressingToolNames,
     selectorGrindingWheels,
-    formattedTools,
     formState,
-    dispatch,
-  ]);
+    setFormState,
+  );
+
+  useInitializeGrindingWheels(
+    selectorGrindingWheels,
+    formattedTools,
+    dressingToolNames,
+  );
 
   const handleSubmit = (field: string) => {
     const [toolKey, property, dressingToolName] = field.split('-');
@@ -143,7 +68,6 @@ const GrindingData: React.FC = () => {
         property: property as 'xSafetyDistance' | 'zSafetyDistance',
         value: Number(value),
       };
-      console.log('editObject', editObject);
       dispatch(editGrindingWheelProperty(editObject));
     } else if (property === 'bAxisAngle' && dressingToolName) {
       const editObject = {
@@ -152,7 +76,6 @@ const GrindingData: React.FC = () => {
         value: Number(value),
         dressingToolName,
       };
-      console.log('editObject', editObject);
       dispatch(editGrindingWheelProperty(editObject));
     }
   };
