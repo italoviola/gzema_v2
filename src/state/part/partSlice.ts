@@ -215,6 +215,41 @@ const partSlice = createSlice({
         };
       }
     },
+    editGrindingWheelProperty: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        property: 'xSafetyDistance' | 'zSafetyDistance' | 'bAxisAngle';
+        value: number;
+        dressingToolName?: string;
+      }>,
+    ) => {
+      const { id, property, value, dressingToolName } = action.payload;
+      const grindingWheel = state.grindingWheels.find(
+        (wheel) => wheel.id === id,
+      );
+
+      console.log('grindingWheel', grindingWheel);
+
+      if (!grindingWheel) {
+        console.log('here 1');
+        return;
+      }
+
+      if (property === 'xSafetyDistance' || property === 'zSafetyDistance') {
+        console.log('here 2');
+        grindingWheel[property] = value;
+      } else if (property === 'bAxisAngle' && dressingToolName) {
+        const dressingTool = grindingWheel.dressingToolsData.find(
+          (tool) => tool.name === dressingToolName,
+        );
+        if (dressingTool) {
+          dressingTool.bAxisAngle = value;
+        }
+      } else {
+        console.log('here 3');
+      }
+    },
   },
 });
 
@@ -231,6 +266,7 @@ export const {
   changeContourPositionAtOperation,
   setGrindingWheelData,
   editGrindingWheelData,
+  editGrindingWheelProperty,
 } = partSlice.actions;
 
 export default partSlice.reducer;

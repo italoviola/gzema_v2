@@ -7,7 +7,10 @@ import TranslatedToolName from 'components/TranslatedToolName';
 
 import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
-import { setGrindingWheelData } from 'state/part/partSlice';
+import {
+  editGrindingWheelProperty,
+  setGrindingWheelData,
+} from 'state/part/partSlice';
 
 import transaltedDressingToolsNames from 'mockdata/pt-br/dressingTools.json';
 
@@ -48,94 +51,133 @@ const GrindingData: React.FC = () => {
   );
 
   useEffect(() => {
-    // Inicializa o estado apenas se estiver vazio
-    if (Object.keys(formState).length === 0) {
-      const initialFormState: FormState = Object.entries(
-        dressingToolNames,
-      ).reduce((acc, [toolKey, toolNames]) => {
-        const toolId = parseInt(toolKey.replace('tool', ''), 10);
-        const grindingWheel = selectorGrindingWheels.find(
-          (wheel) => wheel.id === toolId,
+    console.log('selectorGrindingWheels', selectorGrindingWheels);
+  }, [selectorGrindingWheels]);
+
+  useEffect(() => {
+    // TEM UM BUG AQUI que esta setando os edits pro estado inicial quando alterados pra true no botao edit
+
+    // Inicializa o estado local apenas se estiver vazio
+    const initialFormState: FormState = Object.entries(
+      dressingToolNames,
+    ).reduce((acc, [toolKey, toolNames]) => {
+      const toolId = parseInt(toolKey.replace('tool', ''), 10);
+      const grindingWheel = selectorGrindingWheels.find(
+        (wheel) => wheel.id === toolId,
+      );
+
+      acc[`${toolKey}-xSafetyDistance`] = {
+        value: grindingWheel?.xSafetyDistance || 0,
+        edit: false,
+        error: false,
+        message: undefined,
+      };
+      acc[`${toolKey}-zSafetyDistance`] = {
+        value: grindingWheel?.zSafetyDistance || 0,
+        edit: false,
+        error: false,
+        message: undefined,
+      };
+      toolNames.forEach((name) => {
+        const dressingToolData = grindingWheel?.dressingToolsData.find(
+          (tool) => tool.name === name,
         );
 
-        acc[`${toolKey}-xSafeDistance`] = {
-          value: grindingWheel?.xSafetyDistance || '',
+        acc[`${toolKey}-${name}-bAxisAngle`] = {
+          value: dressingToolData?.bAxisAngle || 0,
           edit: false,
           error: false,
           message: undefined,
         };
-        acc[`${toolKey}-zSafeDistance`] = {
-          value: grindingWheel?.zSafetyDistance || '',
-          edit: false,
-          error: false,
-          message: undefined,
-        };
-        toolNames.forEach((name) => {
-          const dressingToolData = grindingWheel?.dressingToolsData.find(
-            (tool) => tool.name === name,
+      });
+      return acc;
+    }, {} as FormState);
+
+    console.log('initialFormState', initialFormState);
+
+    setFormState(initialFormState);
+  }, [dressingToolNames, selectorGrindingWheels]);
+
+  useEffect(() => {
+    // TRANSFORMAR EM HOOK
+    // Inicializa o estado global se o grindingWheels estiver vazio
+    if (selectorGrindingWheels.length === 0 && formattedTools.length > 0) {
+      const initialGrindingWheels: GrindingWheels = formattedTools.map(
+        (tool) => {
+          const dressingTools = dressingToolNames[`tool${tool.id}`] || [];
+          const dressingToolsData: GWDressingToolsData = dressingTools.map(
+            (name) => ({
+              name,
+              bAxisAngle: 0,
+            }),
           );
 
-          acc[`${toolKey}-${name}-bAxisAngle`] = {
-            value: dressingToolData?.bAxisAngle || '',
-            edit: false,
-            error: false,
-            message: undefined,
-          };
-        });
-        return acc;
-      }, {} as FormState);
-
-      setFormState(initialFormState);
-    }
-  }, [dressingToolNames, selectorGrindingWheels, formState]);
-
-  const handleSubmit = () => {
-    const grindingWheels: GrindingWheels = Object.entries(
-      dressingToolNames,
-    ).map(([toolKey, toolNames]): GrindingWheelsItem => {
-      const toolId = parseInt(toolKey.replace('tool', ''), 10);
-
-      const xSafetyDistance = formState[`${toolKey}-xSafeDistance`]?.value || 0;
-      const zSafetyDistance = formState[`${toolKey}-zSafeDistance`]?.value || 0;
-
-      const dressingToolsData: GWDressingToolsData = toolNames.map(
-        (name): GWDressingToolsDataItem => {
-          const bAxisAngle =
-            formState[`${toolKey}-${name}-bAxisAngle`]?.value || 0;
-
           return {
-            name,
-            bAxisAngle: Number(bAxisAngle),
+            id: tool.id,
+            label: tool.label,
+            xSafetyDistance: 0,
+            zSafetyDistance: 0,
+            dressingToolsData,
           };
         },
       );
 
-      return {
+      dispatch(setGrindingWheelData(initialGrindingWheels));
+    }
+  }, [
+    dressingToolNames,
+    selectorGrindingWheels,
+    formattedTools,
+    formState,
+    dispatch,
+  ]);
+
+  const handleSubmit = (field: string) => {
+    const [toolKey, property, dressingToolName] = field.split('-');
+    const toolId = parseInt(toolKey.replace('tool', ''), 10);
+
+    const value = formState[field]?.value || 0;
+
+    if (property === 'xSafetyDistance' || property === 'zSafetyDistance') {
+      const editObject = {
         id: toolId,
-        label: `Tool ${toolId}`,
-        xSafetyDistance: Number(xSafetyDistance),
-        zSafetyDistance: Number(zSafetyDistance),
-        dressingToolsData,
+        property: property as 'xSafetyDistance' | 'zSafetyDistance',
+        value: Number(value),
       };
+      console.log('editObject', editObject);
+      dispatch(editGrindingWheelProperty(editObject));
+    } else if (property === 'bAxisAngle' && dressingToolName) {
+      const editObject = {
+        id: toolId,
+        property: property as 'bAxisAngle',
+        value: Number(value),
+        dressingToolName,
+      };
+      console.log('editObject', editObject);
+      dispatch(editGrindingWheelProperty(editObject));
+    }
+  };
+
+  const toggleEdit = (field: string) => {
+    setFormState((prevState) => {
+      const isEditing = prevState[field]?.edit;
+
+      const updatedState = {
+        ...prevState,
+        [field]: {
+          ...prevState[field],
+          edit: !isEditing,
+          error: false,
+          message: undefined,
+        },
+      };
+
+      if (isEditing) {
+        handleSubmit(field);
+      }
+
+      return updatedState;
     });
-
-    console.log('form component state', grindingWheels);
-
-    dispatch(setGrindingWheelData(grindingWheels));
-
-    // grindingWheels.forEach((wheel) => {
-    //   console.log('wheel', wheel);
-    //   dispatch(
-    //     editGrindingWheelData({
-    //       id: wheel.id,
-    //       changes: {
-    //         xSafetyDistance: wheel.xSafetyDistance,
-    //         zSafetyDistance: wheel.zSafetyDistance,
-    //         dressingToolsData: wheel.dressingToolsData,
-    //       },
-    //     }),
-    //   );
-    // });
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,9 +187,7 @@ const GrindingData: React.FC = () => {
     };
 
     let newValue: string | number;
-    if (name === 'ip') {
-      newValue = value;
-    } else if (Number.isNaN(Number(value))) {
+    if (Number.isNaN(Number(value))) {
       newValue = value;
     } else {
       newValue = Number(value);
@@ -160,19 +200,6 @@ const GrindingData: React.FC = () => {
         value: newValue,
       },
     }));
-  };
-
-  const toggleEdit = (field: string) => {
-    setFormState((prevState) => ({
-      ...prevState,
-      [field]: {
-        ...prevState[field],
-        edit: !prevState[field]?.edit, // Verifica se o campo existe antes de acessar
-        error: false,
-        message: undefined,
-      },
-    }));
-    handleSubmit();
   };
 
   // Render functions
@@ -205,16 +232,16 @@ const GrindingData: React.FC = () => {
                     label="Distância Segura X: "
                     direction="row"
                     type="number"
-                    name={`${toolKey}-xSafeDistance`}
-                    value={formState[`${toolKey}-xSafeDistance`]?.value || ''}
+                    name={`${toolKey}-xSafetyDistance`}
+                    value={formState[`${toolKey}-xSafetyDistance`]?.value || ''}
                     onChange={handleInputChange}
-                    disabled={!formState[`${toolKey}-xSafeDistance`]?.edit}
+                    disabled={!formState[`${toolKey}-xSafetyDistance`]?.edit}
                   />
                   <EditButton
                     type="button"
-                    onClick={() => toggleEdit(`${toolKey}-xSafeDistance`)}
+                    onClick={() => toggleEdit(`${toolKey}-xSafetyDistance`)}
                   >
-                    {renderEditIcon(`${toolKey}-xSafeDistance`)}
+                    {renderEditIcon(`${toolKey}-xSafetyDistance`)}
                   </EditButton>
                 </FieldContent>
               </GrindingField>
@@ -224,16 +251,16 @@ const GrindingData: React.FC = () => {
                     label="Distância Segura Y: "
                     direction="row"
                     type="number"
-                    name={`${toolKey}-zSafeDistance`}
-                    value={formState[`${toolKey}-zSafeDistance`]?.value || ''}
+                    name={`${toolKey}-zSafetyDistance`}
+                    value={formState[`${toolKey}-zSafetyDistance`]?.value || ''}
                     onChange={handleInputChange}
-                    disabled={!formState[`${toolKey}-zSafeDistance`]?.edit}
+                    disabled={!formState[`${toolKey}-zSafetyDistance`]?.edit}
                   />
                   <EditButton
                     type="button"
-                    onClick={() => toggleEdit(`${toolKey}-zSafeDistance`)}
+                    onClick={() => toggleEdit(`${toolKey}-zSafetyDistance`)}
                   >
-                    {renderEditIcon(`${toolKey}-zSafeDistance`)}
+                    {renderEditIcon(`${toolKey}-zSafetyDistance`)}
                   </EditButton>
                 </FieldContent>
               </GrindingField>
