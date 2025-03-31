@@ -12,9 +12,9 @@ const TranslatedToolName: React.FC<TranslatedToolNameProps> = ({
   const toolNumber = name.match(/\d+$/);
 
   return (
-    <span>
+    <p>
       {translatedToolName} {toolNumber}
-    </span>
+    </p>
   );
 };
 

@@ -255,9 +255,9 @@ function generateMapProgram(
 
       const { bAxisAngle } = operation;
       const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
-      return `${bAxisAngleLine}\n`;
+      return `${bAxisAngleLine}`;
     })
-    .join('');
+    .join('\n');
 
   const grindingWheelsLines = part.grindingWheels
     .map((wheel) => {
