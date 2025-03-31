@@ -77,8 +77,6 @@ function generateLines(
   loadedCncData: StoredCncData,
   toolId?: number,
   toolType?: number,
-  xSafetyDistanceValue?: number,
-  zSafetyDistanceValue?: number,
 ): string {
   let toolVar: string = '5X00';
   if (toolId === 1) toolVar = '5100';
@@ -127,12 +125,6 @@ function generateLines(
   const toolTypeLine = toolType
     ? `N${incrementLineNumber()} #${toolVar}0=${toolType}\n`
     : '';
-  const xSafetyDistanceLine = xSafetyDistanceValue
-    ? `N${incrementLineNumber()} #${toolVar}2=${xSafetyDistanceValue}\n`
-    : '';
-  const zSafetyDistanceLine = zSafetyDistanceValue
-    ? `N${incrementLineNumber()} #${toolVar}3=${zSafetyDistanceValue}\n`
-    : '';
   const macroRefLine = macroRef
     ? `N${incrementLineNumber()} ${macroRef}\n`
     : '';
@@ -154,7 +146,7 @@ function generateLines(
       loadedCncData,
     )}`;
   });
-  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
+  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
 
   return gCodeOutput;
 }
@@ -174,18 +166,9 @@ function mountGCodeWithProgramNumber(
   programNumber: number,
   toolId: number,
   toolType: number,
-  xSafetyDistanceValue: number,
-  zSafetyDistanceValue: number,
   loadedCncData: StoredCncData,
 ): string {
-  const gCodeOutput = generateLines(
-    contour,
-    loadedCncData,
-    toolId,
-    toolType,
-    xSafetyDistanceValue,
-    zSafetyDistanceValue,
-  );
+  const gCodeOutput = generateLines(contour, loadedCncData, toolId, toolType);
   const gCodeTemplate = `O${programNumber}(${removeAccents(
     contour.name,
   )})\n${gCodeOutput}%`;
@@ -302,16 +285,6 @@ function generateGCodeForPart(
       Array.isArray(formattedTools)
         ? formattedTools.find((t) => t.id === toolId)?.value ?? 0
         : 0,
-      getOperationData(
-        part,
-        contour.id,
-        (operation) => operation.xSafetyDistance,
-      ),
-      getOperationData(
-        part,
-        contour.id,
-        (operation) => operation.zSafetyDistance,
-      ),
       loadedCncData,
     );
     gCodeStrings.push(gCode);

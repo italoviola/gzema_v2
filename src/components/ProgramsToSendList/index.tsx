@@ -64,8 +64,6 @@ const ProgramsToSendList: React.FC = () => {
       Number(rangeStart) + Number(index),
       toolId,
       formattedTools.find((t: ToolOptionItem) => t.id === toolId)?.value ?? 0,
-      getOperationData(part, contour.id, (op) => op.xSafetyDistance),
-      getOperationData(part, contour.id, (op) => op.zSafetyDistance),
       loadedCncData,
     );
   };
