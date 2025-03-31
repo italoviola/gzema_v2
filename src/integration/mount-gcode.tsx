@@ -215,6 +215,7 @@ function generateMapProgram(
     grindingItemsQtd: 50005,
     dressingItemsQtd: 50006,
     bAxisAngle: 50100,
+    safetyDistanceBase: 51000, // Base for safety distance variables
   };
 
   const grindingItemsCount = part.operations.reduce((count, operation) => {
@@ -245,8 +246,8 @@ function generateMapProgram(
     );
   }, 0);
 
-  const grindingItemsLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
-  const dressingItemsLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
+  const grindingItemsCountLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
+  const dressingItemsCountLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
 
   const operationsLines = part.operations
     .map((operation, index) => {
@@ -258,7 +259,19 @@ function generateMapProgram(
     })
     .join('');
 
-  return `${header}\n${grindingItemsLine}\n${dressingItemsLine}\n${operationsLines}`;
+  const grindingWheelsLines = part.grindingWheels
+    .map((wheel) => {
+      const xSafetyDistanceLine = `#${
+        varNumbers.safetyDistanceBase + wheel.id * 100 + 2
+      }=${wheel.xSafetyDistance}`;
+      const zSafetyDistanceLine = `#${
+        varNumbers.safetyDistanceBase + wheel.id * 100 + 3
+      }=${wheel.zSafetyDistance}`;
+      return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}`;
+    })
+    .join('\n');
+
+  return `${header}\n${grindingItemsCountLine}\n${dressingItemsCountLine}\n${operationsLines}\n${grindingWheelsLines}`;
 }
 
 function generateGCodeForPart(
