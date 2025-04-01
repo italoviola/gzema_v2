@@ -19,7 +19,6 @@ import useRelatedTools from 'hooks/useRelatedTools';
 
 import toolNames from 'mockdata/pt-br/dressingTools.json';
 
-import { FieldState } from 'components/FormField/interface';
 import { ToolOptionItem } from 'components/Select/interface';
 import { addContourPayload, FormProps, IFormData } from './interface';
 
@@ -66,11 +65,6 @@ const ContourForm: React.FC<FormProps> = ({
       formValues = {
         name: { value: contour.name, error: false, message: undefined },
         type: { value: contour.type, error: false, message: undefined },
-        bAxisAngle: {
-          value: contour.bAxisAngle,
-          error: false,
-          message: undefined,
-        },
         dressingTool: {
           value: contour.dressingTool,
           error: false,
@@ -154,7 +148,6 @@ const ContourForm: React.FC<FormProps> = ({
       machining: machining as Machining,
       type: Number(formData.type.value) as ContourType,
       dressingTool: formData.dressingTool?.value as string,
-      bAxisAngle: Number(formData.bAxisAngle?.value) as number,
     };
 
     if (variation === 'add') {
@@ -275,18 +268,6 @@ const ContourForm: React.FC<FormProps> = ({
             )}
           </>
         )}
-      {machining === MACHINING_DRESSING && (
-        <Field>
-          <FormField
-            name="bAxisAngle"
-            label="Ângulo Eixo B"
-            type="number"
-            placeholder="Valor do ângulo..."
-            fieldState={formData.bAxisAngle as FieldState}
-            handleInputChange={handleChange}
-          />
-        </Field>
-      )}
       <Button onClick={handleClick}>
         {variation === 'add' ? 'Cadastrar' : 'Editar'}
       </Button>

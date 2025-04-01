@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setGrindingWheelData } from 'state/part/partSlice';
 import {
   GrindingWheels,
@@ -7,16 +7,26 @@ import {
   GWDressingToolsData,
 } from 'types/part';
 import { ToolOptionItem } from 'components/Select/interface';
+import useRelatedTools from './useRelatedTools';
+import useFormattedTools from './useFormattedTools';
 
-const useInitializeGrindingWheels = (
-  selectorGrindingWheels: GrindingWheels,
-  formattedTools: ToolOptionItem[],
-  dressingToolNames: Record<string, string[]>,
-) => {
+const useInitializeGrindingWheels = () => {
   const dispatch = useDispatch();
 
+  const dressingToolNames = useRelatedTools();
+  const formattedTools = useFormattedTools();
+
+  const selectorGrindingWheels = useSelector(
+    (state: { part: { grindingWheels: GrindingWheels } }) =>
+      state.part.grindingWheels,
+  );
+
   useEffect(() => {
-    if (selectorGrindingWheels.length === 0 && formattedTools.length > 0) {
+    if (
+      selectorGrindingWheels.length === 0 &&
+      formattedTools.length > 0 &&
+      Object.entries(dressingToolNames).length > 0
+    ) {
       const initialGrindingWheels: GrindingWheels = formattedTools.map(
         (tool: ToolOptionItem): GrindingWheelsItem => {
           const dressingTools = dressingToolNames[`tool${tool.id}`] || [];

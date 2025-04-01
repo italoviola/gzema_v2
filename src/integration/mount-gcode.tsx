@@ -1,4 +1,11 @@
-import { ContourItem, ActivitiyItem, Part, OperationItem } from 'types/part';
+import {
+  ContourItem,
+  ActivitiyItem,
+  Part,
+  OperationItem,
+  GrindingWheelsItem,
+  GWDressingToolsDataItem,
+} from 'types/part';
 import {
   B_AXIS_NO_SPIN,
   MACHINING_DRESSING,
@@ -255,19 +262,40 @@ function generateMapProgram(
 
       const { bAxisAngle } = operation;
       const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
-      return `${bAxisAngleLine}`;
+      return `${bAxisAngleLine}\n`;
     })
-    .join('\n');
+    .join('');
 
   const grindingWheelsLines = part.grindingWheels
-    .map((wheel) => {
+    .map((wheel: GrindingWheelsItem) => {
       const xSafetyDistanceLine = `#${
         varNumbers.safetyDistanceBase + wheel.id * 100 + 2
       }=${wheel.xSafetyDistance}`;
       const zSafetyDistanceLine = `#${
         varNumbers.safetyDistanceBase + wheel.id * 100 + 3
       }=${wheel.zSafetyDistance}`;
-      return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}`;
+
+      // console.log('wheel', wheel);
+
+      const dressingToolsLines = wheel.dressingToolsData
+        .map((dTool: GWDressingToolsDataItem) => {
+          // console.log('dTool', dTool);
+          const baseCode = 51500 + (wheel.id - 1) * 100; // Base code for the wheel
+          const dToolTypeCode = (() => {
+            // console.log('dTool.name', dTool.name);
+            if (dTool.name.startsWith('fixedDiamond')) return 0;
+            if (dTool.name.startsWith('refractableDiamond')) return 1;
+            if (dTool.name.startsWith('dressingDisc')) return 2;
+            if (dTool.name.startsWith('fixedDressingRoller')) return 3;
+            if (dTool.name.startsWith('sCtrlMovableDressingRoller')) return 4;
+            return 5; // Default fallback
+          })();
+          const variableCode = baseCode + dToolTypeCode * 10 + 8; // Calculate the variable code
+          return `#${variableCode}=${dTool.bAxisAngle}`;
+        })
+        .join('\n');
+
+      return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}\n${dressingToolsLines}`;
     })
     .join('\n');
 

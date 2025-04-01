@@ -35,7 +35,7 @@ const useInitializeFormState = (
             (tool) => tool.name === name,
           );
 
-          acc[`${toolKey}-${name}-bAxisAngle`] = {
+          acc[`${toolKey}-bAxisAngle-${name}`] = {
             value: dressingToolData?.bAxisAngle || 0,
             edit: false,
             error: false,

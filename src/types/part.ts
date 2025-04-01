@@ -33,7 +33,6 @@ export interface ContourItem {
   type: ContourType;
   activities: Activities;
   dressingTool?: string;
-  bAxisAngle?: number;
 }
 
 export interface Contours extends Array<ContourItem> {}
@@ -49,7 +48,6 @@ export interface OperationItem {
 
 export interface Operations extends Array<OperationItem> {}
 
-// aqui
 export interface GWDressingToolsDataItem {
   name: string;
   bAxisAngle: number;

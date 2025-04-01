@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TabMenu from 'components/TabMenu';
@@ -39,10 +39,19 @@ const GrindingData: React.FC = () => {
   const formattedTools = useFormattedTools();
   const [formState, setFormState] = useState<FormState>({});
 
+  const grindingWheels = useSelector(
+    (state: { part: { grindingWheels: GrindingWheels } }) =>
+      state.part.grindingWheels,
+  );
+
   const selectorGrindingWheels = useSelector(
     (state: { part: { grindingWheels: GrindingWheels } }) =>
       state.part.grindingWheels,
   );
+
+  useEffect(() => {
+    console.log('grindingWheels', grindingWheels);
+  }, [grindingWheels]);
 
   useInitializeFormState(
     dressingToolNames,
@@ -51,11 +60,7 @@ const GrindingData: React.FC = () => {
     setFormState,
   );
 
-  useInitializeGrindingWheels(
-    selectorGrindingWheels,
-    formattedTools,
-    dressingToolNames,
-  );
+  useInitializeGrindingWheels();
 
   const handleSubmit = (field: string) => {
     const [toolKey, property, dressingToolName] = field.split('-');
@@ -225,9 +230,9 @@ const GrindingData: React.FC = () => {
                           translatedToolNames={transaltedDressingToolsNames}
                         />
                       </ToolName>
-                      {formState[`${toolKey}-${name}-bAxisAngle`]?.error && (
+                      {formState[`${toolKey}-bAxisAngle-${name}`]?.error && (
                         <div style={{ color: 'red' }}>
-                          {formState[`${toolKey}-${name}-bAxisAngle`]?.message}
+                          {formState[`${toolKey}-bAxisAngle-${name}`]?.message}
                         </div>
                       )}
                       <FieldContent>
@@ -235,25 +240,25 @@ const GrindingData: React.FC = () => {
                           label="Ângulo Eixo B: "
                           direction="row"
                           type="number"
-                          name={`${toolKey}-${name}-bAxisAngle`}
+                          name={`${toolKey}-bAxisAngle-${name}`}
                           value={
-                            formState[`${toolKey}-${name}-bAxisAngle`]?.value
+                            formState[`${toolKey}-bAxisAngle-${name}`]?.value
                           }
                           onChange={handleInputChange}
                           disabled={
-                            !formState[`${toolKey}-${name}-bAxisAngle`]?.edit
+                            !formState[`${toolKey}-bAxisAngle-${name}`]?.edit
                           }
                           error={
-                            formState[`${toolKey}-${name}-bAxisAngle`]?.error
+                            formState[`${toolKey}-bAxisAngle-${name}`]?.error
                           }
                         />
                         <EditButton
                           type="button"
                           onClick={() =>
-                            toggleEdit(`${toolKey}-${name}-bAxisAngle`)
+                            toggleEdit(`${toolKey}-bAxisAngle-${name}`)
                           }
                         >
-                          {renderEditIcon(`${toolKey}-${name}-bAxisAngle`)}
+                          {renderEditIcon(`${toolKey}-bAxisAngle-${name}`)}
                         </EditButton>
                       </FieldContent>
                     </DressingField>
