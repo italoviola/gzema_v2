@@ -222,7 +222,8 @@ function generateMapProgram(
     grindingItemsQtd: 50005,
     dressingItemsQtd: 50006,
     bAxisAngle: 50100,
-    safetyDistanceBase: 51000, // Base for safety distance variables
+    safetyDistanceBase: 50000,
+    dToolBAxisAngleBase: 51500,
   };
 
   const grindingItemsCount = part.operations.reduce((count, operation) => {
@@ -262,37 +263,46 @@ function generateMapProgram(
 
       const { bAxisAngle } = operation;
       const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
-      return `${bAxisAngleLine}\n`;
+      return `${bAxisAngleLine}`;
     })
     .join('');
 
   const grindingWheelsLines = part.grindingWheels
     .map((wheel: GrindingWheelsItem) => {
       const xSafetyDistanceLine = `#${
-        varNumbers.safetyDistanceBase + wheel.id * 100 + 2
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 1
       }=${wheel.xSafetyDistance}`;
       const zSafetyDistanceLine = `#${
-        varNumbers.safetyDistanceBase + wheel.id * 100 + 3
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 2
       }=${wheel.zSafetyDistance}`;
 
-      // console.log('wheel', wheel);
-
       const dressingToolsLines = wheel.dressingToolsData
-        .map((dTool: GWDressingToolsDataItem) => {
-          // console.log('dTool', dTool);
-          const baseCode = 51500 + (wheel.id - 1) * 100; // Base code for the wheel
+        .reduce((acc, dTool: GWDressingToolsDataItem) => {
+          const baseCode =
+            varNumbers.dToolBAxisAngleBase + (wheel.id - 1) * 1000;
           const dToolTypeCode = (() => {
-            // console.log('dTool.name', dTool.name);
             if (dTool.name.startsWith('fixedDiamond')) return 0;
             if (dTool.name.startsWith('refractableDiamond')) return 1;
             if (dTool.name.startsWith('dressingDisc')) return 2;
             if (dTool.name.startsWith('fixedDressingRoller')) return 3;
             if (dTool.name.startsWith('sCtrlMovableDressingRoller')) return 4;
-            return 5; // Default fallback
+            return undefined; // Default case
           })();
-          const variableCode = baseCode + dToolTypeCode * 10 + 8; // Calculate the variable code
-          return `#${variableCode}=${dTool.bAxisAngle}`;
-        })
+          const variableCode =
+            dToolTypeCode !== undefined
+              ? baseCode + dToolTypeCode * 10 + 8
+              : `(error: not expected dressing tool name ${dTool.name})`;
+          // console.log(
+          //   `WheelId: ${wheel.id}, Dressing tool: ${dTool.name}, Variable code: #${variableCode}=${dTool.bAxisAngle}`,
+          // );
+
+          // Avoid duplicate entries for the same variable code
+          if (!acc.includes(`#${variableCode}=${dTool.bAxisAngle}`)) {
+            acc.push(`#${variableCode}=${dTool.bAxisAngle}`);
+          }
+
+          return acc;
+        }, [] as string[])
         .join('\n');
 
       return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}\n${dressingToolsLines}`;
