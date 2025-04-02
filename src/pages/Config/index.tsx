@@ -1,10 +1,12 @@
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import { Label } from 'components/Input/style';
 import Modal from 'components/Modal';
+import Button from 'components/Button';
 
 import {
   Config as ConfigType,
@@ -14,15 +16,20 @@ import {
   StoredCncData,
   Tools,
 } from 'types/api';
-import Button from 'components/Button';
-import { ModalContent, ModalText } from 'components/SideMenu/styles';
 
 import { loadConfig } from 'utils/loadConfig';
 import { loadTools } from 'utils/loadTools';
 import { loadCncData } from 'utils/loadCncData';
 
-import { colors } from 'styles/global.styles';
+import {
+  replacePart,
+  initialState as partInitialState,
+} from 'state/part/partSlice';
+import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+
+import { ModalContent, ModalText } from 'components/SideMenu/styles';
 import { PageContent, PageTitle } from 'styles/Components';
+import { colors } from 'styles/global.styles';
 
 import { FieldKeys, FormState } from './interface';
 import {
@@ -56,6 +63,8 @@ const breadcrumbsItems = [
 ];
 
 const Config: React.FC = () => {
+  const dispatch = useDispatch();
+
   const [loaded, setLoaded] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [toolsData, setToolsData] = useState<Tools>({} as Tools);
@@ -532,6 +541,19 @@ const Config: React.FC = () => {
     });
   };
 
+  const newFile = useCallback(() => {
+    dispatch(
+      replacePart({
+        ...partInitialState,
+      }),
+    );
+    dispatch(
+      editApp({
+        ...appInitialState,
+      }),
+    );
+  }, [dispatch]);
+
   const handleGetTools = async () => {
     const request: GetToolsRequest = {
       network: {
@@ -595,6 +617,7 @@ const Config: React.FC = () => {
           setToolsData(newToolsData);
           setCncData(newCncData);
           arrangeToolTypes();
+          newFile();
         }
       } else setIsModalFeedbackOpen(true);
     } catch (error) {

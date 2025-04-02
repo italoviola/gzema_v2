@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TabMenu from 'components/TabMenu';
@@ -39,19 +39,10 @@ const GrindingData: React.FC = () => {
   const formattedTools = useFormattedTools();
   const [formState, setFormState] = useState<FormState>({});
 
-  const grindingWheels = useSelector(
-    (state: { part: { grindingWheels: GrindingWheels } }) =>
-      state.part.grindingWheels,
-  );
-
   const selectorGrindingWheels = useSelector(
     (state: { part: { grindingWheels: GrindingWheels } }) =>
       state.part.grindingWheels,
   );
-
-  useEffect(() => {
-    console.log('grindingWheels', grindingWheels);
-  }, [grindingWheels]);
 
   useInitializeFormState(
     dressingToolNames,

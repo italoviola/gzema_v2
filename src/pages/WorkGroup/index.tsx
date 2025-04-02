@@ -256,7 +256,7 @@ const WorkGroup: React.FC = () => {
                     <OpItemHeaderSubTitle>
                       <WheelText>{matchedTool && matchedTool.label}</WheelText>
                       <BAxisAngleText>
-                        Ângulo Eixo B: {operation.bAxisAngle}
+                        Ângulo Eixo B (Retificação): {operation.bAxisAngle}
                       </BAxisAngleText>
                     </OpItemHeaderSubTitle>
                   </OpItemHeaderContent>

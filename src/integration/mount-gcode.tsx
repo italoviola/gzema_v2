@@ -270,40 +270,41 @@ function generateMapProgram(
   const grindingWheelsLines = part.grindingWheels
     .map((wheel: GrindingWheelsItem) => {
       const xSafetyDistanceLine = `#${
-        varNumbers.safetyDistanceBase + wheel.id * 1000 + 1
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 2
       }=${wheel.xSafetyDistance}`;
       const zSafetyDistanceLine = `#${
-        varNumbers.safetyDistanceBase + wheel.id * 1000 + 2
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 3
       }=${wheel.zSafetyDistance}`;
 
       const dressingToolsLines = wheel.dressingToolsData
-        .reduce((acc, dTool: GWDressingToolsDataItem) => {
-          const baseCode =
-            varNumbers.dToolBAxisAngleBase + (wheel.id - 1) * 1000;
-          const dToolTypeCode = (() => {
-            if (dTool.name.startsWith('fixedDiamond')) return 0;
-            if (dTool.name.startsWith('refractableDiamond')) return 1;
-            if (dTool.name.startsWith('dressingDisc')) return 2;
-            if (dTool.name.startsWith('fixedDressingRoller')) return 3;
-            if (dTool.name.startsWith('sCtrlMovableDressingRoller')) return 4;
-            return undefined; // Default case
-          })();
-          const variableCode =
-            dToolTypeCode !== undefined
-              ? baseCode + dToolTypeCode * 10 + 8
-              : `(error: not expected dressing tool name ${dTool.name})`;
-          // console.log(
-          //   `WheelId: ${wheel.id}, Dressing tool: ${dTool.name}, Variable code: #${variableCode}=${dTool.bAxisAngle}`,
-          // );
+        .reduce(
+          (acc, dTool: GWDressingToolsDataItem) => {
+            const baseCode =
+              varNumbers.dToolBAxisAngleBase + (wheel.id - 1) * 1000;
+            const dToolTypeCode = (() => {
+              if (dTool.name.startsWith('fixedDiamond')) return 0;
+              if (dTool.name.startsWith('refractableDiamond')) return 1;
+              if (dTool.name.startsWith('dressingDisc')) return 2;
+              if (dTool.name.startsWith('fixedDressingRoller')) return 3;
+              if (dTool.name.startsWith('sCtrlMovableDressingRoller')) return 4;
+              return undefined; // Default case
+            })();
+            const variableCode =
+              dToolTypeCode !== undefined
+                ? baseCode + dToolTypeCode * 10 + 8
+                : `(error: not expected dressing tool name ${dTool.name})`;
 
-          // Avoid duplicate entries for the same variable code
-          if (!acc.includes(`#${variableCode}=${dTool.bAxisAngle}`)) {
-            acc.push(`#${variableCode}=${dTool.bAxisAngle}`);
-          }
+            // Use a Set to track unique variable codes
+            if (!acc.seen.has(Number(variableCode))) {
+              acc.seen.add(Number(variableCode));
+              acc.lines.push(`#${variableCode}=${dTool.bAxisAngle}`);
+            }
 
-          return acc;
-        }, [] as string[])
-        .join('\n');
+            return acc;
+          },
+          { lines: [] as string[], seen: new Set<number>() },
+        )
+        .lines.join('\n');
 
       return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}\n${dressingToolsLines}`;
     })
