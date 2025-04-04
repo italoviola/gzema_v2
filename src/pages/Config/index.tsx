@@ -9,10 +9,12 @@ import Modal from 'components/Modal';
 import Button from 'components/Button';
 
 import {
+  BAxisSpin,
   Config as ConfigType,
   GetToolsRequest,
   GetToolsResponse,
   GetToolsResponseDataItem,
+  NotationPattern,
   StoredCncData,
   Tools,
 } from 'types/api';
@@ -597,14 +599,19 @@ const Config: React.FC = () => {
 
       if (res.statusCode === 200) {
         if (res.data) {
-          const newToolsData: Tools = {} as Tools; // might be GetDataFromCNCRequest
+          const newToolsData: Tools = {} as Tools;
           const newCncData: StoredCncData = {} as StoredCncData;
 
           res.data.forEach((tool: GetToolsResponseDataItem) => {
             Object.keys(formState).forEach((key) => {
               if (formState[key as keyof FormState].value === tool.code) {
-                if (key === 'notationPattern' || key === 'hasBAxis') {
-                  newCncData[key as keyof StoredCncData] = tool.value;
+                if (
+                  (key === 'notationPattern' || key === 'hasBAxis') &&
+                  key in newCncData
+                ) {
+                  newCncData[key as keyof StoredCncData] = tool.value as
+                    | NotationPattern
+                    | BAxisSpin;
                 } else {
                   newToolsData[key as keyof Tools] = tool.value;
                 }
