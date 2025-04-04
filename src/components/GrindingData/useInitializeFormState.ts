@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { GrindingWheels } from 'types/part';
+import { GrindingWheels, GWDressingToolsDataItem } from 'types/part';
+import { DressingToolsNames } from 'hooks/useRelatedTools';
 import { FormState } from './interface';
 
 const useInitializeFormState = (
@@ -30,18 +31,20 @@ const useInitializeFormState = (
           error: false,
           message: undefined,
         };
-        toolNames.forEach((name) => {
-          const dressingToolData = grindingWheel?.dressingToolsData.find(
-            (tool) => tool.name === name,
-          );
+        (toolNames as DressingToolsNames[]).forEach(
+          (name: DressingToolsNames) => {
+            const dressingToolData = grindingWheel?.dressingToolsData.find(
+              (item: GWDressingToolsDataItem) => item.name === name,
+            );
 
-          acc[`${toolKey}-bAxisAngle-${name}`] = {
-            value: dressingToolData?.bAxisAngle || 0,
-            edit: false,
-            error: false,
-            message: undefined,
-          };
-        });
+            acc[`${toolKey}-bAxisAngle-${name}`] = {
+              value: dressingToolData?.bAxisAngle || 0,
+              edit: false,
+              error: false,
+              message: undefined,
+            };
+          },
+        );
         return acc;
       }, {} as FormState);
 

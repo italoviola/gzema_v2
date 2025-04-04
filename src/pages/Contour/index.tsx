@@ -23,8 +23,6 @@ import { StyledIcon } from 'components/SideMenu/styles';
 import { PageContent } from 'styles/Components';
 import { colors } from 'styles/global.styles';
 
-import toolNames from 'mockdata/pt-br/dressingTools.json';
-
 import defineActionParams from './defineActionParams';
 
 import { ActionParamsValidation } from './interface';
@@ -494,10 +492,7 @@ const Contour: React.FC = () => {
                   />
                   {formData.dressingTool && (
                     <InfoLabel fontSize="14px" color={colors.blue}>
-                      <TranslatedToolName
-                        name={formData.dressingTool}
-                        translatedToolNames={toolNames}
-                      />
+                      <TranslatedToolName name={formData.dressingTool} />
                     </InfoLabel>
                   )}
                   <CodePreviewBtn>

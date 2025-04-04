@@ -15,9 +15,7 @@ import {
 import useFormattedTools from 'hooks/useFormattedTools';
 import { addContour, editContour } from 'state/part/partSlice';
 
-import useRelatedTools from 'hooks/useRelatedTools';
-
-import toolNames from 'mockdata/pt-br/dressingTools.json';
+import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
 
 import { ToolOptionItem } from 'components/Select/interface';
 import { addContourPayload, FormProps, IFormData } from './interface';
@@ -245,23 +243,24 @@ const ContourForm: React.FC<FormProps> = ({
                     <Field>
                       <Label>Rebolo {index + 1}</Label>
                     </Field>
-                    {dToolNames.map((name) => (
-                      <Field key={`${toolKey}-${name}`}>
-                        <RadioButton style={{ fontSize: '16px' }}>
-                          <input
-                            type="radio"
-                            value={name}
-                            name="dressingTool"
-                            onChange={(e) => handleChange(e)}
-                          />
-                          <span />
-                          <TranslatedToolName
-                            name={name}
-                            translatedToolNames={toolNames}
-                          />
-                        </RadioButton>
-                      </Field>
-                    ))}
+                    {(dToolNames as DressingToolsNames[]).map(
+                      (name: DressingToolsNames) => (
+                        <Field key={`${toolKey}-${name}`}>
+                          <RadioButton style={{ fontSize: '16px' }}>
+                            <input
+                              type="radio"
+                              value={name}
+                              name="dressingTool"
+                              onChange={(e) => handleChange(e)}
+                            />
+                            <span />
+                            <TranslatedToolName
+                              name={name as DressingToolsNames}
+                            />
+                          </RadioButton>
+                        </Field>
+                      ),
+                    )}
                   </div>
                 );
               },

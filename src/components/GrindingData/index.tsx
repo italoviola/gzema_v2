@@ -5,13 +5,11 @@ import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
 import TranslatedToolName from 'components/TranslatedToolName';
 
-import useRelatedTools from 'hooks/useRelatedTools';
+import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
 import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
 
 import { editGrindingWheelProperty } from 'state/part/partSlice';
-
-import transaltedDressingToolsNames from 'mockdata/pt-br/dressingTools.json';
 
 import { GrindingWheels } from 'types/part';
 
@@ -212,49 +210,51 @@ const GrindingData: React.FC = () => {
             <DressingContainer>
               <SSubTitle>Dressagem</SSubTitle>
               <Dressing>
-                {toolNames.map((name) => {
-                  return (
-                    <DressingField key={name}>
-                      <ToolName>
-                        <TranslatedToolName
-                          name={name}
-                          translatedToolNames={transaltedDressingToolsNames}
-                        />
-                      </ToolName>
-                      {formState[`${toolKey}-bAxisAngle-${name}`]?.error && (
-                        <div style={{ color: 'red' }}>
-                          {formState[`${toolKey}-bAxisAngle-${name}`]?.message}
-                        </div>
-                      )}
-                      <FieldContent>
-                        <SInput
-                          label="Ângulo Eixo B: "
-                          direction="row"
-                          type="number"
-                          name={`${toolKey}-bAxisAngle-${name}`}
-                          value={
-                            formState[`${toolKey}-bAxisAngle-${name}`]?.value
-                          }
-                          onChange={handleInputChange}
-                          disabled={
-                            !formState[`${toolKey}-bAxisAngle-${name}`]?.edit
-                          }
-                          error={
-                            formState[`${toolKey}-bAxisAngle-${name}`]?.error
-                          }
-                        />
-                        <EditButton
-                          type="button"
-                          onClick={() =>
-                            toggleEdit(`${toolKey}-bAxisAngle-${name}`)
-                          }
-                        >
-                          {renderEditIcon(`${toolKey}-bAxisAngle-${name}`)}
-                        </EditButton>
-                      </FieldContent>
-                    </DressingField>
-                  );
-                })}
+                {(toolNames as DressingToolsNames[]).map(
+                  (name: DressingToolsNames) => {
+                    return (
+                      <DressingField key={name}>
+                        <ToolName>
+                          <TranslatedToolName name={name} />
+                        </ToolName>
+                        {formState[`${toolKey}-bAxisAngle-${name}`]?.error && (
+                          <div style={{ color: 'red' }}>
+                            {
+                              formState[`${toolKey}-bAxisAngle-${name}`]
+                                ?.message
+                            }
+                          </div>
+                        )}
+                        <FieldContent>
+                          <SInput
+                            label="Ângulo Eixo B: "
+                            direction="row"
+                            type="number"
+                            name={`${toolKey}-bAxisAngle-${name}`}
+                            value={
+                              formState[`${toolKey}-bAxisAngle-${name}`]?.value
+                            }
+                            onChange={handleInputChange}
+                            disabled={
+                              !formState[`${toolKey}-bAxisAngle-${name}`]?.edit
+                            }
+                            error={
+                              formState[`${toolKey}-bAxisAngle-${name}`]?.error
+                            }
+                          />
+                          <EditButton
+                            type="button"
+                            onClick={() =>
+                              toggleEdit(`${toolKey}-bAxisAngle-${name}`)
+                            }
+                          >
+                            {renderEditIcon(`${toolKey}-bAxisAngle-${name}`)}
+                          </EditButton>
+                        </FieldContent>
+                      </DressingField>
+                    );
+                  },
+                )}
               </Dressing>
             </DressingContainer>
           </form>
