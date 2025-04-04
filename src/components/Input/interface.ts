@@ -11,4 +11,5 @@ export interface InputProps {
   className?: string;
   error?: boolean;
   disabled?: boolean;
+  direction?: 'row' | 'column';
 }

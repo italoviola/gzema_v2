@@ -47,18 +47,18 @@ export interface Cnc {
   hasBAxis: number;
 }
 
-enum NotationPattern {
+export enum NotationPattern {
   ZEMA = NOTATION_JUNKER,
   JUNKER = NOTATION_ZEMA,
 }
 
-enum BAxisSpin {
+export enum BAxisSpin {
   NO_SPIN = B_AXIS_NO_SPIN,
 }
 
 export interface StoredCncData {
-  notationPattern: NotationPattern;
-  hasBAxis: BAxisSpin;
+  notationPattern: number;
+  hasBAxis: number;
 }
 
 export interface DressingQtdVars {
@@ -95,6 +95,8 @@ export interface Tools {
   tool4fixedDressingRollerQtd: number;
   tool4sCtrlMovableDressingRollerQtd: number;
 }
+
+export interface StoredCncToolsData extends StoredCncData, Tools {}
 
 export type DressingToolsQtds = Omit<
   Tools,

@@ -9,6 +9,7 @@ import Icon from 'components/Icon';
 import Button from 'components/Button';
 import AddOperationForm from 'components/OperationForm';
 import ConfirmAction from 'components/ConfirmAction';
+import GrindingData from 'components/GrindingData';
 
 import useFormattedTools from 'hooks/useFormattedTools';
 
@@ -45,7 +46,7 @@ import {
   BAxisAngleText,
   WheelText,
   OpItemHeaderContent,
-  ContourBtnsWrapper,
+  BtnsWrapper,
   IconButton,
   IconBtn,
 } from './style';
@@ -74,6 +75,8 @@ const WorkGroup: React.FC = () => {
   const [isModalEditOperationOpen, setIsModalEditOperationOpen] =
     useState<boolean>(false);
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
+    useState<boolean>(false);
+  const [isModalGrindingDataOpen, setIsModalGrindingDataOpen] =
     useState<boolean>(false);
   const [opIdAux, setOpIdAux] = useState<number>(0);
 
@@ -130,7 +133,7 @@ const WorkGroup: React.FC = () => {
       <Content>
         <Block>
           <PageTitle>Contornos</PageTitle>
-          <ContourBtnsWrapper>
+          <BtnsWrapper>
             <IconBtn>
               <IconButton
                 onClick={() => setSelectedMachining(1)}
@@ -168,7 +171,7 @@ const WorkGroup: React.FC = () => {
                 </Wrap>
               </Button>
             </AddBtn>
-          </ContourBtnsWrapper>
+          </BtnsWrapper>
           <CContentBlock>
             <div>
               {contours
@@ -185,22 +188,34 @@ const WorkGroup: React.FC = () => {
         </Block>
         <Block>
           <PageTitle>Sequência de Execução</PageTitle>
-          <AddBtn>
-            <Button
-              onClick={() => setIsModalOperationOpen(true)}
-              color={colors.white}
-              bgColor={colors.blue}
-            >
-              <Wrap>
-                <Icon
-                  className="icon-add"
-                  color={colors.white}
-                  fontSize="26px"
-                />
-                <TextAdd>Adicionar Operação</TextAdd>
-              </Wrap>
-            </Button>
-          </AddBtn>
+          <BtnsWrapper>
+            <AddBtn>
+              <Button
+                onClick={() => setIsModalOperationOpen(true)}
+                color={colors.white}
+                bgColor={colors.blue}
+              >
+                <Wrap>
+                  <Icon
+                    className="icon-add"
+                    color={colors.white}
+                    fontSize="26px"
+                  />
+                  <TextAdd>Adicionar Operação</TextAdd>
+                </Wrap>
+              </Button>
+            </AddBtn>
+            <AddBtn>
+              <Button
+                onClick={() => setIsModalGrindingDataOpen(true)}
+                color={colors.blue}
+                bgColor={colors.white}
+                borderColor={colors.blue}
+              >
+                <TextAdd>Dados de Rebolo</TextAdd>
+              </Button>
+            </AddBtn>
+          </BtnsWrapper>
           <OpWrapper>
             {operations.map((operation: OperationItem) => {
               const matchedTool = formattedTools.find(
@@ -241,7 +256,7 @@ const WorkGroup: React.FC = () => {
                     <OpItemHeaderSubTitle>
                       <WheelText>{matchedTool && matchedTool.label}</WheelText>
                       <BAxisAngleText>
-                        Ângulo Eixo B: {operation.bAxisAngle}
+                        Ângulo Eixo B (Retificação): {operation.bAxisAngle}
                       </BAxisAngleText>
                     </OpItemHeaderSubTitle>
                   </OpItemHeaderContent>
@@ -323,6 +338,13 @@ const WorkGroup: React.FC = () => {
           }}
           onCancel={() => setIsModalCofirmDeleteOpOpen(false)}
         />
+      </Modal>
+      <Modal
+        title="Dados de Rebolo"
+        isOpen={isModalGrindingDataOpen}
+        onClose={() => setIsModalGrindingDataOpen(false)}
+      >
+        <GrindingData />
       </Modal>
     </Container>
   );

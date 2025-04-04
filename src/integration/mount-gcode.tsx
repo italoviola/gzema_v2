@@ -1,4 +1,11 @@
-import { ContourItem, ActivitiyItem, Part, OperationItem } from 'types/part';
+import {
+  ContourItem,
+  ActivitiyItem,
+  Part,
+  OperationItem,
+  GrindingWheelsItem,
+  GWDressingToolsDataItem,
+} from 'types/part';
 import {
   B_AXIS_NO_SPIN,
   MACHINING_DRESSING,
@@ -77,8 +84,6 @@ function generateLines(
   loadedCncData: StoredCncData,
   toolId?: number,
   toolType?: number,
-  xSafetyDistanceValue?: number,
-  zSafetyDistanceValue?: number,
 ): string {
   let toolVar: string = '5X00';
   if (toolId === 1) toolVar = '5100';
@@ -127,12 +132,6 @@ function generateLines(
   const toolTypeLine = toolType
     ? `N${incrementLineNumber()} #${toolVar}0=${toolType}\n`
     : '';
-  const xSafetyDistanceLine = xSafetyDistanceValue
-    ? `N${incrementLineNumber()} #${toolVar}2=${xSafetyDistanceValue}\n`
-    : '';
-  const zSafetyDistanceLine = zSafetyDistanceValue
-    ? `N${incrementLineNumber()} #${toolVar}3=${zSafetyDistanceValue}\n`
-    : '';
   const macroRefLine = macroRef
     ? `N${incrementLineNumber()} ${macroRef}\n`
     : '';
@@ -154,7 +153,7 @@ function generateLines(
       loadedCncData,
     )}`;
   });
-  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${xSafetyDistanceLine}${zSafetyDistanceLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
+  gCodeOutput = `${toolIdLine}${jobLine}${toolTypeLine}${dressingToolLine}${macroRefLine}${gCodeOutput}\n`;
 
   return gCodeOutput;
 }
@@ -174,18 +173,9 @@ function mountGCodeWithProgramNumber(
   programNumber: number,
   toolId: number,
   toolType: number,
-  xSafetyDistanceValue: number,
-  zSafetyDistanceValue: number,
   loadedCncData: StoredCncData,
 ): string {
-  const gCodeOutput = generateLines(
-    contour,
-    loadedCncData,
-    toolId,
-    toolType,
-    xSafetyDistanceValue,
-    zSafetyDistanceValue,
-  );
+  const gCodeOutput = generateLines(contour, loadedCncData, toolId, toolType);
   const gCodeTemplate = `O${programNumber}(${removeAccents(
     contour.name,
   )})\n${gCodeOutput}%`;
@@ -232,6 +222,8 @@ function generateMapProgram(
     grindingItemsQtd: 50005,
     dressingItemsQtd: 50006,
     bAxisAngle: 50100,
+    safetyDistanceBase: 50000,
+    dToolBAxisAngleBase: 51500,
   };
 
   const grindingItemsCount = part.operations.reduce((count, operation) => {
@@ -262,8 +254,8 @@ function generateMapProgram(
     );
   }, 0);
 
-  const grindingItemsLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
-  const dressingItemsLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
+  const grindingItemsCountLine = `#${varNumbers.grindingItemsQtd}=${grindingItemsCount}`;
+  const dressingItemsCountLine = `#${varNumbers.dressingItemsQtd}=${dressingItemsCount}`;
 
   const operationsLines = part.operations
     .map((operation, index) => {
@@ -271,11 +263,54 @@ function generateMapProgram(
 
       const { bAxisAngle } = operation;
       const bAxisAngleLine = `#${varNumbers.bAxisAngle + index}=${bAxisAngle}`;
-      return `${bAxisAngleLine}\n`;
+      return `${bAxisAngleLine}`;
     })
     .join('');
 
-  return `${header}\n${grindingItemsLine}\n${dressingItemsLine}\n${operationsLines}`;
+  const grindingWheelsLines = part.grindingWheels
+    .map((wheel: GrindingWheelsItem) => {
+      const xSafetyDistanceLine = `#${
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 2
+      }=${wheel.xSafetyDistance}`;
+      const zSafetyDistanceLine = `#${
+        varNumbers.safetyDistanceBase + wheel.id * 1000 + 3
+      }=${wheel.zSafetyDistance}`;
+
+      const dressingToolsLines = wheel.dressingToolsData
+        .reduce(
+          (acc, dTool: GWDressingToolsDataItem) => {
+            const baseCode =
+              varNumbers.dToolBAxisAngleBase + (wheel.id - 1) * 1000;
+            const dToolTypeCode = (() => {
+              if (dTool.name.startsWith('fixedDiamond')) return 0;
+              if (dTool.name.startsWith('refractableDiamond')) return 1;
+              if (dTool.name.startsWith('dressingDisc')) return 2;
+              if (dTool.name.startsWith('fixedDressingRoller')) return 3;
+              if (dTool.name.startsWith('sCtrlMovableDressingRoller')) return 4;
+              return undefined; // Default case
+            })();
+            const variableCode =
+              dToolTypeCode !== undefined
+                ? baseCode + dToolTypeCode * 10 + 8
+                : `(error: not expected dressing tool name ${dTool.name})`;
+
+            // Use a Set to track unique variable codes
+            if (!acc.seen.has(Number(variableCode))) {
+              acc.seen.add(Number(variableCode));
+              acc.lines.push(`#${variableCode}=${dTool.bAxisAngle}`);
+            }
+
+            return acc;
+          },
+          { lines: [] as string[], seen: new Set<number>() },
+        )
+        .lines.join('\n');
+
+      return `${xSafetyDistanceLine}\n${zSafetyDistanceLine}\n${dressingToolsLines}`;
+    })
+    .join('\n');
+
+  return `${header}\n${grindingItemsCountLine}\n${dressingItemsCountLine}\n${operationsLines}\n${grindingWheelsLines}`;
 }
 
 function generateGCodeForPart(
@@ -302,16 +337,6 @@ function generateGCodeForPart(
       Array.isArray(formattedTools)
         ? formattedTools.find((t) => t.id === toolId)?.value ?? 0
         : 0,
-      getOperationData(
-        part,
-        contour.id,
-        (operation) => operation.xSafetyDistance,
-      ),
-      getOperationData(
-        part,
-        contour.id,
-        (operation) => operation.zSafetyDistance,
-      ),
       loadedCncData,
     );
     gCodeStrings.push(gCode);

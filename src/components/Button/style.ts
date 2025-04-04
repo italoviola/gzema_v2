@@ -5,7 +5,6 @@ import { ButtonProps } from './interface';
 
 export const StyledButton = styled.button<ButtonProps>`
   background-color: ${(props) => props.bgColor};
-  border: none;
   color: ${(props) => props.color};
   padding: 12px;
   text-align: center;

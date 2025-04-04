@@ -1,28 +1,37 @@
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import { Label } from 'components/Input/style';
 import Modal from 'components/Modal';
+import Button from 'components/Button';
 
 import {
+  BAxisSpin,
   Config as ConfigType,
   GetToolsRequest,
   GetToolsResponse,
   GetToolsResponseDataItem,
+  NotationPattern,
   StoredCncData,
   Tools,
 } from 'types/api';
-import Button from 'components/Button';
-import { ModalContent, ModalText } from 'components/SideMenu/styles';
 
 import { loadConfig } from 'utils/loadConfig';
 import { loadTools } from 'utils/loadTools';
 import { loadCncData } from 'utils/loadCncData';
 
-import { colors } from 'styles/global.styles';
+import {
+  replacePart,
+  initialState as partInitialState,
+} from 'state/part/partSlice';
+import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+
+import { ModalContent, ModalText } from 'components/SideMenu/styles';
 import { PageContent, PageTitle } from 'styles/Components';
+import { colors } from 'styles/global.styles';
 
 import { FieldKeys, FormState } from './interface';
 import {
@@ -56,6 +65,8 @@ const breadcrumbsItems = [
 ];
 
 const Config: React.FC = () => {
+  const dispatch = useDispatch();
+
   const [loaded, setLoaded] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [toolsData, setToolsData] = useState<Tools>({} as Tools);
@@ -477,7 +488,7 @@ const Config: React.FC = () => {
 
     return (
       <React.Fragment key={name}>
-        <Label>{label}:</Label>
+        <Label direction="column">{label}:</Label>
         {formState[name].error && <Message>{formState[name].message}</Message>}
         <Field>
           <SInput
@@ -532,6 +543,19 @@ const Config: React.FC = () => {
     });
   };
 
+  const newFile = useCallback(() => {
+    dispatch(
+      replacePart({
+        ...partInitialState,
+      }),
+    );
+    dispatch(
+      editApp({
+        ...appInitialState,
+      }),
+    );
+  }, [dispatch]);
+
   const handleGetTools = async () => {
     const request: GetToolsRequest = {
       network: {
@@ -575,14 +599,19 @@ const Config: React.FC = () => {
 
       if (res.statusCode === 200) {
         if (res.data) {
-          const newToolsData: Tools = {} as Tools; // might be GetDataFromCNCRequest
+          const newToolsData: Tools = {} as Tools;
           const newCncData: StoredCncData = {} as StoredCncData;
 
           res.data.forEach((tool: GetToolsResponseDataItem) => {
             Object.keys(formState).forEach((key) => {
               if (formState[key as keyof FormState].value === tool.code) {
-                if (key === 'notationPattern' || key === 'hasBAxis') {
-                  newCncData[key as keyof StoredCncData] = tool.value;
+                if (
+                  (key === 'notationPattern' || key === 'hasBAxis') &&
+                  key in newCncData
+                ) {
+                  newCncData[key as keyof StoredCncData] = tool.value as
+                    | NotationPattern
+                    | BAxisSpin;
                 } else {
                   newToolsData[key as keyof Tools] = tool.value;
                 }
@@ -595,6 +624,7 @@ const Config: React.FC = () => {
           setToolsData(newToolsData);
           setCncData(newCncData);
           arrangeToolTypes();
+          newFile();
         }
       } else setIsModalFeedbackOpen(true);
     } catch (error) {
