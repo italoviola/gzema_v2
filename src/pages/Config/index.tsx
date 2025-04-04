@@ -1,26 +1,37 @@
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import { Label } from 'components/Input/style';
 import Modal from 'components/Modal';
+import Button from 'components/Button';
 
 import {
+  BAxisSpin,
   Config as ConfigType,
   GetToolsRequest,
   GetToolsResponse,
   GetToolsResponseDataItem,
+  NotationPattern,
+  StoredCncData,
   Tools,
 } from 'types/api';
-import Button from 'components/Button';
-import { ModalContent, ModalText } from 'components/SideMenu/styles';
 
 import { loadConfig } from 'utils/loadConfig';
 import { loadTools } from 'utils/loadTools';
+import { loadCncData } from 'utils/loadCncData';
 
-import { colors } from 'styles/global.styles';
+import {
+  replacePart,
+  initialState as partInitialState,
+} from 'state/part/partSlice';
+import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+
+import { ModalContent, ModalText } from 'components/SideMenu/styles';
 import { PageContent, PageTitle } from 'styles/Components';
+import { colors } from 'styles/global.styles';
 
 import { FieldKeys, FormState } from './interface';
 import {
@@ -41,6 +52,8 @@ import {
   EditButton,
   ContentText,
   SButton,
+  SContentBlockBtn,
+  SContentBlockSpinner,
 } from './styles';
 
 const breadcrumbsItems = [
@@ -52,9 +65,12 @@ const breadcrumbsItems = [
 ];
 
 const Config: React.FC = () => {
+  const dispatch = useDispatch();
+
   const [loaded, setLoaded] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [toolsData, setToolsData] = useState<Tools>({} as Tools);
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const [isGetToolsLoading, setIsGetToolsLoading] = useState<boolean>(false);
   const [isModalFeedbackOpen, setIsModalFeedbackOpen] =
     useState<boolean>(false);
@@ -68,8 +84,10 @@ const Config: React.FC = () => {
     const fetchData = async () => {
       const loadedConfig: ConfigType = await loadConfig();
       const loadedTools: Tools = await loadTools();
+      const loadedCncData: StoredCncData = await loadCncData();
 
       setFormState((prevState) => ({
+        ...prevState,
         ip: {
           ...prevState.ip,
           value: loadedConfig.network.ip || prevState.ip.value,
@@ -95,6 +113,15 @@ const Config: React.FC = () => {
           ...prevState.pmcAddressBit,
           value:
             loadedConfig.cnc.pmcAddressBit || prevState.pmcAddressBit.value,
+        },
+        notationPattern: {
+          ...prevState.notationPattern,
+          value:
+            loadedConfig.cnc.notationPattern || prevState.notationPattern.value,
+        },
+        hasBAxis: {
+          ...prevState.hasBAxis,
+          value: loadedConfig.cnc.hasBAxis || prevState.hasBAxis.value,
         },
         tool1Var: {
           ...prevState.tool1Var,
@@ -233,9 +260,12 @@ const Config: React.FC = () => {
             prevState.tool4sCtrlMovableDressingRollerQtd.value,
         },
       }));
+
       setToolsData(loadedTools);
+      setCncData(loadedCncData);
       setLoaded(true);
     };
+
     fetchData();
   }, []);
 
@@ -252,6 +282,8 @@ const Config: React.FC = () => {
         delRangeEnd: formState.delRangeEnd.value as number,
         pmcAddress: formState.pmcAddress.value as number,
         pmcAddressBit: formState.pmcAddressBit.value as number,
+        notationPattern: formState.notationPattern.value as number,
+        hasBAxis: formState.hasBAxis.value as number,
       },
       tools: {
         tool1Var: formState.tool1Var.value as number,
@@ -383,43 +415,58 @@ const Config: React.FC = () => {
     const newDisplayValues: { [key: string]: string } = {};
     const newColorsState: { [key: string]: string } = {};
 
+    const updateDisplayValues = (prop: any, value: any) => {
+      const setDisplayAndColor = (display: string, color: string) => {
+        newDisplayValues[prop.name] = display;
+        newColorsState[prop.name] = color;
+      };
+
+      if (prop.name === 'notationPattern') {
+        setDisplayAndColor(
+          value === 1 ? 'Junker' : 'Zema',
+          value === 1 ? colors.blue : colors.greyDark,
+        );
+      } else if (prop.name === 'hasBAxis') {
+        setDisplayAndColor(
+          value === 0 ? 'Não' : 'Sim',
+          value === 0 ? colors.greyDark : colors.blue,
+        );
+      } else if (
+        ['tool1Var', 'tool2Var', 'tool3Var', 'tool4Var'].includes(prop.name)
+      ) {
+        if (value !== undefined) {
+          if (value === 1) {
+            setDisplayAndColor('Externo', colors.blue);
+          } else if (value === 2) {
+            setDisplayAndColor('Interno', colors.blue);
+          } else {
+            setDisplayAndColor('Inexistente', colors.greyDark);
+          }
+        } else {
+          setDisplayAndColor('Inexistente', colors.greyDark);
+        }
+      } else if (value) {
+        setDisplayAndColor(`Quantidade: ${value.toString()}`, colors.blue);
+      } else {
+        setDisplayAndColor('Inexistente', colors.greyDark);
+      }
+    };
+
     fieldsToolsProps.forEach((prop) => {
       const toolVarName = prop.name as keyof Tools;
       const toolValue = toolsData[toolVarName];
+      updateDisplayValues(prop, toolValue);
+    });
 
-      if (
-        toolVarName === 'tool1Var' ||
-        toolVarName === 'tool2Var' ||
-        toolVarName === 'tool3Var' ||
-        toolVarName === 'tool4Var'
-      ) {
-        if (toolValue !== undefined) {
-          if (toolValue === 1) {
-            newDisplayValues[prop.name] = 'Externo';
-            newColorsState[prop.name] = colors.blue;
-          } else if (toolValue === 2) {
-            newDisplayValues[prop.name] = 'Interno';
-            newColorsState[prop.name] = colors.blue;
-          } else {
-            newDisplayValues[prop.name] = 'Inexistente';
-            newColorsState[prop.name] = colors.greyDark;
-          }
-        } else {
-          newDisplayValues[prop.name] = 'Inexistente';
-          newColorsState[prop.name] = colors.greyDark;
-        }
-      } else if (toolValue) {
-        newDisplayValues[prop.name] = `Quantidade: ${toolValue.toString()}`;
-        newColorsState[prop.name] = colors.blue;
-      } else {
-        newDisplayValues[prop.name] = 'Inexistente';
-        newColorsState[prop.name] = colors.greyDark;
-      }
+    fieldsCNCProps.forEach((prop) => {
+      const cncVarName = prop.name as keyof StoredCncData;
+      const cncValue = cncData[cncVarName];
+      updateDisplayValues(prop, cncValue);
     });
 
     setDisplayValues(newDisplayValues);
     setColorsState(newColorsState);
-  }, [toolsData]);
+  }, [toolsData, cncData]);
 
   useEffect(() => {
     arrangeToolTypes();
@@ -441,7 +488,7 @@ const Config: React.FC = () => {
 
     return (
       <React.Fragment key={name}>
-        <Label>{label}:</Label>
+        <Label direction="column">{label}:</Label>
         {formState[name].error && <Message>{formState[name].message}</Message>}
         <Field>
           <SInput
@@ -453,7 +500,9 @@ const Config: React.FC = () => {
             disabled={!formState[name].edit}
             error={formState[name].error}
           />
-          {(name === 'tool1Var' ||
+          {(name === 'hasBAxis' ||
+            name === 'notationPattern' ||
+            name === 'tool1Var' ||
             name === 'tool2Var' ||
             name === 'tool3Var' ||
             name === 'tool4Var') && (
@@ -494,6 +543,19 @@ const Config: React.FC = () => {
     });
   };
 
+  const newFile = useCallback(() => {
+    dispatch(
+      replacePart({
+        ...partInitialState,
+      }),
+    );
+    dispatch(
+      editApp({
+        ...appInitialState,
+      }),
+    );
+  }, [dispatch]);
+
   const handleGetTools = async () => {
     const request: GetToolsRequest = {
       network: {
@@ -501,6 +563,8 @@ const Config: React.FC = () => {
         port: formState.port.value as number,
       },
       pCodeAddresses: [
+        formState.notationPattern.value as number,
+        formState.hasBAxis.value as number,
         formState.tool1Var.value as number,
         formState.tool1fixedDiamondQtd.value as number,
         formState.tool1refractableDiamondQtd.value as number,
@@ -535,18 +599,32 @@ const Config: React.FC = () => {
 
       if (res.statusCode === 200) {
         if (res.data) {
-          const newObject: Tools = {} as Tools;
+          const newToolsData: Tools = {} as Tools;
+          const newCncData: StoredCncData = {} as StoredCncData;
+
           res.data.forEach((tool: GetToolsResponseDataItem) => {
             Object.keys(formState).forEach((key) => {
               if (formState[key as keyof FormState].value === tool.code) {
-                newObject[key as keyof Tools] = tool.value;
+                if (
+                  (key === 'notationPattern' || key === 'hasBAxis') &&
+                  key in newCncData
+                ) {
+                  newCncData[key as keyof StoredCncData] = tool.value as
+                    | NotationPattern
+                    | BAxisSpin;
+                } else {
+                  newToolsData[key as keyof Tools] = tool.value;
+                }
               }
             });
           });
 
-          window.electron.store.set('tools', newObject);
-          setToolsData(newObject);
+          window.electron.store.set('tools', newToolsData);
+          window.electron.store.set('cnc', newCncData);
+          setToolsData(newToolsData);
+          setCncData(newCncData);
           arrangeToolTypes();
+          newFile();
         }
       } else setIsModalFeedbackOpen(true);
     } catch (error) {
@@ -565,6 +643,21 @@ const Config: React.FC = () => {
           <SSubTitle>Rede</SSubTitle>
           {fieldsNetworkProps.map((field) => renderField(field))}
         </SContentBlock>
+        {!isGetToolsLoading ? (
+          <SContentBlockBtn>
+            <SButton
+              onClick={() => handleGetTools()}
+              color={colors.white}
+              bgColor={colors.blue}
+            >
+              Buscar dados do CNC
+            </SButton>
+          </SContentBlockBtn>
+        ) : (
+          <SContentBlockSpinner>
+            <Spinner color={colors.blue} />
+          </SContentBlockSpinner>
+        )}
         <SContentBlock>
           <SSubTitle>CNC</SSubTitle>
           {fieldsCNCProps.map((field) => renderField(field))}
@@ -572,17 +665,6 @@ const Config: React.FC = () => {
         <SContentBlock>
           <SSubTitle>Ferramentas</SSubTitle>
           {fieldsToolsProps.map((field) => renderField(field))}
-          {!isGetToolsLoading ? (
-            <SButton
-              onClick={() => handleGetTools()}
-              color={colors.white}
-              bgColor={colors.blue}
-            >
-              Buscar ferramentas
-            </SButton>
-          ) : (
-            <Spinner color={colors.blue} />
-          )}
         </SContentBlock>
       </PageContent>
       <Modal

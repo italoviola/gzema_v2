@@ -12,22 +12,16 @@ import ContourForm from 'components/ContourForm';
 import CodePreview from 'components/CodePreview';
 import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
+import TranslatedToolName from 'components/TranslatedToolName';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
-import {
-  MACHINING_DRESSING,
-  MACHINING_GRINDING,
-  TYPE_EXTERNAL,
-  XZ_REGEX,
-} from 'utils/constants';
+import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
 
 import { ActionParamItem, ActivitiyItem, ContourItem, Part } from 'types/part';
 
 import { StyledIcon } from 'components/SideMenu/styles';
 import { PageContent } from 'styles/Components';
 import { colors } from 'styles/global.styles';
-
-import toolNames from 'mockdata/pt-br/dressingTools.json';
 
 import defineActionParams from './defineActionParams';
 
@@ -62,10 +56,6 @@ import {
   BtnText,
   ScrollBtn,
   RotatedIcon,
-  DressingLabels,
-  DressingItem,
-  DressingLabelsContainer,
-  SLinkAction,
   BackBtn,
   BackBtnContent,
   IconBack,
@@ -502,16 +492,7 @@ const Contour: React.FC = () => {
                   />
                   {formData.dressingTool && (
                     <InfoLabel fontSize="14px" color={colors.blue}>
-                      {(() => {
-                        const toolName = formData.dressingTool.replace(
-                          /\d+$/,
-                          '',
-                        ); // Remove numerical sufix
-                        const translatedToolName =
-                          toolNames[toolName as keyof typeof toolNames];
-                        const toolNumber = formData.dressingTool.match(/\d+$/); // Captura o numerical sufix
-                        return `${translatedToolName} ${toolNumber}`;
-                      })()}
+                      <TranslatedToolName name={formData.dressingTool} />
                     </InfoLabel>
                   )}
                   <CodePreviewBtn>
@@ -533,59 +514,6 @@ const Contour: React.FC = () => {
                   </CodePreviewBtn>
                 </TitleContainer>
               </PageHead>
-              {initialState.machining === MACHINING_DRESSING && (
-                <DressingLabelsContainer>
-                  <DressingLabels>
-                    {(formData.bAxisAngle || formData.bAxisAngle === 0) && (
-                      <DressingItem>
-                        <SLinkAction
-                          onClick={() => setIsModalEditDressingOpen(true)}
-                        >
-                          Ângulo Eixo B:
-                        </SLinkAction>{' '}
-                        {formData.bAxisAngle}
-                      </DressingItem>
-                    )}
-                    {(formData.xSafetyDistance ||
-                      formData.xSafetyDistance === 0) && (
-                      <DressingItem>
-                        <SLinkAction
-                          onClick={() => setIsModalEditDressingOpen(true)}
-                        >
-                          Distância de Segurança X:
-                        </SLinkAction>{' '}
-                        {formData.xSafetyDistance}
-                      </DressingItem>
-                    )}
-                    {(formData.zSafetyDistance ||
-                      formData.zSafetyDistance === 0) && (
-                      <DressingItem>
-                        <SLinkAction
-                          onClick={() => setIsModalEditDressingOpen(true)}
-                        >
-                          Distância de Segurança Z:
-                        </SLinkAction>{' '}
-                        {formData.zSafetyDistance}
-                      </DressingItem>
-                    )}
-                  </DressingLabels>
-                  {(formData.bAxisAngle ||
-                    formData.bAxisAngle === 0 ||
-                    formData.xSafetyDistance ||
-                    formData.xSafetyDistance === 0 ||
-                    formData.zSafetyDistance ||
-                    formData.zSafetyDistance === 0) && (
-                    <DressingItem>
-                      <TitleEditBtn
-                        type="button"
-                        onClick={() => setIsModalEditDressingOpen(true)}
-                      >
-                        <TitleEditIconEdit className="icon-create" />
-                      </TitleEditBtn>
-                    </DressingItem>
-                  )}
-                </DressingLabelsContainer>
-              )}
               <Block>
                 <TableWrapper>
                   <Table className="table table-ordenation">

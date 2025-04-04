@@ -12,6 +12,7 @@ import useFormattedTools from 'hooks/useFormattedTools';
 
 import { saveFile, saveFileAs } from 'utils/saveFile';
 import { loadConfig } from 'utils/loadConfig';
+import { loadCncData } from 'utils/loadCncData';
 import { generateGCodeForPart } from 'integration/mount-gcode';
 
 import { editApp } from 'state/app/appSlice';
@@ -19,7 +20,7 @@ import { editApp } from 'state/app/appSlice';
 import { Part } from 'types/part';
 import { App } from 'types/app';
 import { SaveObject } from 'types/general';
-import { Response, Request, Config } from 'types/api';
+import { Response, Request, Config, StoredCncData } from 'types/api';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -134,10 +135,12 @@ const SideMenu: React.FC = () => {
 
   const sendPrograms = async () => {
     const loadedConfig: Config = await loadConfig();
+    const loadedCncData: StoredCncData = await loadCncData();
     const generatedCodes: string[] = generateGCodeForPart(
       part,
       loadedConfig.cnc.delRangeStart,
       formattedTools,
+      loadedCncData,
     );
     const request: Request = {
       ...loadedConfig,

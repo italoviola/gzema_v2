@@ -2,6 +2,9 @@ export const TYPE_EXTERNAL = 1;
 export const TYPE_INTERNAL = 2;
 export const MACHINING_GRINDING = 1;
 export const MACHINING_DRESSING = 2;
+export const NOTATION_ZEMA = 0;
+export const NOTATION_JUNKER = 1;
+export const B_AXIS_NO_SPIN = 0;
 
 export const isElectron = () => {
   // Renderer process

@@ -1,11 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-import { Part, ContourItem, ActivitiyItem, OperationItem } from 'types/part';
 
-interface EditContourPayload {
-  id: number;
-  changes: Partial<ContourItem>;
-}
+import {
+  Part,
+  ContourItem,
+  ActivitiyItem,
+  OperationItem,
+  GrindingWheels,
+  GrindingWheelsItem,
+} from 'types/part';
 
 const initialActivity: ActivitiyItem = {
   id: 1,
@@ -31,31 +34,24 @@ export const initialState: Part = {
       name: 'Operação',
       contoursIds: [],
       bAxisAngle: 0,
-      xSafetyDistance: 0,
-      zSafetyDistance: 0,
     },
   ],
+  grindingWheels: [],
 };
 
 const partSlice = createSlice({
   name: 'parts',
   initialState,
   reducers: {
+    replacePart: (_, action: PayloadAction<Part>) => {
+      return action.payload;
+    },
     addContour: (
       state,
       action: PayloadAction<
         | Omit<ContourItem, 'id'>
         | (Omit<Partial<Pick<ContourItem, 'activities'>>, 'id'> &
-            Pick<
-              ContourItem,
-              | 'name'
-              | 'machining'
-              | 'type'
-              | 'dressingTool'
-              | 'bAxisAngle'
-              | 'xSafetyDistance'
-              | 'zSafetyDistance'
-            >)
+            Pick<ContourItem, 'name' | 'machining' | 'type' | 'dressingTool'>)
       >,
     ) => {
       const maxId = Math.max(...state.contours.map((contour) => contour.id), 0);
@@ -64,6 +60,36 @@ const partSlice = createSlice({
         id: maxId + 1,
         activities: action.payload.activities ?? [initialActivity],
       });
+    },
+    editContour: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        changes: Partial<ContourItem>;
+      }>,
+    ) => {
+      const { id, changes } = action.payload;
+      const index = state.contours.findIndex((contour) => contour.id === id);
+      if (index !== -1) {
+        state.contours[index] = {
+          ...state.contours[index],
+          ...changes,
+        };
+      }
+    },
+    removeContour: (state, action: PayloadAction<number>) => {
+      const contourIdToRemove = action.payload;
+
+      state.contours = state.contours.filter(
+        (contour) => contour.id !== contourIdToRemove,
+      );
+
+      state.operations = state.operations.map((operation) => ({
+        ...operation,
+        contoursIds: operation.contoursIds.filter(
+          (id) => id !== contourIdToRemove,
+        ),
+      }));
     },
     addOperation: (
       state,
@@ -160,31 +186,57 @@ const partSlice = createSlice({
         operation.contoursIds[index + 1] = temp;
       }
     },
-    replacePart: (_, action: PayloadAction<Part>) => {
-      return action.payload;
+    setGrindingWheelData: (state, action: PayloadAction<GrindingWheels>) => {
+      state.grindingWheels = action.payload;
     },
-    removeContour: (state, action: PayloadAction<number>) => {
-      const contourIdToRemove = action.payload;
-
-      state.contours = state.contours.filter(
-        (contour) => contour.id !== contourIdToRemove,
-      );
-
-      state.operations = state.operations.map((operation) => ({
-        ...operation,
-        contoursIds: operation.contoursIds.filter(
-          (id) => id !== contourIdToRemove,
-        ),
-      }));
-    },
-    editContour: (state, action: PayloadAction<EditContourPayload>) => {
+    editGrindingWheelData: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        changes: Partial<
+          Pick<
+            GrindingWheelsItem,
+            'xSafetyDistance' | 'zSafetyDistance' | 'dressingToolsData'
+          >
+        >;
+      }>,
+    ) => {
       const { id, changes } = action.payload;
-      const index = state.contours.findIndex((contour) => contour.id === id);
+      const index = state.grindingWheels.findIndex((wheel) => wheel.id === id);
       if (index !== -1) {
-        state.contours[index] = {
-          ...state.contours[index],
+        state.grindingWheels[index] = {
+          ...state.grindingWheels[index],
           ...changes,
         };
+      }
+    },
+    editGrindingWheelProperty: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        property: 'xSafetyDistance' | 'zSafetyDistance' | 'bAxisAngle';
+        value: number;
+        dressingToolName?: string;
+      }>,
+    ) => {
+      const { id, property, value, dressingToolName } = action.payload;
+      const grindingWheel = state.grindingWheels.find(
+        (wheel) => wheel.id === id,
+      );
+
+      if (!grindingWheel) {
+        return;
+      }
+
+      if (property === 'xSafetyDistance' || property === 'zSafetyDistance') {
+        grindingWheel[property] = value;
+      } else if (property === 'bAxisAngle' && dressingToolName) {
+        const dressingTool = grindingWheel.dressingToolsData.find(
+          (tool) => tool.name === dressingToolName,
+        );
+        if (dressingTool) {
+          dressingTool.bAxisAngle = value;
+        }
       }
     },
   },
@@ -201,6 +253,9 @@ export const {
   addContourToOperation,
   removeContourFromOperation,
   changeContourPositionAtOperation,
+  setGrindingWheelData,
+  editGrindingWheelData,
+  editGrindingWheelProperty,
 } = partSlice.actions;
 
 export default partSlice.reducer;

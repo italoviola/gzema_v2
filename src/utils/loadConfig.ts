@@ -10,6 +10,8 @@ export const defaultConfig: Config = {
     delRangeEnd: 1030,
     pmcAddress: 2850,
     pmcAddressBit: 0,
+    notationPattern: 50009,
+    hasBAxis: 50010,
   },
   tools: {
     tool1Var: 51000,
@@ -56,6 +58,9 @@ export const loadConfig = async (): Promise<Config> => {
         pmcAddress: savedConfig.cnc?.pmcAddress || defaultConfig.cnc.pmcAddress,
         pmcAddressBit:
           savedConfig.cnc?.pmcAddressBit || defaultConfig.cnc.pmcAddressBit,
+        notationPattern:
+          savedConfig.cnc?.notationPattern || defaultConfig.cnc.notationPattern,
+        hasBAxis: savedConfig.cnc?.hasBAxis || defaultConfig.cnc.hasBAxis,
       },
       tools: {
         tool1Var: savedConfig.tools?.tool1Var || defaultConfig.tools.tool1Var,

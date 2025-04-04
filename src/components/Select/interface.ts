@@ -11,7 +11,7 @@ export interface ToolOptions extends Array<ToolOptionItem> {}
 
 export interface ToolDressingOptionItem {
   name: string;
-  value: number;
+  quantity: number;
   toolId: number;
 }
 

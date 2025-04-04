@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ContourType, Machining, Contours } from 'types/part';
 
 import FormField from 'components/FormField';
+import TranslatedToolName from 'components/TranslatedToolName';
 import { Message } from 'components/FormField/style';
 
 import {
@@ -14,14 +15,9 @@ import {
 import useFormattedTools from 'hooks/useFormattedTools';
 import { addContour, editContour } from 'state/part/partSlice';
 
-import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
+import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
 
-import { HorizontalField } from 'components/OperationForm/style';
-
-import toolNames from 'mockdata/pt-br/dressingTools.json';
-
-import { FieldState } from 'components/FormField/interface';
-import { ToolOptionItem, ToolOptions } from 'components/Select/interface';
+import { ToolOptionItem } from 'components/Select/interface';
 import { addContourPayload, FormProps, IFormData } from './interface';
 
 import {
@@ -50,7 +46,7 @@ const ContourForm: React.FC<FormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
-  const fDressingTools = useFormattedDressingTools();
+  const relatedTools = useRelatedTools();
   const availableTypes = Array.from(
     new Set(formattedTools.map((tool: ToolOptionItem) => tool.type)),
   );
@@ -67,21 +63,6 @@ const ContourForm: React.FC<FormProps> = ({
       formValues = {
         name: { value: contour.name, error: false, message: undefined },
         type: { value: contour.type, error: false, message: undefined },
-        bAxisAngle: {
-          value: contour.bAxisAngle,
-          error: false,
-          message: undefined,
-        },
-        xSafetyDistance: {
-          value: contour.xSafetyDistance,
-          error: false,
-          message: undefined,
-        },
-        zSafetyDistance: {
-          value: contour.zSafetyDistance,
-          error: false,
-          message: undefined,
-        },
         dressingTool: {
           value: contour.dressingTool,
           error: false,
@@ -92,15 +73,6 @@ const ContourForm: React.FC<FormProps> = ({
   }
 
   const [formData, setFormData] = useState(formValues);
-  const [matchedTools, setMatchedTools] = useState<ToolOptions>([]);
-
-  useEffect(() => {
-    setMatchedTools(
-      formattedTools.filter(
-        (tool) => tool.type === Number(formData.type.value),
-      ),
-    );
-  }, [formData.type.value, formattedTools]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -174,9 +146,6 @@ const ContourForm: React.FC<FormProps> = ({
       machining: machining as Machining,
       type: Number(formData.type.value) as ContourType,
       dressingTool: formData.dressingTool?.value as string,
-      bAxisAngle: Number(formData.bAxisAngle?.value) as number,
-      xSafetyDistance: Number(formData.xSafetyDistance?.value) as number,
-      zSafetyDistance: Number(formData.zSafetyDistance?.value) as number,
     };
 
     if (variation === 'add') {
@@ -252,42 +221,6 @@ const ContourForm: React.FC<FormProps> = ({
           </Field>
         </>
       )}
-      {machining === MACHINING_DRESSING && (
-        <>
-          <Field>
-            <FormField
-              name="bAxisAngle"
-              label="Ângulo Eixo B"
-              type="number"
-              placeholder="Valor do ângulo..."
-              fieldState={formData.bAxisAngle as FieldState}
-              handleInputChange={handleChange}
-            />
-          </Field>
-          <HorizontalField>
-            <Field>
-              <FormField
-                name="xSafetyDistance"
-                label="Distância de Segurança X"
-                type="number"
-                placeholder="Valor da distância..."
-                fieldState={formData.xSafetyDistance as FieldState}
-                handleInputChange={handleChange}
-              />
-            </Field>
-            <Field>
-              <FormField
-                name="zSafetyDistance"
-                label="Distância de Segurança Z"
-                type="number"
-                placeholder="Valor da distância..."
-                fieldState={formData.zSafetyDistance as FieldState}
-                handleInputChange={handleChange}
-              />
-            </Field>
-          </HorizontalField>
-        </>
-      )}
       {variation === 'add' &&
         machining === MACHINING_DRESSING &&
         formData.type.value && (
@@ -296,55 +229,42 @@ const ContourForm: React.FC<FormProps> = ({
               <Message>{formData.dressingTool.message}</Message>
             )}
             <TitleLabel>Ferramenta de Dressagem</TitleLabel>
-            <Field>
-              {['tool1', 'tool2', 'tool3', 'tool4'].map((toolPrefix, index) => {
-                const toolsForPrefix = fDressingTools.filter((tool) =>
-                  tool.name.startsWith(toolPrefix),
-                );
-                if (toolsForPrefix.length === 0) return null;
-
-                const matchedToolsForPrefix = toolsForPrefix.filter((tool) =>
-                  matchedTools.some(
-                    (matchedTool) => matchedTool.id === tool.toolId,
-                  ),
-                );
-                if (matchedToolsForPrefix.length === 0) return null;
-
+            {Object.entries(relatedTools).map(
+              ([toolKey, dToolNames], index) => {
+                const toolId = parseInt(toolKey.replace('tool', ''), 10);
+                const toolType = formattedTools.find(
+                  (tool) => tool.id === toolId,
+                )?.type;
+                if (toolType !== Number(formData.type.value)) {
+                  return null;
+                }
                 return (
-                  <div key={toolPrefix}>
+                  <div key={toolKey}>
                     <Field>
                       <Label>Rebolo {index + 1}</Label>
                     </Field>
-                    {matchedToolsForPrefix.map((tool) => {
-                      const noPrefixToolName = tool.name
-                        .replace(/tool[1-4]/, '')
-                        .replace('Qtd', '');
-                      const translatedToolName =
-                        toolNames[noPrefixToolName as keyof typeof toolNames];
-
-                      return (
-                        <Field key={tool.name}>
-                          {[...Array(tool.value)].map((_, i) => (
-                            <RadioButton style={{ fontSize: '16px' }}>
-                              <input
-                                type="radio"
-                                value={`${noPrefixToolName.replace('Qtd', '')}${
-                                  i + 1
-                                }`}
-                                name="dressingTool"
-                                onChange={(e) => handleChange(e)}
-                              />
-                              <span />
-                              {`${translatedToolName} ${i + 1}`}
-                            </RadioButton>
-                          ))}
+                    {(dToolNames as DressingToolsNames[]).map(
+                      (name: DressingToolsNames) => (
+                        <Field key={`${toolKey}-${name}`}>
+                          <RadioButton style={{ fontSize: '16px' }}>
+                            <input
+                              type="radio"
+                              value={name}
+                              name="dressingTool"
+                              onChange={(e) => handleChange(e)}
+                            />
+                            <span />
+                            <TranslatedToolName
+                              name={name as DressingToolsNames}
+                            />
+                          </RadioButton>
                         </Field>
-                      );
-                    })}
+                      ),
+                    )}
                   </div>
                 );
-              })}
-            </Field>
+              },
+            )}
           </>
         )}
       <Button onClick={handleClick}>

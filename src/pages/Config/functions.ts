@@ -39,6 +39,18 @@ export const initialState: FormState = {
     error: false,
     message: undefined,
   },
+  notationPattern: {
+    value: defaultConfig.cnc.notationPattern,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
+  hasBAxis: {
+    value: defaultConfig.cnc.hasBAxis,
+    edit: false,
+    error: false,
+    message: undefined,
+  },
   tool1Var: {
     value: defaultConfig.tools.tool1Var,
     edit: false,
@@ -220,11 +232,23 @@ export const fieldsCNCProps: RenderFieldProps = [
     type: 'number',
     placeholder: '0',
   },
+  {
+    label: 'Padrão de Notação (Zema ou Junker)',
+    name: 'notationPattern',
+    type: 'number',
+    placeholder: '50009',
+  },
+  {
+    label: 'Possui Eixo B',
+    name: 'hasBAxis',
+    type: 'number',
+    placeholder: '50010',
+  },
 ];
 
 export const fieldsToolsProps: RenderFieldProps = [
   {
-    label: 'Variável do Rebolo 1',
+    label: 'Variável Tipo do Rebolo 1',
     name: 'tool1Var',
     type: 'number',
     placeholder: '50010',
@@ -260,7 +284,7 @@ export const fieldsToolsProps: RenderFieldProps = [
     placeholder: '50015',
   },
   {
-    label: 'Variável do Rebolo 2',
+    label: 'Variável Tipo do Rebolo 2',
     name: 'tool2Var',
     type: 'number',
     placeholder: '50020',
@@ -296,7 +320,7 @@ export const fieldsToolsProps: RenderFieldProps = [
     placeholder: '50025',
   },
   {
-    label: 'Variável do Rebolo 3',
+    label: 'Variável Tipo do Rebolo 3',
     name: 'tool3Var',
     type: 'number',
     placeholder: '50030',
@@ -332,7 +356,7 @@ export const fieldsToolsProps: RenderFieldProps = [
     placeholder: '50035',
   },
   {
-    label: 'Variável do Rebolo 4',
+    label: 'Variável Tipo do Rebolo 4',
     name: 'tool4Var',
     type: 'number',
     placeholder: '50040',
