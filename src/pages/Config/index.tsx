@@ -500,18 +500,15 @@ const Config: React.FC = () => {
             disabled={!formState[name].edit}
             error={formState[name].error}
           />
-          {(name === 'hasBAxis' ||
-            name === 'notationPattern' ||
-            name === 'tool1Var' ||
-            name === 'tool2Var' ||
-            name === 'tool3Var' ||
-            name === 'tool4Var') && (
+          {name === 'hasBAxis' ||
+          name === 'notationPattern' ||
+          ['tool1Var', 'tool2Var', 'tool3Var', 'tool4Var'].includes(name) ? (
             <ContentText color={color}>{displayValue}</ContentText>
+          ) : (
+            Object.keys(toolsData).includes(name) && (
+              <ContentText color={color}>{displayValue}</ContentText>
+            )
           )}
-          {Object.keys(toolsData).includes(name) &&
-            !['tool1Var', 'tool2Var', 'tool3Var', 'tool4Var'].includes(
-              name,
-            ) && <ContentText color={color}>{displayValue}</ContentText>}
           <EditButton type="button" onClick={() => toggleEdit(name)}>
             {renderEditIcon(name)}
           </EditButton>
