@@ -8,6 +8,7 @@ import {
   OperationItem,
   GrindingWheels,
   GrindingWheelsItem,
+  GWDressingToolsDataItem,
 } from 'types/part';
 
 const initialActivity: ActivitiyItem = {
@@ -232,7 +233,7 @@ const partSlice = createSlice({
         grindingWheel[property] = value;
       } else if (property === 'bAxisAngle' && dressingToolName) {
         const dressingTool = grindingWheel.dressingToolsData.find(
-          (tool) => tool.name === dressingToolName,
+          (item: GWDressingToolsDataItem) => item.name === dressingToolName,
         );
         if (dressingTool) {
           dressingTool.bAxisAngle = value;

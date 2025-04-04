@@ -233,7 +233,7 @@ const ContourForm: React.FC<FormProps> = ({
               ([toolKey, dToolNames], index) => {
                 const toolId = parseInt(toolKey.replace('tool', ''), 10);
                 const toolType = formattedTools.find(
-                  (tool) => tool.id === toolId,
+                  (tool: ToolOptionItem) => tool.id === toolId,
                 )?.type;
                 if (toolType !== Number(formData.type.value)) {
                   return null;
