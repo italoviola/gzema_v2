@@ -79,6 +79,12 @@ const Header: React.FC = () => {
         navigate('/config');
       },
     },
+    {
+      name: 'Máquina',
+      action: () => {
+        navigate('/machine');
+      },
+    },
   ];
 
   useEffect(() => {

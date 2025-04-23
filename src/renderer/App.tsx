@@ -13,6 +13,7 @@ import ModalCloseApp from 'components/ModalCloseApp';
 import WorkGroup from 'pages/WorkGroup';
 import Contour from 'pages/Contour';
 import OffPage from 'pages/OffPage';
+import Machine from 'pages/Machine';
 
 import './App.css';
 import Config from 'pages/Config';
@@ -75,6 +76,7 @@ const App: React.FC = () => {
             <Route path="/workgroup" element={<WorkGroup />} />
             <Route path="/contour/:id" element={<Contour />} />
             <Route path="/config" element={<Config />} />
+            <Route path="/machine" element={<Machine />} />
           </Routes>
           <ModalCloseApp
             isOpen={isConfirmCloseModalOpen}

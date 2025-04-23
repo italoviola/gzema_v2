@@ -233,13 +233,13 @@ export const fieldsCNCProps: RenderFieldProps = [
     placeholder: '0',
   },
   {
-    label: 'Padrão de Notação (Zema ou Junker)',
+    label: 'Variável Padrão de Notação (Zema ou Junker)',
     name: 'notationPattern',
     type: 'number',
     placeholder: '50009',
   },
   {
-    label: 'Possui Eixo B',
+    label: 'Variável Possui Eixo B',
     name: 'hasBAxis',
     type: 'number',
     placeholder: '50010',

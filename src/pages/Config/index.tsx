@@ -7,6 +7,7 @@ import Spinner from 'components/Spinner';
 import { Label } from 'components/Input/style';
 import Modal from 'components/Modal';
 import Button from 'components/Button';
+import TabMenu from 'components/TabMenu';
 
 import {
   BAxisSpin,
@@ -44,9 +45,8 @@ import {
 } from './functions';
 import {
   Container,
-  SContentBlock,
+  // SContentBlock,
   SInput,
-  SSubTitle,
   Field,
   Message,
   EditButton,
@@ -631,15 +631,29 @@ const Config: React.FC = () => {
     }
   };
 
+  const tabMenuItems = [
+    {
+      label: 'Rede',
+      content: (
+        <div>{fieldsNetworkProps.map((field) => renderField(field))}</div>
+      ),
+    },
+    {
+      label: 'CNC',
+      content: <div>{fieldsCNCProps.map((field) => renderField(field))}</div>,
+    },
+    {
+      label: 'Ferramentas',
+      content: <div>{fieldsToolsProps.map((field) => renderField(field))}</div>,
+    },
+  ];
+
   return (
     <Container className={loaded ? 'loaded' : ''}>
       <Breadcrumbs items={breadcrumbsItems} />
       <PageContent>
         <PageTitle>Configurações</PageTitle>
-        <SContentBlock>
-          <SSubTitle>Rede</SSubTitle>
-          {fieldsNetworkProps.map((field) => renderField(field))}
-        </SContentBlock>
+        <TabMenu items={tabMenuItems} />
         {!isGetToolsLoading ? (
           <SContentBlockBtn>
             <SButton
@@ -655,14 +669,6 @@ const Config: React.FC = () => {
             <Spinner color={colors.blue} />
           </SContentBlockSpinner>
         )}
-        <SContentBlock>
-          <SSubTitle>CNC</SSubTitle>
-          {fieldsCNCProps.map((field) => renderField(field))}
-        </SContentBlock>
-        <SContentBlock>
-          <SSubTitle>Ferramentas</SSubTitle>
-          {fieldsToolsProps.map((field) => renderField(field))}
-        </SContentBlock>
       </PageContent>
       <Modal
         title="Erro ao buscar ferramentas"
