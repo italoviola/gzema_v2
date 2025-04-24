@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
 
-import { SelectOptions } from 'components/Select/interface';
+import { loadCncData } from 'utils/loadCncData';
+import { loadTools } from 'utils/loadTools';
 
+import { SelectOptions } from 'components/Select/interface';
 import { colors } from 'styles/global.styles';
 
-import { fieldsProps, initialState } from './functions';
+import { StoredCncData, Tools } from 'types/api';
 
-import { FormState } from './interface';
+import { fieldsProps, initialState, updateFormState } from './functions';
+import {
+  mapFormStateToStoredCncData,
+  mapFormStateToStoredToolsData,
+} from './mapFunctions';
+import { FormState, FieldState } from './interface';
 
 import {
   Container,
@@ -37,9 +44,55 @@ const EditableForm: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
 
+  const [loadedCncData, setLoadedCncData] = useState<StoredCncData>(
+    {} as StoredCncData,
+  );
+  const [loadedTools, setLoadedTools] = useState({} as Tools);
+
+  useEffect(() => {
+    console.log('Form State:', formState);
+  }, [formState]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const cncData: StoredCncData = await loadCncData();
+      const toolsData: Tools = await loadTools();
+
+      setLoadedCncData(cncData);
+      setLoadedTools(toolsData);
+
+      setFormState((prevState: FormState) =>
+        updateFormState(prevState, cncData, toolsData),
+      );
+
+      console.log('Loaded CNC Data:', cncData);
+    }
+    fetchData();
+  }, []);
+
   const toggleEdit = () => {
     setIsEditing((prevState) => !prevState);
   };
+
+  const saveCncData = (cncData: StoredCncData) => {
+    console.log('Saving CNC data:', cncData);
+    window.electron.store.set('cnc', cncData);
+  };
+
+  const saveToolsData = (toolsData: Tools) => {
+    console.log('Saving tools data:', toolsData);
+    window.electron.store.set('tools', toolsData);
+  };
+
+  useEffect(() => {
+    if (!isEditing) {
+      const cncMappedData = mapFormStateToStoredCncData(formState);
+      const toolsMappedData = mapFormStateToStoredToolsData(formState);
+
+      saveCncData(cncMappedData);
+      saveToolsData(toolsMappedData);
+    }
+  }, [isEditing, formState]);
 
   const renderField = ({
     label,
@@ -52,24 +105,23 @@ const EditableForm: React.FC = () => {
   }) => (
     <Field key={name}>
       <Label>{label}:</Label>
-      {/* <SInput
-        type={type}
-        name={name}
-        value={String(formState[name as keyof FormState])}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        disabled={!isEditing}
-      /> */}
       <SSelect
         name={name}
         options={options}
-        onChange={(selectedOption) =>
-          setFormState((prevState) => ({
+        onChange={(selectedOption) => {
+          const value = Number(selectedOption.target?.value || selectedOption);
+          setFormState((prevState: FormState) => ({
             ...prevState,
-            [name]: selectedOption?.target?.value || '',
-          }))
-        }
-        value={String(formState[name as keyof FormState])}
+            [name]: {
+              ...prevState[name as keyof FormState],
+              value,
+              error: false,
+              message: undefined,
+            } as FieldState,
+          }));
+        }}
+        value={Number(formState[name as keyof FormState].value)}
+        disabled={!isEditing}
       />
     </Field>
   );

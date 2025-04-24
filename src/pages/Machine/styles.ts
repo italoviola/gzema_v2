@@ -34,30 +34,12 @@ export const Field = styled.div`
 `;
 
 export const Label = styled.label`
-  flex-grow: 1;
-  width: 150px;
+  width: 50%;
   font-size: 16px;
   color: ${colors.greyFont};
 `;
 
-// export const SInput = styled(Input)`
-//   flex-grow: 1;
-
-//   & input {
-//     &::placeholder {
-//       color: ${colors.greyDark};
-//       font-style: italic;
-//     }
-//   }
-
-//   &:last-child {
-//     margin-bottom: 0;
-//   }
-// `;
-
-export const SSelect = styled(SelectComponent)`
-  flex-grow: 1;
-`;
+export const SSelect = styled(SelectComponent)``;
 
 export const SButton = styled(Button)`
   width: auto;

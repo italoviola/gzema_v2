@@ -1,7 +1,7 @@
 import { SelectOptions } from 'components/Select/interface';
 import { StoredCncToolsData } from 'types/api';
 
-type FieldState = {
+export type FieldState = {
   value: string | number;
   options: SelectOptions;
   error: boolean;
@@ -12,7 +12,6 @@ export type RenderFieldProps = {
   label: string;
   name: keyof StoredCncToolsData;
   type: string;
-  placeholder: string;
   options: SelectOptions;
 }[];
 

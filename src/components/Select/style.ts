@@ -1,7 +1,9 @@
 import styled from 'styled-components';
 import { colors } from 'styles/global.styles';
 
-export const Container = styled.div``;
+export const Container = styled.div`
+  width: 100%;
+`;
 
 export const Label = styled.label`
   display: block;
@@ -17,4 +19,10 @@ export const SSelect = styled.select`
   padding: 15px;
   width: 100%;
   font-size: 18px;
+
+  &:disabled {
+    background-color: ${colors.greyMedium};
+    border-color: ${colors.greyMedium};
+    cursor: not-allowed;
+  }
 `;

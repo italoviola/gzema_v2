@@ -30,4 +30,5 @@ export interface SelectComponentProps {
   options: ToolOptions | SelectOptions;
   onChange: (value: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string | number;
+  disabled?: boolean;
 }
