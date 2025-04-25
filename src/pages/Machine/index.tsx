@@ -4,6 +4,8 @@ import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
 
+import getToolsHandle from 'api/getTools/handle';
+
 import { loadCncData } from 'utils/loadCncData';
 import { loadTools } from 'utils/loadTools';
 
@@ -44,28 +46,14 @@ const EditableForm: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
 
-  const [loadedCncData, setLoadedCncData] = useState<StoredCncData>(
-    {} as StoredCncData,
-  );
-  const [loadedTools, setLoadedTools] = useState({} as Tools);
-
-  useEffect(() => {
-    console.log('Form State:', formState);
-  }, [formState]);
-
   useEffect(() => {
     async function fetchData() {
       const cncData: StoredCncData = await loadCncData();
       const toolsData: Tools = await loadTools();
 
-      setLoadedCncData(cncData);
-      setLoadedTools(toolsData);
-
       setFormState((prevState: FormState) =>
         updateFormState(prevState, cncData, toolsData),
       );
-
-      console.log('Loaded CNC Data:', cncData);
     }
     fetchData();
   }, []);
@@ -93,6 +81,18 @@ const EditableForm: React.FC = () => {
       saveToolsData(toolsMappedData);
     }
   }, [isEditing, formState]);
+
+  const handleGetData = async () => {
+    const res = await getToolsHandle();
+    if (res.status === 'success') {
+      const { tools, cnc } = res;
+      setFormState((prevState: FormState) =>
+        updateFormState(prevState, cnc, tools),
+      );
+    } else {
+      console.error('Error fetching data:', res);
+    }
+  };
 
   const renderField = ({
     label,
@@ -135,7 +135,7 @@ const EditableForm: React.FC = () => {
           <Button
             onClick={toggleEdit}
             color={colors.blue}
-            bgColor={colors.grey}
+            bgColor={colors.white}
             borderColor={colors.blue}
           >
             <Wrap>
@@ -150,7 +150,7 @@ const EditableForm: React.FC = () => {
           <Button
             onClick={toggleEdit}
             color={colors.blue}
-            bgColor={colors.grey}
+            bgColor={colors.white}
             borderColor={colors.blue}
           >
             <Wrap>
@@ -163,7 +163,7 @@ const EditableForm: React.FC = () => {
             </Wrap>
           </Button>
           <Button
-            onClick={toggleEdit}
+            onClick={() => handleGetData()}
             color={colors.white}
             bgColor={colors.blue}
           >

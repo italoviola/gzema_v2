@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Input from 'components/Input';
 import Button from 'components/Button';
 
-import { colors, shadows } from 'styles/global.styles';
+import { colors, measures, shadows } from 'styles/global.styles';
 
 import { ContentBlock, SubTitle } from 'styles/Components';
 
@@ -13,8 +13,8 @@ export const Container = styled.div`
 `;
 
 export const SContentBlock = styled(ContentBlock)`
-  margin-bottom: 20px;
-  max-height: 100%;
+  height: calc(100vh - ${measures.contentBellowBtnToHeader});
+  overflow: auto;
 `;
 
 export const SContentBlockBtn = styled.div`
