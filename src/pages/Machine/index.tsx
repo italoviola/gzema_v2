@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
+import Spinner from 'components/Spinner';
 
 import getToolsHandle from 'api/getTools/handle';
 
@@ -36,20 +37,25 @@ import {
 
 const breadcrumbsItems = [
   {
-    label: 'Configurações',
-    url: '/config',
+    label: 'Dados de Máquina',
+    url: '/machine',
     isActive: true,
   },
 ];
 
 const EditableForm: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formState, setFormState] = useState<FormState>(initialState);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [shouldSaveData, setShouldSaveData] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData() {
       const cncData: StoredCncData = await loadCncData();
       const toolsData: Tools = await loadTools();
+
+      console.log('CNC Data:', cncData);
+      console.log('Tools Data:', toolsData);
 
       setFormState((prevState: FormState) =>
         updateFormState(prevState, cncData, toolsData),
@@ -57,10 +63,6 @@ const EditableForm: React.FC = () => {
     }
     fetchData();
   }, []);
-
-  const toggleEdit = () => {
-    setIsEditing((prevState) => !prevState);
-  };
 
   const saveCncData = (cncData: StoredCncData) => {
     console.log('Saving CNC data:', cncData);
@@ -72,25 +74,41 @@ const EditableForm: React.FC = () => {
     window.electron.store.set('tools', toolsData);
   };
 
-  useEffect(() => {
-    if (!isEditing) {
-      const cncMappedData = mapFormStateToStoredCncData(formState);
-      const toolsMappedData = mapFormStateToStoredToolsData(formState);
+  const toggleEdit = () => {
+    setIsEditing((prevState) => !prevState);
+  };
 
-      saveCncData(cncMappedData);
-      saveToolsData(toolsMappedData);
+  const saveData = React.useCallback(() => {
+    const cncMappedData = mapFormStateToStoredCncData(formState);
+    const toolsMappedData = mapFormStateToStoredToolsData(formState);
+
+    saveCncData(cncMappedData);
+    saveToolsData(toolsMappedData);
+  }, [formState]);
+
+  useEffect(() => {
+    if (shouldSaveData) {
+      saveData();
+      setShouldSaveData(false);
     }
-  }, [isEditing, formState]);
+  }, [formState, saveData, shouldSaveData]);
 
   const handleGetData = async () => {
-    const res = await getToolsHandle();
-    if (res.status === 'success') {
-      const { tools, cnc } = res;
-      setFormState((prevState: FormState) =>
-        updateFormState(prevState, cnc, tools),
-      );
-    } else {
-      console.error('Error fetching data:', res);
+    setIsLoading(true);
+    let res;
+    try {
+      res = await getToolsHandle();
+    } finally {
+      if (res && res.status === 'success') {
+        const { tools, cnc } = res;
+        setFormState((prevState: FormState) =>
+          updateFormState(prevState, cnc, tools),
+        );
+        setShouldSaveData(true);
+      } else {
+        console.error('Error fetching data:', res);
+      }
+      setIsLoading(false);
     }
   };
 
@@ -133,7 +151,7 @@ const EditableForm: React.FC = () => {
         <Title>Dados de Máquina</Title>
         <ButtonsHeader>
           <Button
-            onClick={toggleEdit}
+            onClick={() => {}}
             color={colors.blue}
             bgColor={colors.white}
             borderColor={colors.blue}
@@ -148,7 +166,7 @@ const EditableForm: React.FC = () => {
             </Wrap>
           </Button>
           <Button
-            onClick={toggleEdit}
+            onClick={() => {}}
             color={colors.blue}
             bgColor={colors.white}
             borderColor={colors.blue}
@@ -163,31 +181,45 @@ const EditableForm: React.FC = () => {
             </Wrap>
           </Button>
           <Button
+            onClick={toggleEdit}
+            color={isEditing ? colors.white : colors.green}
+            bgColor={isEditing ? colors.green : colors.white}
+            borderColor={isEditing ? colors.green : colors.green}
+          >
+            <Wrap>
+              {isEditing ? (
+                <Icon
+                  className="icon-floppy-disk"
+                  color={colors.white}
+                  fontSize="16px"
+                />
+              ) : (
+                <Icon
+                  className="icon-create"
+                  color={colors.green}
+                  fontSize="24px"
+                />
+              )}
+
+              <BtnText>{isEditing ? 'Salvar' : 'Editar'}</BtnText>
+            </Wrap>
+          </Button>
+          <Button
             onClick={() => handleGetData()}
             color={colors.white}
             bgColor={colors.blue}
           >
             <Wrap>
-              <Icon
-                className="icon-panorama_fisheye"
-                color={colors.white}
-                fontSize="24px"
-              />
+              {!isLoading ? (
+                <Icon
+                  className="icon-download3"
+                  color={colors.white}
+                  fontSize="22px"
+                />
+              ) : (
+                <Spinner size="22px" />
+              )}
               <BtnText>Buscar do CNC</BtnText>
-            </Wrap>
-          </Button>
-          <Button
-            onClick={toggleEdit}
-            color={colors.white}
-            bgColor={colors.green}
-          >
-            <Wrap>
-              <Icon
-                className="icon-create"
-                color={colors.white}
-                fontSize="24px"
-              />
-              <BtnText>{isEditing ? 'Salvar' : 'Editar'}</BtnText>
             </Wrap>
           </Button>
         </ButtonsHeader>

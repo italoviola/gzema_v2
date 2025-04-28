@@ -74,6 +74,7 @@ export const Wrap = styled.div`
   flex-flow: row nowrap;
   align-items: center;
   justify-content: center;
+  gap: 5px;
 `;
 
 export const BtnText = styled.p`

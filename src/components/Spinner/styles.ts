@@ -6,14 +6,14 @@ export const Container = styled.div`
   justify-content: center;
 `;
 
-export const Spinner = styled.div<{ color?: string }>`
+export const Spinner = styled.div<{ color?: string; size?: string }>`
   border: 4px solid transparent;
   box-sizing: border-box;
   border-left-color: ${({ color }) => color};
   border-right-color: ${({ color }) => color};
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
+  width: ${({ size }) => size};
+  height: ${({ size }) => size};
   animation: spin 1s linear infinite;
 
   @keyframes spin {

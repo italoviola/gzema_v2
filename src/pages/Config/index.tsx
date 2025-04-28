@@ -1,35 +1,25 @@
-import React, { useEffect, useState, FormEvent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState, FormEvent } from 'react';
+// import { useDispatch } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Icon from 'components/Icon';
-import Spinner from 'components/Spinner';
-import { Label } from 'components/Input/style';
 import Modal from 'components/Modal';
 import Button from 'components/Button';
 import TabMenu from 'components/TabMenu';
 
-import {
-  BAxisSpin,
-  Config as ConfigType,
-  GetToolsRequest,
-  GetToolsResponse,
-  GetToolsResponseDataItem,
-  NotationPattern,
-  StoredCncData,
-  Tools,
-} from 'types/api';
+import { Config as ConfigType, StoredCncData, Tools } from 'types/api';
 
 import { loadConfig } from 'utils/loadConfig';
 import { loadTools } from 'utils/loadTools';
 import { loadCncData } from 'utils/loadCncData';
 
-import {
-  replacePart,
-  initialState as partInitialState,
-} from 'state/part/partSlice';
-import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+// import {
+//   replacePart,
+//   initialState as partInitialState,
+// } from 'state/part/partSlice';
+// import { editApp, initialState as appInitialState } from 'state/app/appSlice';
 
+import { Label } from 'components/Input/style';
 import { ModalContent, ModalText } from 'components/SideMenu/styles';
 import { PageContent, PageTitle } from 'styles/Components';
 import { colors } from 'styles/global.styles';
@@ -45,15 +35,11 @@ import {
 } from './functions';
 import {
   Container,
-  // SContentBlock,
   SInput,
   Field,
   Message,
   EditButton,
   ContentText,
-  SButton,
-  SContentBlockBtn,
-  SContentBlockSpinner,
 } from './styles';
 
 const breadcrumbsItems = [
@@ -65,13 +51,12 @@ const breadcrumbsItems = [
 ];
 
 const Config: React.FC = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const [loaded, setLoaded] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [toolsData, setToolsData] = useState<Tools>({} as Tools);
   const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
-  const [isGetToolsLoading, setIsGetToolsLoading] = useState<boolean>(false);
   const [isModalFeedbackOpen, setIsModalFeedbackOpen] =
     useState<boolean>(false);
 
@@ -517,119 +502,18 @@ const Config: React.FC = () => {
     );
   };
 
-  const getTools = (
-    request: GetToolsRequest,
-    timeout: number,
-  ): Promise<GetToolsResponse> => {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject(new Error('Request timed out'));
-      }, timeout);
-
-      window.electron.ipcRenderer
-        .getTools(request)
-        .then((res: GetToolsResponse) => {
-          clearTimeout(timer);
-          resolve(res);
-          return res;
-        })
-        .catch((error: GetToolsResponse) => {
-          clearTimeout(timer);
-          reject(error);
-        });
-    });
-  };
-
-  const newFile = useCallback(() => {
-    dispatch(
-      replacePart({
-        ...partInitialState,
-      }),
-    );
-    dispatch(
-      editApp({
-        ...appInitialState,
-      }),
-    );
-  }, [dispatch]);
-
-  const handleGetTools = async () => {
-    const request: GetToolsRequest = {
-      network: {
-        ip: formState.ip.value as string,
-        port: formState.port.value as number,
-      },
-      pCodeAddresses: [
-        formState.notationPattern.value as number,
-        formState.hasBAxis.value as number,
-        formState.tool1Var.value as number,
-        formState.tool1fixedDiamondQtd.value as number,
-        formState.tool1refractableDiamondQtd.value as number,
-        formState.tool1dressingDiscQtd.value as number,
-        formState.tool1fixedDressingRollerQtd.value as number,
-        formState.tool1sCtrlMovableDressingRollerQtd.value as number,
-        formState.tool2Var.value as number,
-        formState.tool2fixedDiamondQtd.value as number,
-        formState.tool2refractableDiamondQtd.value as number,
-        formState.tool2dressingDiscQtd.value as number,
-        formState.tool2fixedDressingRollerQtd.value as number,
-        formState.tool2sCtrlMovableDressingRollerQtd.value as number,
-        formState.tool3Var.value as number,
-        formState.tool3fixedDiamondQtd.value as number,
-        formState.tool3refractableDiamondQtd.value as number,
-        formState.tool3dressingDiscQtd.value as number,
-        formState.tool3fixedDressingRollerQtd.value as number,
-        formState.tool3sCtrlMovableDressingRollerQtd.value as number,
-        formState.tool4Var.value as number,
-        formState.tool4fixedDiamondQtd.value as number,
-        formState.tool4refractableDiamondQtd.value as number,
-        formState.tool4dressingDiscQtd.value as number,
-        formState.tool4fixedDressingRollerQtd.value as number,
-        formState.tool4sCtrlMovableDressingRollerQtd.value as number,
-      ],
-    };
-
-    setIsGetToolsLoading(true);
-
-    try {
-      const res: GetToolsResponse = await getTools(request, 100000);
-
-      if (res.statusCode === 200) {
-        if (res.data) {
-          const newToolsData: Tools = {} as Tools;
-          const newCncData: StoredCncData = {} as StoredCncData;
-
-          res.data.forEach((tool: GetToolsResponseDataItem) => {
-            Object.keys(formState).forEach((key) => {
-              if (formState[key as keyof FormState].value === tool.code) {
-                if (
-                  (key === 'notationPattern' || key === 'hasBAxis') &&
-                  key in newCncData
-                ) {
-                  newCncData[key as keyof StoredCncData] = tool.value as
-                    | NotationPattern
-                    | BAxisSpin;
-                } else {
-                  newToolsData[key as keyof Tools] = tool.value;
-                }
-              }
-            });
-          });
-
-          window.electron.store.set('tools', newToolsData);
-          window.electron.store.set('cnc', newCncData);
-          setToolsData(newToolsData);
-          setCncData(newCncData);
-          arrangeToolTypes();
-          newFile();
-        }
-      } else setIsModalFeedbackOpen(true);
-    } catch (error) {
-      setIsModalFeedbackOpen(true);
-    } finally {
-      setIsGetToolsLoading(false);
-    }
-  };
+  // const newFile = useCallback(() => {
+  //   dispatch(
+  //     replacePart({
+  //       ...partInitialState,
+  //     }),
+  //   );
+  //   dispatch(
+  //     editApp({
+  //       ...appInitialState,
+  //     }),
+  //   );
+  // }, [dispatch]);
 
   const tabMenuItems = [
     {
@@ -654,21 +538,6 @@ const Config: React.FC = () => {
       <PageContent>
         <PageTitle>Configurações</PageTitle>
         <TabMenu items={tabMenuItems} />
-        {!isGetToolsLoading ? (
-          <SContentBlockBtn>
-            <SButton
-              onClick={() => handleGetTools()}
-              color={colors.white}
-              bgColor={colors.blue}
-            >
-              Buscar dados do CNC
-            </SButton>
-          </SContentBlockBtn>
-        ) : (
-          <SContentBlockSpinner>
-            <Spinner color={colors.blue} />
-          </SContentBlockSpinner>
-        )}
       </PageContent>
       <Modal
         title="Erro ao buscar ferramentas"
