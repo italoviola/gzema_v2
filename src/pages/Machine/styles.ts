@@ -82,3 +82,19 @@ export const BtnText = styled.p`
   line-height: 27px;
   font-size: 18px;
 `;
+
+export const ModalContent = styled.div`
+  max-height: calc(100vh - ${measures.contentToHeader});
+  overflow-y: auto;
+`;
+
+export const ModalContentMax = styled(ModalContent)`
+  height: calc(100vh - ${measures.contentToHeader});
+  max-height: auto;
+`;
+
+export const ModalText = styled.p`
+  color: ${colors.greyFont};
+  font-size: 16px;
+  margin-bottom: 16px;
+`;

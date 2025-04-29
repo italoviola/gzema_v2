@@ -4,6 +4,7 @@ import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
+import Modal from 'components/Modal';
 
 import getToolsHandle from 'api/getTools/handle';
 
@@ -33,6 +34,8 @@ import {
   BtnText,
   Wrap,
   SSelect,
+  ModalContent,
+  ModalText,
 } from './styles';
 
 const breadcrumbsItems = [
@@ -48,6 +51,8 @@ const EditableForm: React.FC = () => {
   const [formState, setFormState] = useState<FormState>(initialState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shouldSaveData, setShouldSaveData] = useState<boolean>(false);
+  const [isModalFeedbackOpen, setIsModalFeedbackOpen] =
+    useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -76,6 +81,9 @@ const EditableForm: React.FC = () => {
 
   const toggleEdit = () => {
     setIsEditing((prevState) => !prevState);
+    if (isEditing) {
+      setShouldSaveData(true);
+    }
   };
 
   const saveData = React.useCallback(() => {
@@ -106,7 +114,7 @@ const EditableForm: React.FC = () => {
         );
         setShouldSaveData(true);
       } else {
-        console.error('Error fetching data:', res);
+        setIsModalFeedbackOpen(true);
       }
       setIsLoading(false);
     }
@@ -225,6 +233,27 @@ const EditableForm: React.FC = () => {
         </ButtonsHeader>
         <SContentBlock>{fieldsProps.map(renderField)}</SContentBlock>
       </Content>
+      <Modal
+        title="Erro ao buscar dados"
+        variation="danger"
+        isOpen={isModalFeedbackOpen}
+        onClose={() => setIsModalFeedbackOpen(false)}
+      >
+        <ModalContent>
+          <ModalText>
+            Houve um erro ao buscar dados, verifique a conexão com o serviço ou
+            o CNC e tente novamente.
+          </ModalText>
+        </ModalContent>
+        <Button
+          onClick={() => setIsModalFeedbackOpen(false)}
+          color={colors.red}
+          bgColor={colors.white}
+          borderColor={colors.red}
+        >
+          OK
+        </Button>
+      </Modal>
     </Container>
   );
 };
