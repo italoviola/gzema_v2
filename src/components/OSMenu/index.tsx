@@ -11,12 +11,15 @@ import {
   initialState as partInitialState,
 } from 'state/part/partSlice';
 import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+
 import { Part } from 'types/part';
 import { FileObject, SaveObject } from 'types/general';
 import { App } from 'types/app';
+import { GZemaFile } from 'types/fileTypes';
 
 import { isElectron } from 'utils/constants';
 import { saveFile, saveFileAs } from 'utils/saveFile';
+import { loadMachineData } from 'utils/loadMachineData';
 import { appFileExtension } from 'main/appConstants';
 
 import {
@@ -110,7 +113,10 @@ const OSMenu: React.FC = () => {
 
       if (file) {
         // refactor later maybe
-        dispatch(replacePart((file as FileObject).data as unknown as Part));
+        console.log('file', file);
+        dispatch(
+          replacePart((file as FileObject).data as unknown as GZemaFile),
+        );
         dispatch(
           editApp({
             fileName: (file as FileObject).fileName,
@@ -159,7 +165,10 @@ const OSMenu: React.FC = () => {
   const handleSaveFileAs = useCallback(async () => {
     let saveObj: SaveObject | undefined;
     try {
-      saveObj = await saveFileAs(partState);
+      const machineData = await loadMachineData();
+      const data: GZemaFile = { ...partState, machine: machineData };
+      console.log('data', data);
+      saveObj = await saveFileAs(data);
       saveFileChangeAppState(saveObj);
     } catch (error: unknown) {
       alert(error);
@@ -170,7 +179,10 @@ const OSMenu: React.FC = () => {
     if (lastFilePath) {
       let saveObj: SaveObject | undefined;
       try {
-        saveObj = await saveFile(partState, lastFilePath);
+        const machineData = await loadMachineData();
+        const data: GZemaFile = { ...partState, machine: machineData };
+        console.log('data', data);
+        saveObj = await saveFile(data, lastFilePath);
         saveFileChangeAppState(saveObj);
       } catch (error: unknown) {
         alert(error);
