@@ -14,7 +14,7 @@ import { FormState, RenderFieldProps } from './interface';
 
 export const initialState: FormState = {
   notationPattern: {
-    value: defaultData.notationPattern, // mudar
+    value: defaultData.notationPattern,
     options: [
       { label: 'Zema', value: NOTATION_ZEMA },
       { label: 'Junker', value: NOTATION_JUNKER },

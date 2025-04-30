@@ -71,10 +71,7 @@ const getToolsHandle = async (): Promise<
                 if (
                   configSection[key as keyof typeof configSection] === tool.code
                 ) {
-                  if (
-                    (key === 'notationPattern' || key === 'hasBAxis') &&
-                    key in newCncData
-                  ) {
+                  if (key === 'notationPattern' || key === 'hasBAxis') {
                     newCncData[key as keyof StoredCncData] = tool.value as
                       | NotationPattern
                       | BAxisSpin;
@@ -90,7 +87,6 @@ const getToolsHandle = async (): Promise<
         // window.electron.store.set('tools', newToolsData);
         // window.electron.store.set('cnc', newCncData);
         // newFile()
-
         return { status: 'success', tools: newToolsData, cnc: newCncData };
       }
       return { status: 'noData' };

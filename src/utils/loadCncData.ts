@@ -9,6 +9,9 @@ export const defaultData: StoredCncData = {
 export const loadCncData = async () => {
   const savedData: StoredCncData = await window.electron.store.get('cnc');
 
+  console.log('savedData', savedData);
+  console.log('defaultData', defaultData);
+
   if (savedData) return savedData;
   return defaultData;
 };

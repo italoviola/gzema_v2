@@ -59,9 +59,6 @@ const EditableForm: React.FC = () => {
       const cncData: StoredCncData = await loadCncData();
       const toolsData: Tools = await loadTools();
 
-      console.log('CNC Data:', cncData);
-      console.log('Tools Data:', toolsData);
-
       setFormState((prevState: FormState) =>
         updateFormState(prevState, cncData, toolsData),
       );
@@ -135,7 +132,7 @@ const EditableForm: React.FC = () => {
         name={name}
         options={options}
         onChange={(selectedOption) => {
-          const value = Number(selectedOption.target?.value || selectedOption);
+          const value = Number(selectedOption.target.value);
           setFormState((prevState: FormState) => ({
             ...prevState,
             [name]: {
