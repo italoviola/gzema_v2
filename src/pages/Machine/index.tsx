@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import Modal from 'components/Modal';
+
+import { editApp } from 'state/app/appSlice';
 
 import getToolsHandle from 'api/getTools/handle';
 
@@ -14,6 +17,7 @@ import { loadTools } from 'utils/loadTools';
 import { SelectOptions } from 'components/Select/interface';
 import { colors } from 'styles/global.styles';
 
+import { App } from 'types/app';
 import { StoredCncData, Tools } from 'types/api';
 
 import { fieldsProps, initialState, updateFormState } from './functions';
@@ -47,6 +51,11 @@ const breadcrumbsItems = [
 ];
 
 const EditableForm: React.FC = () => {
+  const dispatch = useDispatch();
+  const hasMachineDataChange = useSelector(
+    (state: App) => state.hasMachineDataChange,
+  );
+
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -62,9 +71,17 @@ const EditableForm: React.FC = () => {
       setFormState((prevState: FormState) =>
         updateFormState(prevState, cncData, toolsData),
       );
+      dispatch(
+        editApp({
+          hasMachineDataChange: false,
+        }),
+      );
     }
-    fetchData();
-  }, []);
+
+    if (hasMachineDataChange || hasMachineDataChange === undefined) {
+      fetchData();
+    }
+  }, [dispatch, hasMachineDataChange]);
 
   const saveCncData = (cncData: StoredCncData) => {
     console.log('Saving CNC data:', cncData);

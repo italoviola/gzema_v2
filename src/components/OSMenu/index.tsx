@@ -16,6 +16,7 @@ import { Part } from 'types/part';
 import { FileObject, SaveObject } from 'types/general';
 import { App } from 'types/app';
 import { GZemaFile } from 'types/fileTypes';
+import { StoredCncData } from 'types/api';
 
 import { isElectron } from 'utils/constants';
 import { saveFile, saveFileAs } from 'utils/saveFile';
@@ -123,6 +124,21 @@ const OSMenu: React.FC = () => {
             isSaved: true,
             lastFilePathSaved: (file as FileObject).path,
             lastSavedFileState: JSON.stringify((file as FileObject).data),
+          }),
+        );
+
+        const { machine } = (file as FileObject).data as GZemaFile;
+        const { notationPattern, hasBAxis, ...toolsData } = machine;
+        const cncData: StoredCncData = {
+          notationPattern,
+          hasBAxis,
+        };
+        await window.electron.store.set('cnc', cncData);
+        await window.electron.store.set('tools', toolsData);
+
+        dispatch(
+          editApp({
+            hasMachineDataChange: true,
           }),
         );
       }

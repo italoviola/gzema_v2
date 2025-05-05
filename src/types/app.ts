@@ -4,4 +4,5 @@ export interface App {
   lastSavedFileState?: string;
   lastFilePathSaved?: string;
   lastGeneratedCodes?: string[];
+  hasMachineDataChange?: boolean;
 }
