@@ -15,12 +15,14 @@ import { editApp, initialState as appInitialState } from 'state/app/appSlice';
 import { Part } from 'types/part';
 import { FileObject, SaveObject } from 'types/general';
 import { App } from 'types/app';
-import { GZemaFile } from 'types/fileTypes';
-import { StoredCncData } from 'types/api';
+import { GZemaFile, Machine } from 'types/fileTypes';
 
 import { isElectron } from 'utils/constants';
 import { saveFile, saveFileAs } from 'utils/saveFile';
 import { loadMachineData } from 'utils/loadMachineData';
+import { setMachineData } from 'utils/setMachineData';
+import { extractCncData } from 'utils/extractCncData';
+
 import { appFileExtension } from 'main/appConstants';
 
 import {
@@ -35,16 +37,29 @@ import {
 } from './styles';
 
 const OSMenu: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isModalConfirmNewOpen, setIsModalConfirmNewOpen] = useState(false);
-  const [isModalConfirmOpenOpen, setIsModalConfirmOpenOpen] = useState(false);
-  const menuRef = useRef<HTMLElement | null>(null);
+  const dispatch = useDispatch();
+
   const lastFilePath = useSelector(
     (state: { app: App }) => state.app.lastFilePathSaved,
   );
   const isSaved = useSelector((state: { app: App }) => state.app.isSaved);
   const partState = useSelector((state: { part: Part }) => state.part);
-  const dispatch = useDispatch();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isModalConfirmNewOpen, setIsModalConfirmNewOpen] =
+    useState<boolean>(false);
+  const [isModalConfirmOpenOpen, setIsModalConfirmOpenOpen] =
+    useState<boolean>(false);
+  const [isModalMachineDataChangedOpen, setIsModalMachineDataChangedOpen] =
+    useState<boolean>(false);
+  const [importedMachineState, setImportedMachineData] =
+    useState<Machine | null>(null);
+  const [storedMachineState, setStoredMachineData] = useState<Machine | null>(
+    null,
+  );
+  const [importedFile, setImportedFile] = useState<FileObject | null>(null);
+
+  const menuRef = useRef<HTMLElement | null>(null);
 
   const toggleMenu = useCallback(() => {
     setIsOpen(!isOpen);
@@ -73,12 +88,36 @@ const OSMenu: React.FC = () => {
     toggleMenu();
   }, [isSaved, newFile, toggleMenu]);
 
+  const handleSetMachineData = useCallback(async () => {
+    setMachineData(importedMachineState as Machine);
+    dispatch(
+      editApp({
+        hasMachineDataChange: true,
+      }),
+    );
+  }, [dispatch, importedMachineState]);
+
+  const openedFileStateUpdate = useCallback(() => {
+    dispatch(
+      replacePart((importedFile as FileObject).data as unknown as GZemaFile),
+    );
+    dispatch(
+      editApp({
+        fileName: (importedFile as FileObject).fileName,
+        isSaved: true,
+        lastFilePathSaved: (importedFile as FileObject).path,
+        lastSavedFileState: JSON.stringify((importedFile as FileObject).data),
+      }),
+    );
+  }, [dispatch, importedFile]);
+
   const openFile = useCallback(async () => {
     try {
       let file: FileObject | undefined;
 
       if (isElectron()) {
         file = await window.electron.ipcRenderer.openFile();
+        setImportedFile(file as FileObject);
       } else {
         const fileRead: Promise<FileObject> = new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -110,43 +149,44 @@ const OSMenu: React.FC = () => {
         });
 
         file = await fileRead;
+        setImportedFile(file as FileObject);
       }
 
       if (file) {
         // refactor later maybe
         console.log('file', file);
-        dispatch(
-          replacePart((file as FileObject).data as unknown as GZemaFile),
-        );
-        dispatch(
-          editApp({
-            fileName: (file as FileObject).fileName,
-            isSaved: true,
-            lastFilePathSaved: (file as FileObject).path,
-            lastSavedFileState: JSON.stringify((file as FileObject).data),
-          }),
-        );
 
         const { machine } = (file as FileObject).data as GZemaFile;
-        const { notationPattern, hasBAxis, ...toolsData } = machine;
-        const cncData: StoredCncData = {
-          notationPattern,
-          hasBAxis,
-        };
-        await window.electron.store.set('cnc', cncData);
-        await window.electron.store.set('tools', toolsData);
+        const { cncData, toolsData } = extractCncData(machine);
 
-        dispatch(
-          editApp({
-            hasMachineDataChange: true,
-          }),
-        );
+        const importedData: Machine = { ...cncData, ...toolsData };
+        const storedData: Machine = await loadMachineData();
+        setImportedMachineData(importedData);
+        setStoredMachineData(storedData);
+
+        if (
+          JSON.stringify(importedData) !== JSON.stringify(storedMachineState)
+        ) {
+          setIsModalMachineDataChangedOpen(true);
+          console.log('Machine data has changed:', {
+            imported: importedMachineState,
+            stored: storedMachineState,
+          });
+        } else {
+          // deveria usar tudo num cara só, ao inves de dois, vira machineData e cabo
+          openedFileStateUpdate();
+        }
       }
     } catch (error: unknown) {
       alert(`Error opening file`);
     }
     toggleMenu();
-  }, [dispatch, toggleMenu]);
+  }, [
+    toggleMenu,
+    importedMachineState,
+    storedMachineState,
+    openedFileStateUpdate,
+  ]);
 
   const handleOpenFile = useCallback(() => {
     if (!isSaved) {
@@ -196,6 +236,7 @@ const OSMenu: React.FC = () => {
       let saveObj: SaveObject | undefined;
       try {
         const machineData = await loadMachineData();
+        // adicionar verificação pra avisar se alterou o machine de acordo com o arquivo ou não
         const data: GZemaFile = { ...partState, machine: machineData };
         console.log('data', data);
         saveObj = await saveFile(data, lastFilePath);
@@ -347,6 +388,33 @@ const OSMenu: React.FC = () => {
           }}
           onCancel={() => {
             setIsModalConfirmOpenOpen(false);
+          }}
+        />
+      </Modal>
+      <Modal
+        isOpen={isModalMachineDataChangedOpen}
+        onClose={() => setIsModalMachineDataChangedOpen(false)}
+        title="Alerta: Subtituição de Dados de Máquina"
+        variation="danger"
+      >
+        <ModalText>
+          Os dados de máquina desse arquivo são diferentes dos dados de máquina
+          configurados atualmente. Importar irá mudar os dados de máquina
+          atuais. Deseja continuar?
+        </ModalText>
+        <ConfirmAction
+          onConfirm={() => {
+            handleSetMachineData();
+            setImportedMachineData(null);
+            setStoredMachineData(null);
+            openedFileStateUpdate();
+            setIsModalMachineDataChangedOpen(false);
+          }}
+          onCancel={() => {
+            setImportedMachineData(null);
+            setStoredMachineData(null);
+            setImportedFile(null);
+            setIsModalMachineDataChangedOpen(false);
           }}
         />
       </Modal>

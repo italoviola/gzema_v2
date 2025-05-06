@@ -53,7 +53,7 @@ const breadcrumbsItems = [
 const EditableForm: React.FC = () => {
   const dispatch = useDispatch();
   const hasMachineDataChange = useSelector(
-    (state: App) => state.hasMachineDataChange,
+    (state: { app: App }) => state.app.hasMachineDataChange,
   );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -73,7 +73,7 @@ const EditableForm: React.FC = () => {
       );
       dispatch(
         editApp({
-          hasMachineDataChange: false,
+          hasMachineDataChange: undefined,
         }),
       );
     }
