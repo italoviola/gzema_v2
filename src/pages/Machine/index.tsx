@@ -6,8 +6,11 @@ import Button from 'components/Button';
 import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import Modal from 'components/Modal';
+import ConfirmAction from 'components/ConfirmAction';
 
 import { editApp } from 'state/app/appSlice';
+
+import { useSetNewFile } from 'hooks/useSetNewFile';
 
 import getToolsHandle from 'api/getTools/handle';
 
@@ -52,6 +55,8 @@ const breadcrumbsItems = [
 
 const EditableForm: React.FC = () => {
   const dispatch = useDispatch();
+  const setNewFile = useSetNewFile();
+
   const hasMachineDataChange = useSelector(
     (state: { app: App }) => state.app.hasMachineDataChange,
   );
@@ -61,6 +66,10 @@ const EditableForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shouldSaveData, setShouldSaveData] = useState<boolean>(false);
   const [isModalFeedbackOpen, setIsModalFeedbackOpen] =
+    useState<boolean>(false);
+  const [isModalConfirmSaveOpen, setIsModalConfirmSaveOpen] =
+    useState<boolean>(false);
+  const [isModalConfirmGetCncOpen, setIsModalConfirmGetCncOpen] =
     useState<boolean>(false);
 
   useEffect(() => {
@@ -93,10 +102,42 @@ const EditableForm: React.FC = () => {
     window.electron.store.set('tools', toolsData);
   };
 
-  const toggleEdit = () => {
-    setIsEditing((prevState) => !prevState);
-    if (isEditing) {
-      setShouldSaveData(true);
+  const toggleEdit = async () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    }
+
+    const cncData: StoredCncData = await loadCncData();
+    const toolsData: Tools = await loadTools();
+
+    const cncMappedData = mapFormStateToStoredCncData(formState);
+    const toolsMappedData = mapFormStateToStoredToolsData(formState);
+
+    const isCncDataDifferent =
+      JSON.stringify(cncData) !== JSON.stringify(cncMappedData);
+    const isToolsDataDifferent =
+      JSON.stringify(toolsData) !== JSON.stringify(toolsMappedData);
+
+    if (isCncDataDifferent || isToolsDataDifferent) {
+      setIsModalConfirmSaveOpen(true);
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const discardFormChanges = async () => {
+    try {
+      const cncData: StoredCncData = await loadCncData();
+      const toolsData: Tools = await loadTools();
+
+      setFormState((prevState: FormState) =>
+        updateFormState(prevState, cncData, toolsData),
+      );
+
+      console.log('Alterações descartadas e formulário restaurado.');
+    } catch (error) {
+      console.error('Erro ao descartar alterações:', error);
     }
   };
 
@@ -126,6 +167,7 @@ const EditableForm: React.FC = () => {
         setFormState((prevState: FormState) =>
           updateFormState(prevState, cnc, tools),
         );
+        await setNewFile();
         setShouldSaveData(true);
       } else {
         setIsModalFeedbackOpen(true);
@@ -172,7 +214,7 @@ const EditableForm: React.FC = () => {
       <Content>
         <Title>Dados de Máquina</Title>
         <ButtonsHeader>
-          <Button
+          {/* <Button
             onClick={() => {}}
             color={colors.blue}
             bgColor={colors.white}
@@ -201,7 +243,7 @@ const EditableForm: React.FC = () => {
               />
               <BtnText>Exportar</BtnText>
             </Wrap>
-          </Button>
+          </Button> */}
           <Button
             onClick={toggleEdit}
             color={isEditing ? colors.white : colors.green}
@@ -227,7 +269,7 @@ const EditableForm: React.FC = () => {
             </Wrap>
           </Button>
           <Button
-            onClick={() => handleGetData()}
+            onClick={() => setIsModalConfirmGetCncOpen(true)}
             color={colors.white}
             bgColor={colors.blue}
           >
@@ -267,6 +309,64 @@ const EditableForm: React.FC = () => {
         >
           OK
         </Button>
+      </Modal>
+      <Modal
+        title="Confirmação de Alteração"
+        variation="danger"
+        isOpen={isModalConfirmSaveOpen}
+        onClose={() => {
+          setShouldSaveData(false);
+          setIsModalConfirmSaveOpen(false);
+          discardFormChanges();
+          setIsEditing(false);
+        }}
+      >
+        <ModalContent>
+          <ModalText>
+            Os Dados de Máquina carregados diferem dos Dados de Máquina do
+            arquivo, mudar os dados de máquina irá criar um novo arquivo do
+            zero. Mudanças não salvas serão perdidas. Deseja continuar?
+          </ModalText>
+        </ModalContent>
+        <ConfirmAction
+          onConfirm={() => {
+            setShouldSaveData(true);
+            setIsModalConfirmSaveOpen(false);
+            setNewFile();
+            setIsEditing(false);
+          }}
+          onCancel={() => {
+            setShouldSaveData(false);
+            setIsModalConfirmSaveOpen(false);
+            discardFormChanges();
+            setIsEditing(false);
+          }}
+        />
+      </Modal>
+      <Modal
+        title="Confirmação de Alteração"
+        variation="danger"
+        isOpen={isModalConfirmGetCncOpen}
+        onClose={() => {
+          setIsModalConfirmGetCncOpen(false);
+        }}
+      >
+        <ModalContent>
+          <ModalText>
+            Buscar dados de CNC irá mudar os dados de máquina irá criar um novo
+            arquivo do zero. Mudanças não salvas serão perdidas. Deseja
+            continuar?
+          </ModalText>
+        </ModalContent>
+        <ConfirmAction
+          onConfirm={() => {
+            handleGetData();
+            setIsModalConfirmGetCncOpen(false);
+          }}
+          onCancel={() => {
+            setIsModalConfirmGetCncOpen(false);
+          }}
+        />
       </Modal>
     </Container>
   );

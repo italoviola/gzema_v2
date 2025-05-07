@@ -7,7 +7,7 @@ export const initialState: App = {
   lastSavedFileState: '',
   lastFilePathSaved: '',
   lastGeneratedCodes: [],
-  hasMachineDataChange: false,
+  hasMachineDataChange: undefined,
 };
 
 const appSlice = createSlice({

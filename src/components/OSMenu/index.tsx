@@ -6,11 +6,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 
-import {
-  replacePart,
-  initialState as partInitialState,
-} from 'state/part/partSlice';
-import { editApp, initialState as appInitialState } from 'state/app/appSlice';
+import { replacePart } from 'state/part/partSlice';
+import { editApp } from 'state/app/appSlice';
+
+import { useSetNewFile } from 'hooks/useSetNewFile';
 
 import { Part } from 'types/part';
 import { FileObject, SaveObject } from 'types/general';
@@ -38,6 +37,7 @@ import {
 
 const OSMenu: React.FC = () => {
   const dispatch = useDispatch();
+  const setNewFile = useSetNewFile();
 
   const lastFilePath = useSelector(
     (state: { app: App }) => state.app.lastFilePathSaved,
@@ -66,18 +66,9 @@ const OSMenu: React.FC = () => {
   }, [isOpen]);
 
   const newFile = useCallback(() => {
-    dispatch(
-      replacePart({
-        ...partInitialState,
-      }),
-    );
-    dispatch(
-      editApp({
-        ...appInitialState,
-      }),
-    );
+    setNewFile();
     toggleMenu();
-  }, [dispatch, toggleMenu]);
+  }, [setNewFile, toggleMenu]);
 
   const handleNewFile = useCallback(() => {
     if (!isSaved) {
