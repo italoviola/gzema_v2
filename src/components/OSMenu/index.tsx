@@ -76,15 +76,6 @@ const OSMenu: React.FC = () => {
     toggleMenu();
   }, [isSaved, newFile, toggleMenu]);
 
-  const handleSetMachineData = useCallback(async () => {
-    setMachineData(importedMachineState as Machine);
-    dispatch(
-      editApp({
-        hasMachineDataChange: true,
-      }),
-    );
-  }, [dispatch, importedMachineState]);
-
   const openedFileStateUpdate = useCallback(() => {
     dispatch(
       replacePart((importedFile as FileObject).data as unknown as GZemaFile),
@@ -98,6 +89,22 @@ const OSMenu: React.FC = () => {
       }),
     );
   }, [dispatch, importedFile]);
+
+  const handleSetMachineData = useCallback(async () => {
+    try {
+      setMachineData(importedMachineState as Machine);
+    } catch (error: unknown) {
+      alert(`Error setting machine data: ${(error as Error).message}`);
+    } finally {
+      dispatch(
+        editApp({
+          hasMachineDataChange: true,
+        }),
+      );
+      setImportedMachineData(null);
+      openedFileStateUpdate();
+    }
+  }, [dispatch, importedMachineState, openedFileStateUpdate]);
 
   const openFile = useCallback(async () => {
     try {
@@ -381,8 +388,6 @@ const OSMenu: React.FC = () => {
         <ConfirmAction
           onConfirm={() => {
             handleSetMachineData();
-            setImportedMachineData(null);
-            openedFileStateUpdate();
             setIsModalMachineDataChangedOpen(false);
           }}
           onCancel={() => {

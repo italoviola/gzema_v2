@@ -134,10 +134,8 @@ const EditableForm: React.FC = () => {
       setFormState((prevState: FormState) =>
         updateFormState(prevState, cncData, toolsData),
       );
-
-      console.log('Alterações descartadas e formulário restaurado.');
     } catch (error) {
-      console.error('Erro ao descartar alterações:', error);
+      alert(`Erro ao descartar alterações: ${error}`);
     }
   };
 
