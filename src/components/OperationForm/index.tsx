@@ -161,7 +161,7 @@ const OperationForm: React.FC<FormProps> = ({
           options={formattedTools}
         />
       </Field>
-      {cncData.hasBAxis !== B_AXIS_NO_SPIN ? (
+      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
         <Field>
           <FormField
             name="bAxisAngle"
@@ -172,8 +172,6 @@ const OperationForm: React.FC<FormProps> = ({
             handleInputChange={handleChange}
           />
         </Field>
-      ) : (
-        ''
       )}
       <SButton onClick={handleClick}>
         {variation === 'add' ? 'Adicionar' : 'Editar'}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
@@ -11,6 +11,9 @@ import AddOperationForm from 'components/OperationForm';
 import ConfirmAction from 'components/ConfirmAction';
 import GrindingData from 'components/GrindingData';
 
+import { B_AXIS_NO_SPIN } from 'utils/constants';
+import { loadCncData } from 'utils/loadCncData';
+
 import useFormattedTools from 'hooks/useFormattedTools';
 
 import {
@@ -18,8 +21,11 @@ import {
   deleteOperation,
   editOperation,
 } from 'state/part/partSlice';
+import { editApp } from 'state/app/appSlice';
 
 import { ToolOptionItem } from 'components/Select/interface';
+import { App } from 'types/app';
+import { StoredCncData } from 'types/api';
 import { Contours, Machining, OperationItem, Operations } from 'types/part';
 
 import { PageTitle } from 'styles/Components';
@@ -62,12 +68,18 @@ const breadcrumbsItems = [
 const WorkGroup: React.FC = () => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
+
   const contours = useSelector(
     (state: { part: { contours: Contours } }) => state.part.contours,
   );
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
+  const hasMachineDataChange = useSelector(
+    (state: { app: App }) => state.app.hasMachineDataChange,
+  );
+
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const [isModalContourOpen, setIsModalContourOpen] = useState<boolean>(false);
   const [selectedMachining, setSelectedMachining] = useState<Machining>(1);
   const [isModalOperationOpen, setIsModalOperationOpen] =
@@ -79,6 +91,22 @@ const WorkGroup: React.FC = () => {
   const [isModalGrindingDataOpen, setIsModalGrindingDataOpen] =
     useState<boolean>(false);
   const [opIdAux, setOpIdAux] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const loadedCncData: StoredCncData = await loadCncData();
+      setCncData(loadedCncData);
+      dispatch(
+        editApp({
+          hasMachineDataChange: undefined,
+        }),
+      );
+    };
+
+    if (hasMachineDataChange || hasMachineDataChange === undefined) {
+      fetchData();
+    }
+  }, [dispatch, hasMachineDataChange]);
 
   const removeFromOperation = (operationId: number, contourId: number) => {
     dispatch(
@@ -255,9 +283,11 @@ const WorkGroup: React.FC = () => {
                   <OpItemHeaderContent>
                     <OpItemHeaderSubTitle>
                       <WheelText>{matchedTool && matchedTool.label}</WheelText>
-                      <BAxisAngleText>
-                        Ângulo Eixo B (Retificação): {operation.bAxisAngle}
-                      </BAxisAngleText>
+                      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
+                        <BAxisAngleText>
+                          Ângulo Eixo B (Retificação): {operation.bAxisAngle}
+                        </BAxisAngleText>
+                      )}
                     </OpItemHeaderSubTitle>
                   </OpItemHeaderContent>
                   <OpItemCards>

@@ -54,9 +54,6 @@ const OSMenu: React.FC = () => {
     useState<boolean>(false);
   const [importedMachineState, setImportedMachineData] =
     useState<Machine | null>(null);
-  const [storedMachineState, setStoredMachineData] = useState<Machine | null>(
-    null,
-  );
   const [importedFile, setImportedFile] = useState<FileObject | null>(null);
 
   const menuRef = useRef<HTMLElement | null>(null);
@@ -144,27 +141,20 @@ const OSMenu: React.FC = () => {
       }
 
       if (file) {
-        // refactor later maybe
-        console.log('file', file);
-
         const { machine } = (file as FileObject).data as GZemaFile;
         const { cncData, toolsData } = extractCncData(machine);
 
         const importedData: Machine = { ...cncData, ...toolsData };
         const storedData: Machine = await loadMachineData();
         setImportedMachineData(importedData);
-        setStoredMachineData(storedData);
 
-        if (
-          JSON.stringify(importedData) !== JSON.stringify(storedMachineState)
-        ) {
+        if (JSON.stringify(importedData) !== JSON.stringify(storedData)) {
           setIsModalMachineDataChangedOpen(true);
           console.log('Machine data has changed:', {
-            imported: importedMachineState,
-            stored: storedMachineState,
+            imported: importedData,
+            stored: storedData,
           });
         } else {
-          // deveria usar tudo num cara só, ao inves de dois, vira machineData e cabo
           openedFileStateUpdate();
         }
       }
@@ -172,12 +162,7 @@ const OSMenu: React.FC = () => {
       alert(`Error opening file`);
     }
     toggleMenu();
-  }, [
-    toggleMenu,
-    importedMachineState,
-    storedMachineState,
-    openedFileStateUpdate,
-  ]);
+  }, [toggleMenu, openedFileStateUpdate]);
 
   const handleOpenFile = useCallback(() => {
     if (!isSaved) {
@@ -397,13 +382,11 @@ const OSMenu: React.FC = () => {
           onConfirm={() => {
             handleSetMachineData();
             setImportedMachineData(null);
-            setStoredMachineData(null);
             openedFileStateUpdate();
             setIsModalMachineDataChangedOpen(false);
           }}
           onCancel={() => {
             setImportedMachineData(null);
-            setStoredMachineData(null);
             setImportedFile(null);
             setIsModalMachineDataChangedOpen(false);
           }}
