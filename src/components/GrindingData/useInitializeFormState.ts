@@ -36,7 +36,6 @@ const useInitializeFormState = (
             const dressingToolData = grindingWheel?.dressingToolsData.find(
               (item: GWDressingToolsDataItem) => item.name === name,
             );
-
             acc[`${toolKey}-bAxisAngle-${name}`] = {
               value: dressingToolData?.bAxisAngle || 0,
               edit: false,

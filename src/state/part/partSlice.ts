@@ -237,6 +237,12 @@ const partSlice = createSlice({
         );
         if (dressingTool) {
           dressingTool.bAxisAngle = value;
+        } else {
+          const newDressingTool: GWDressingToolsDataItem = {
+            name: dressingToolName,
+            bAxisAngle: value,
+          };
+          grindingWheel.dressingToolsData.push(newDressingTool);
         }
       }
     },

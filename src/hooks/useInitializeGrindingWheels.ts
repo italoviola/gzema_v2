@@ -1,12 +1,16 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+import { ToolOptionItem } from 'components/Select/interface';
+
 import { setGrindingWheelData } from 'state/part/partSlice';
+
 import {
   GrindingWheels,
   GrindingWheelsItem,
   GWDressingToolsData,
 } from 'types/part';
-import { ToolOptionItem } from 'components/Select/interface';
+
 import useRelatedTools from './useRelatedTools';
 import useFormattedTools from './useFormattedTools';
 

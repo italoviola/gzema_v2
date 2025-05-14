@@ -15,6 +15,8 @@ import { GrindingWheels } from 'types/part';
 
 import { EditButton } from 'pages/Config/styles';
 import { colors } from 'styles/global.styles';
+
+import useInitializeFormState from './useInitializeFormState';
 import { FormState } from './interface';
 import {
   Container,
@@ -29,7 +31,6 @@ import {
   SSubTitle,
   ToolName,
 } from './styles';
-import useInitializeFormState from './useInitializeFormState';
 
 const GrindingData: React.FC = () => {
   const dispatch = useDispatch();
@@ -49,6 +50,7 @@ const GrindingData: React.FC = () => {
     setFormState,
   );
 
+  // Bug aqui
   useInitializeGrindingWheels();
 
   const handleSubmit = (field: string) => {

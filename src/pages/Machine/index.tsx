@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
@@ -139,7 +139,7 @@ const EditableForm: React.FC = () => {
     }
   };
 
-  const saveData = React.useCallback(() => {
+  const saveData = useCallback(() => {
     const cncMappedData = mapFormStateToStoredCncData(formState);
     const toolsMappedData = mapFormStateToStoredToolsData(formState);
 
@@ -153,6 +153,14 @@ const EditableForm: React.FC = () => {
       setShouldSaveData(false);
     }
   }, [formState, saveData, shouldSaveData]);
+
+  const changeAppState = useCallback(() => {
+    dispatch(
+      editApp({
+        isSaved: false,
+      }),
+    );
+  }, [dispatch]);
 
   const handleGetData = async () => {
     setIsLoading(true);
@@ -313,10 +321,7 @@ const EditableForm: React.FC = () => {
         variation="danger"
         isOpen={isModalConfirmSaveOpen}
         onClose={() => {
-          setShouldSaveData(false);
           setIsModalConfirmSaveOpen(false);
-          discardFormChanges();
-          setIsEditing(false);
         }}
       >
         <ModalContent>
@@ -327,12 +332,14 @@ const EditableForm: React.FC = () => {
           </ModalText>
         </ModalContent>
         <ConfirmAction
+          confirmText="Salvar"
           onConfirm={() => {
             setShouldSaveData(true);
             setIsModalConfirmSaveOpen(false);
-            setNewFile();
+            changeAppState();
             setIsEditing(false);
           }}
+          cancelText="Descartar"
           onCancel={() => {
             setShouldSaveData(false);
             setIsModalConfirmSaveOpen(false);
