@@ -7,7 +7,6 @@ import TranslatedToolName from 'components/TranslatedToolName';
 
 import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
-import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
 
 import { editGrindingWheelProperty } from 'state/part/partSlice';
 
@@ -49,9 +48,6 @@ const GrindingData: React.FC = () => {
     formState,
     setFormState,
   );
-
-  // Bug aqui
-  useInitializeGrindingWheels();
 
   const handleSubmit = (field: string) => {
     const [toolKey, property, dressingToolName] = field.split('-');

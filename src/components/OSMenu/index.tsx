@@ -90,6 +90,13 @@ const OSMenu: React.FC = () => {
     );
   }, [dispatch, importedFile]);
 
+  useEffect(() => {
+    // tratar ele vazio erro no else? acho q não, pq ele pode cair no else sem dar erro
+    if (importedFile) {
+      openedFileStateUpdate();
+    }
+  }, [importedFile, openedFileStateUpdate]);
+
   const handleSetMachineData = useCallback(async () => {
     try {
       setMachineData(importedMachineState as Machine);
@@ -112,7 +119,6 @@ const OSMenu: React.FC = () => {
 
       if (isElectron()) {
         file = await window.electron.ipcRenderer.openFile();
-        setImportedFile(file as FileObject);
       } else {
         const fileRead: Promise<FileObject> = new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -144,7 +150,6 @@ const OSMenu: React.FC = () => {
         });
 
         file = await fileRead;
-        setImportedFile(file as FileObject);
       }
 
       if (file) {
@@ -162,14 +167,16 @@ const OSMenu: React.FC = () => {
             stored: storedData,
           });
         } else {
-          openedFileStateUpdate();
+          setImportedFile(file as FileObject);
         }
       }
     } catch (error: unknown) {
+      // talvez tenha que reverter algum state se houver erros
       alert(`Error opening file`);
+      console.error('Error opening file:', error);
     }
     toggleMenu();
-  }, [toggleMenu, openedFileStateUpdate]);
+  }, [toggleMenu]);
 
   const handleOpenFile = useCallback(() => {
     if (!isSaved) {

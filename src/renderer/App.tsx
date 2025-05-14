@@ -2,24 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { Part } from 'types/part';
+import useRelatedTools from 'hooks/useRelatedTools';
+import useFormattedTools from 'hooks/useFormattedTools';
+import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
+
 import { editApp } from 'state/app/appSlice';
 import { initialState } from 'state/part/partSlice';
 
-import BaseLayout from 'layouts/Base';
-import ModalCloseApp from 'components/ModalCloseApp';
+import { Part } from 'types/part';
+
+import { initializeGrindingWheels } from 'utils/initializeGrindingWheels';
 
 // Pages
 import WorkGroup from 'pages/WorkGroup';
 import Contour from 'pages/Contour';
 import OffPage from 'pages/OffPage';
 import Machine from 'pages/Machine';
+import Config from 'pages/Config';
+
+import BaseLayout from 'layouts/Base';
+import ModalCloseApp from 'components/ModalCloseApp';
 
 import './App.css';
-import Config from 'pages/Config';
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
+  const dressingToolNames = useRelatedTools();
+  const formattedTools = useFormattedTools();
+
   const lastSavedFileState = useSelector(
     (state: { app: { lastSavedFileState: string } }) =>
       state.app.lastSavedFileState,
@@ -28,6 +38,8 @@ const App: React.FC = () => {
 
   const [isConfirmCloseModalOpen, setIsConfirmCloseModalOpen] = useState(false);
   const [isAttemptingToClose, setIsAttemptingToClose] = useState(false);
+
+  useInitializeGrindingWheels();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -58,15 +70,25 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (lastSavedFileState && lastSavedFileState !== JSON.stringify(part))
+    const grindingWheelsUpdated = initializeGrindingWheels(
+      formattedTools,
+      dressingToolNames,
+    );
+
+    const initialStateUpdated = {
+      ...initialState,
+      grindingWheels: grindingWheelsUpdated,
+    };
+
+    if (lastSavedFileState && lastSavedFileState !== JSON.stringify(part)) {
       dispatch(editApp({ isSaved: false }));
-    else if (
+    } else if (
       !lastSavedFileState &&
-      JSON.stringify(part) !== JSON.stringify(initialState)
-    )
+      JSON.stringify(part) !== JSON.stringify(initialStateUpdated)
+    ) {
       dispatch(editApp({ isSaved: false }));
-    else dispatch(editApp({ isSaved: true }));
-  }, [dispatch, lastSavedFileState, part]);
+    } else dispatch(editApp({ isSaved: true }));
+  }, [dispatch, dressingToolNames, formattedTools, lastSavedFileState, part]);
   return (
     <Router>
       <BaseLayout>
