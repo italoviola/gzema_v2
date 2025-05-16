@@ -145,7 +145,12 @@ const EditableForm: React.FC = () => {
 
     saveCncData(cncMappedData);
     saveToolsData(toolsMappedData);
-  }, [formState]);
+    dispatch(
+      editApp({
+        hasMachineDataFix: true,
+      }),
+    );
+  }, [dispatch, formState]);
 
   useEffect(() => {
     if (shouldSaveData) {

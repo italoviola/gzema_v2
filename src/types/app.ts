@@ -5,4 +5,5 @@ export interface App {
   lastFilePathSaved?: string;
   lastGeneratedCodes?: string[];
   hasMachineDataChange?: boolean;
+  hasMachineDataFix?: boolean;
 }

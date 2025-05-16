@@ -5,6 +5,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
 import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
+import useHandleMachineDataChange from 'hooks/useHandleMachineDataChange';
 
 import { editApp } from 'state/app/appSlice';
 import { initialState } from 'state/part/partSlice';
@@ -89,6 +90,9 @@ const App: React.FC = () => {
       dispatch(editApp({ isSaved: false }));
     } else dispatch(editApp({ isSaved: true }));
   }, [dispatch, dressingToolNames, formattedTools, lastSavedFileState, part]);
+
+  useHandleMachineDataChange();
+
   return (
     <Router>
       <BaseLayout>
