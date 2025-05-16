@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+
 import useFormattedTools from 'hooks/useFormattedTools';
 import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
-import { ToolDressingOptionItem } from 'components/Select/interface';
+
+import { ToolDressingOptionItem } from 'types/formattedTools';
 
 export type DressingToolsNames =
   | 'fixedDiamond'

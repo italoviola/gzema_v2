@@ -1,4 +1,4 @@
-import { ToolOptionItem } from 'components/Select/interface';
+import { ToolOptionItem } from 'types/formattedTools';
 import {
   GrindingWheels,
   GrindingWheelsItem,

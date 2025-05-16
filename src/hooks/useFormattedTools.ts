@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Tools } from 'types/api';
-import { ToolOptions } from 'components/Select/interface';
+
 import { loadTools } from 'utils/loadTools';
 import { TYPE_EXTERNAL, TYPE_INTERNAL } from 'utils/constants';
+
+import { Tools } from 'types/api';
+import { ToolOptions } from 'types/formattedTools';
 
 export const fetchFormattedTools = async (): Promise<ToolOptions> => {
   const tools: Tools = await loadTools();
@@ -15,13 +17,17 @@ export const fetchFormattedTools = async (): Promise<ToolOptions> => {
     ];
     return toolVars
       .filter((prop) => tools[prop as keyof Tools] !== 0)
-      .map((prop, index) => {
-        const id = index + 1;
+      .map((prop) => {
+        // Extrai o número do nome da propriedade, ex: "tool1Var" -> 1
+        const match = prop.match(/\d+/);
+        const id = match ? Number(match[0]) : 0;
         let label = `Rebolo ${id} (${tools[prop].toString()})`;
         if (tools[prop] === TYPE_EXTERNAL) {
           label = `Rebolo ${id} (Externo)`;
         } else if (tools[prop] === TYPE_INTERNAL) {
           label = `Rebolo ${id} (Interno)`;
+        } else {
+          label = `Rebolo ${id} (Inexistente)`;
         }
         return {
           id,

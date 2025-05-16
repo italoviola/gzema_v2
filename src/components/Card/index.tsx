@@ -18,7 +18,7 @@ import {
 } from 'state/part/partSlice';
 
 import { ContourType, OperationItem, Operations } from 'types/part';
-import { ToolOptionItem } from 'components/Select/interface';
+import { ToolOptionItem } from 'types/formattedTools';
 
 import { MACHINING_GRINDING } from 'utils/constants';
 

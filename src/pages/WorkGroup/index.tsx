@@ -23,7 +23,7 @@ import {
 } from 'state/part/partSlice';
 import { editApp } from 'state/app/appSlice';
 
-import { ToolOptionItem } from 'components/Select/interface';
+import { ToolOptionItem } from 'types/formattedTools';
 import { App } from 'types/app';
 import { StoredCncData } from 'types/api';
 import { Contours, Machining, OperationItem, Operations } from 'types/part';

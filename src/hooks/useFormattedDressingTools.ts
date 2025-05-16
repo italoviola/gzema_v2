@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { DressingToolsQtds } from 'types/api';
-import { ToolDressingOptions } from 'components/Select/interface';
+
 import { loadTools } from 'utils/loadTools';
+
+import { DressingToolsQtds } from 'types/api';
+import { ToolDressingOptions } from 'types/formattedTools';
 
 const useFormattedDressingTools = () => {
   const [formattedDressingTools, setFormattedDressingTools] =
