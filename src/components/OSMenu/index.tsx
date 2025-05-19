@@ -52,9 +52,10 @@ const OSMenu: React.FC = () => {
     useState<boolean>(false);
   const [isModalMachineDataChangedOpen, setIsModalMachineDataChangedOpen] =
     useState<boolean>(false);
-  const [importedMachineState, setImportedMachineData] =
-    useState<Machine | null>(null);
   const [importedFile, setImportedFile] = useState<FileObject | null>(null);
+  const [importedFileAux, setImportedFileAux] = useState<FileObject | null>(
+    null,
+  );
 
   const menuRef = useRef<HTMLElement | null>(null);
 
@@ -88,18 +89,16 @@ const OSMenu: React.FC = () => {
         lastSavedFileState: JSON.stringify((importedFile as FileObject).data),
       }),
     );
+    setImportedFileAux(null);
   }, [dispatch, importedFile]);
 
-  useEffect(() => {
-    // tratar ele vazio erro no else? acho q não, pq ele pode cair no else sem dar erro
-    if (importedFile) {
-      openedFileStateUpdate();
-    }
-  }, [importedFile, openedFileStateUpdate]);
-
   const handleSetMachineData = useCallback(async () => {
+    const { machine } = (importedFile as FileObject).data as GZemaFile;
+    const { cncData, toolsData } = extractCncData(machine);
+    const importedMachineData: Machine = { ...cncData, ...toolsData };
+
     try {
-      setMachineData(importedMachineState as Machine);
+      setMachineData(importedMachineData as Machine);
     } catch (error: unknown) {
       alert(`Error setting machine data: ${(error as Error).message}`);
     } finally {
@@ -108,10 +107,16 @@ const OSMenu: React.FC = () => {
           hasMachineDataChange: true,
         }),
       );
-      setImportedMachineData(null);
+    }
+  }, [dispatch, importedFile]);
+
+  useEffect(() => {
+    if (importedFile) {
+      if (importedFile.data.machine) handleSetMachineData();
+
       openedFileStateUpdate();
     }
-  }, [dispatch, importedMachineState, openedFileStateUpdate]);
+  }, [handleSetMachineData, importedFile, openedFileStateUpdate]);
 
   const openFile = useCallback(async () => {
     try {
@@ -158,9 +163,9 @@ const OSMenu: React.FC = () => {
 
         const importedData: Machine = { ...cncData, ...toolsData };
         const storedData: Machine = await loadMachineData();
-        setImportedMachineData(importedData);
 
         if (JSON.stringify(importedData) !== JSON.stringify(storedData)) {
+          setImportedFileAux(file as FileObject);
           setIsModalMachineDataChangedOpen(true);
           console.log('Machine data has changed:', {
             imported: importedData,
@@ -394,11 +399,10 @@ const OSMenu: React.FC = () => {
         </ModalText>
         <ConfirmAction
           onConfirm={() => {
-            handleSetMachineData();
+            setImportedFile(importedFileAux);
             setIsModalMachineDataChangedOpen(false);
           }}
           onCancel={() => {
-            setImportedMachineData(null);
             setImportedFile(null);
             setIsModalMachineDataChangedOpen(false);
           }}

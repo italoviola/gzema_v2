@@ -5,6 +5,7 @@ import { TYPE_EXTERNAL, TYPE_INTERNAL } from 'utils/constants';
 
 import { Tools } from 'types/api';
 import { ToolOptions } from 'types/formattedTools';
+import { useSelector } from 'react-redux';
 
 export const fetchFormattedTools = async (): Promise<ToolOptions> => {
   const tools: Tools = await loadTools();
@@ -42,6 +43,10 @@ export const fetchFormattedTools = async (): Promise<ToolOptions> => {
 
 const useFormattedTools = () => {
   const [formattedTools, setFormattedTools] = useState<ToolOptions>([]);
+  const hasMachineDataChange = useSelector(
+    (state: { app: { hasMachineDataChange: boolean } }) =>
+      state.app.hasMachineDataChange,
+  );
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -50,7 +55,7 @@ const useFormattedTools = () => {
     };
 
     fetchTools();
-  }, []);
+  }, [hasMachineDataChange]);
 
   return formattedTools;
 };
