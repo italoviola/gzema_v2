@@ -21,14 +21,14 @@ const useHandleMachineDataChange = () => {
   const formattedDressingTools = useFormattedDressingTools();
   const dressingToolsNames = useRelatedTools();
 
-  const hasMachineDataFix = useSelector(
-    (state: { app: { hasMachineDataFix: boolean } }) =>
-      state.app.hasMachineDataFix,
+  const hasFixFromMachineDataChange = useSelector(
+    (state: { app: { hasFixFromMachineDataChange: boolean } }) =>
+      state.app.hasFixFromMachineDataChange,
   );
   const part = useSelector((state: { part: Part }) => state.part);
 
   useEffect(() => {
-    if (!hasMachineDataFix) return;
+    if (!hasFixFromMachineDataChange) return;
 
     part.operations.forEach((operation: OperationItem) => {
       const tool = formattedTools.find(
@@ -76,10 +76,10 @@ const useHandleMachineDataChange = () => {
       });
     });
 
-    // Resetar o estado de hasMachineDataFix após processar as alterações
-    dispatch(editApp({ hasMachineDataFix: undefined }));
+    // Resetar o estado de hasFixFromMachineDataChange após processar as alterações
+    dispatch(editApp({ hasFixFromMachineDataChange: undefined }));
   }, [
-    hasMachineDataFix,
+    hasFixFromMachineDataChange,
     part,
     formattedTools,
     dispatch,

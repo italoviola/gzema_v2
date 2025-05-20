@@ -75,8 +75,8 @@ const WorkGroup: React.FC = () => {
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
-  const hasMachineDataChange = useSelector(
-    (state: { app: App }) => state.app.hasMachineDataChange,
+  const hasImportedMachineDataChange = useSelector(
+    (state: { app: App }) => state.app.hasImportedMachineDataChange,
   );
 
   const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
@@ -98,15 +98,18 @@ const WorkGroup: React.FC = () => {
       setCncData(loadedCncData);
       dispatch(
         editApp({
-          hasMachineDataChange: undefined,
+          hasImportedMachineDataChange: undefined,
         }),
       );
     };
 
-    if (hasMachineDataChange || hasMachineDataChange === undefined) {
+    if (
+      hasImportedMachineDataChange ||
+      hasImportedMachineDataChange === undefined
+    ) {
       fetchData();
     }
-  }, [dispatch, hasMachineDataChange]);
+  }, [dispatch, hasImportedMachineDataChange]);
 
   const removeFromOperation = (operationId: number, contourId: number) => {
     dispatch(

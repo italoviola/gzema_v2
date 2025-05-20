@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { useSetNewFile } from 'hooks/useSetNewFile';
+
 import Breadcrumbs from 'components/Breadcrumbs';
 import Button from 'components/Button';
 import Icon from 'components/Icon';
@@ -9,8 +11,6 @@ import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 
 import { editApp } from 'state/app/appSlice';
-
-import { useSetNewFile } from 'hooks/useSetNewFile';
 
 import getToolsHandle from 'api/getTools/handle';
 
@@ -57,8 +57,8 @@ const EditableForm: React.FC = () => {
   const dispatch = useDispatch();
   const setNewFile = useSetNewFile();
 
-  const hasMachineDataChange = useSelector(
-    (state: { app: App }) => state.app.hasMachineDataChange,
+  const hasImportedMachineDataChange = useSelector(
+    (state: { app: App }) => state.app.hasImportedMachineDataChange,
   );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -82,24 +82,27 @@ const EditableForm: React.FC = () => {
       );
       dispatch(
         editApp({
-          hasMachineDataChange: undefined,
+          hasImportedMachineDataChange: undefined,
         }),
       );
     }
 
-    if (hasMachineDataChange || hasMachineDataChange === undefined) {
+    if (
+      hasImportedMachineDataChange ||
+      hasImportedMachineDataChange === undefined
+    ) {
       fetchData();
     }
-  }, [dispatch, hasMachineDataChange]);
+  }, [dispatch, hasImportedMachineDataChange]);
 
-  const saveCncData = (cncData: StoredCncData) => {
+  const saveCncData = async (cncData: StoredCncData) => {
     console.log('Saving CNC data:', cncData);
-    window.electron.store.set('cnc', cncData);
+    await window.electron.store.set('cnc', cncData);
   };
 
-  const saveToolsData = (toolsData: Tools) => {
+  const saveToolsData = async (toolsData: Tools) => {
     console.log('Saving tools data:', toolsData);
-    window.electron.store.set('tools', toolsData);
+    await window.electron.store.set('tools', toolsData);
   };
 
   const toggleEdit = async () => {
@@ -139,15 +142,16 @@ const EditableForm: React.FC = () => {
     }
   };
 
-  const saveData = useCallback(() => {
+  const saveData = useCallback(async () => {
     const cncMappedData = mapFormStateToStoredCncData(formState);
     const toolsMappedData = mapFormStateToStoredToolsData(formState);
 
-    saveCncData(cncMappedData);
-    saveToolsData(toolsMappedData);
+    await saveCncData(cncMappedData);
+    await saveToolsData(toolsMappedData);
     dispatch(
       editApp({
-        hasMachineDataFix: true,
+        hasFixFromMachineDataChange: true,
+        hasGrindingWheelUpdate: true,
       }),
     );
   }, [dispatch, formState]);

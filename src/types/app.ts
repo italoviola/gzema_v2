@@ -4,6 +4,7 @@ export interface App {
   lastSavedFileState?: string;
   lastFilePathSaved?: string;
   lastGeneratedCodes?: string[];
-  hasMachineDataChange?: boolean;
-  hasMachineDataFix?: boolean;
+  hasImportedMachineDataChange?: true | undefined;
+  hasFixFromMachineDataChange?: true | undefined;
+  hasGrindingWheelUpdate?: true | undefined;
 }

@@ -143,8 +143,12 @@ const GrindingData: React.FC = () => {
     );
   };
 
-  const tabItems = Object.entries(dressingToolNames).map(
-    ([toolKey, toolNames]) => {
+  const tabItems = Object.entries(dressingToolNames)
+    .filter(([toolKey]) => {
+      const tool = formattedTools.find((t) => `tool${t.id}` === toolKey);
+      return tool && tool.type !== 0;
+    })
+    .map(([toolKey, toolNames]) => {
       const tool = formattedTools.find((t) => `tool${t.id}` === toolKey);
       const label = tool ? tool.label : toolKey;
 
@@ -258,8 +262,7 @@ const GrindingData: React.FC = () => {
           </form>
         ),
       };
-    },
-  );
+    });
 
   return (
     <Container>

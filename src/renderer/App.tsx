@@ -93,6 +93,10 @@ const App: React.FC = () => {
 
   useHandleMachineDataChange();
 
+  useEffect(() => {
+    console.log('App part.grindingWheels: ', part.grindingWheels);
+  }, [part.grindingWheels]);
+
   return (
     <Router>
       <BaseLayout>

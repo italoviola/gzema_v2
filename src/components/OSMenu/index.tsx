@@ -19,7 +19,7 @@ import { GZemaFile, Machine } from 'types/fileTypes';
 import { isElectron } from 'utils/constants';
 import { saveFile, saveFileAs } from 'utils/saveFile';
 import { loadMachineData } from 'utils/loadMachineData';
-import { setMachineData } from 'utils/setMachineData';
+import { saveMachineDataAtElectronStore } from 'utils/saveMachineDataAtElectronStore';
 import { extractCncData } from 'utils/extractCncData';
 
 import { appFileExtension } from 'main/appConstants';
@@ -98,13 +98,13 @@ const OSMenu: React.FC = () => {
     const importedMachineData: Machine = { ...cncData, ...toolsData };
 
     try {
-      setMachineData(importedMachineData as Machine);
+      saveMachineDataAtElectronStore(importedMachineData as Machine);
     } catch (error: unknown) {
       alert(`Error setting machine data: ${(error as Error).message}`);
     } finally {
       dispatch(
         editApp({
-          hasMachineDataChange: true,
+          hasImportedMachineDataChange: true,
         }),
       );
     }
@@ -112,6 +112,7 @@ const OSMenu: React.FC = () => {
 
   useEffect(() => {
     if (importedFile) {
+      console.log('importedFile', importedFile);
       if (importedFile.data.machine) handleSetMachineData();
 
       openedFileStateUpdate();
