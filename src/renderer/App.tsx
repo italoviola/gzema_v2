@@ -25,6 +25,7 @@ import BaseLayout from 'layouts/Base';
 import ModalCloseApp from 'components/ModalCloseApp';
 
 import './App.css';
+import useInitializeOperationToolId from 'hooks/useInitializeOperationToolId';
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
@@ -40,6 +41,7 @@ const App: React.FC = () => {
   const [isConfirmCloseModalOpen, setIsConfirmCloseModalOpen] = useState(false);
   const [isAttemptingToClose, setIsAttemptingToClose] = useState(false);
 
+  useInitializeOperationToolId();
   useInitializeGrindingWheels();
 
   useEffect(() => {
@@ -71,6 +73,7 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // Ensure that the grinding wheels are updated
     const grindingWheelsUpdated = initializeGrindingWheels(
       formattedTools,
       dressingToolNames,
@@ -92,10 +95,6 @@ const App: React.FC = () => {
   }, [dispatch, dressingToolNames, formattedTools, lastSavedFileState, part]);
 
   useHandleMachineDataChange();
-
-  useEffect(() => {
-    console.log('App part.grindingWheels: ', part.grindingWheels);
-  }, [part.grindingWheels]);
 
   return (
     <Router>

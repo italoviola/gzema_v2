@@ -158,7 +158,7 @@ const OperationForm: React.FC<FormProps> = ({
           name="toolId"
           onChange={handleChange}
           value={formData.toolId.value}
-          options={formattedTools}
+          options={formattedTools.filter((tool) => tool.type !== 0)}
         />
       </Field>
       {cncData.hasBAxis !== B_AXIS_NO_SPIN && (

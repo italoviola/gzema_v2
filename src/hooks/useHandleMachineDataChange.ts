@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { editApp } from 'state/app/appSlice';
 import {
   removeContourFromOperation,
   deleteOperation,
@@ -34,7 +33,6 @@ const useHandleMachineDataChange = () => {
       const tool = formattedTools.find(
         (t: ToolOptionItem) => t.id === operation.toolId,
       );
-
       if (!tool || tool.type === 0) {
         dispatch(deleteOperation(operation.id));
         return;
@@ -57,12 +55,10 @@ const useHandleMachineDataChange = () => {
     });
 
     formattedDressingTools.forEach((dressingTool: ToolDressingOptionItem) => {
-      // Filtra apenas os nomes do tipo correspondente (ex: fixedDiamond)
       const typeName = dressingTool.name
         .replace(/^tool\d/, '')
         .replace('Qtd', '');
 
-      // Para cada contorno, verifica se o sufixo é maior que a quantidade
       part.contours.forEach((contour) => {
         if (contour.dressingTool && contour.dressingTool.startsWith(typeName)) {
           // Extrai o sufixo numérico do nome da ferramenta de dressagem
@@ -75,9 +71,6 @@ const useHandleMachineDataChange = () => {
         }
       });
     });
-
-    // Resetar o estado de hasFixFromMachineDataChange após processar as alterações
-    dispatch(editApp({ hasFixFromMachineDataChange: undefined }));
   }, [
     hasFixFromMachineDataChange,
     part,

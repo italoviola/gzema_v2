@@ -13,8 +13,8 @@ import useFormattedTools from './useFormattedTools';
 const useInitializeGrindingWheels = () => {
   const dispatch = useDispatch();
 
-  const dressingToolNames = useRelatedTools();
   const formattedTools = useFormattedTools();
+  const dressingToolNames = useRelatedTools();
 
   const selectorGrindingWheels = useSelector(
     (state: { part: { grindingWheels: GrindingWheels } }) =>

@@ -22,7 +22,6 @@ export const fetchFormattedTools = async (): Promise<ToolOptions> => {
       toolVars
         // .filter((prop) => tools[prop as keyof Tools] !== 0)
         .map((prop) => {
-          // Extrai o número do nome da propriedade, ex: "tool1Var" -> 1
           const match = prop.match(/\d+/);
           const id = match ? Number(match[0]) : 0;
           let label = `Rebolo ${id} (${tools[prop].toString()})`;
@@ -66,7 +65,11 @@ const useFormattedTools = () => {
     fetchTools();
 
     if (hasGrindingWheelUpdate) {
-      dispatch(editApp({ hasGrindingWheelUpdate: undefined }));
+      dispatch(
+        editApp({
+          hasGrindingWheelUpdate: undefined,
+        }),
+      );
     }
   }, [hasMachineDataChange, hasGrindingWheelUpdate, dispatch]);
 
