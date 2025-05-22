@@ -28,15 +28,7 @@ export const initialState: Part = {
       activities: [initialActivity],
     },
   ],
-  operations: [
-    {
-      id: 0,
-      toolId: 1,
-      name: 'Operação',
-      contoursIds: [],
-      bAxisAngle: 0,
-    },
-  ],
+  operations: [],
   grindingWheels: [],
 };
 

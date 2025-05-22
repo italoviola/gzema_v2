@@ -11,6 +11,7 @@ import { editApp } from 'state/app/appSlice';
 import { initialState } from 'state/part/partSlice';
 
 import { Part } from 'types/part';
+// import { App as AppType } from 'types/app';
 
 import { initializeGrindingWheels } from 'utils/initializeGrindingWheels';
 
@@ -25,7 +26,7 @@ import BaseLayout from 'layouts/Base';
 import ModalCloseApp from 'components/ModalCloseApp';
 
 import './App.css';
-import useInitializeOperationToolId from 'hooks/useInitializeOperationToolId';
+// import useInitializeOperationToolId from 'hooks/useInitializeOperationToolId';
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
@@ -37,11 +38,12 @@ const App: React.FC = () => {
       state.app.lastSavedFileState,
   );
   const part = useSelector((state: { part: Part }) => state.part);
+  // const app = useSelector((state: { app: AppType }) => state.app);
 
   const [isConfirmCloseModalOpen, setIsConfirmCloseModalOpen] = useState(false);
   const [isAttemptingToClose, setIsAttemptingToClose] = useState(false);
 
-  useInitializeOperationToolId();
+  // useInitializeOperationToolId();
   useInitializeGrindingWheels();
 
   useEffect(() => {

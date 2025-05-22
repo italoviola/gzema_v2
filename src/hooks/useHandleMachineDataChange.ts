@@ -6,9 +6,11 @@ import {
   deleteOperation,
   removeContour,
 } from 'state/part/partSlice';
+import { editApp } from 'state/app/appSlice';
 
 import { ToolDressingOptionItem, ToolOptionItem } from 'types/formattedTools';
 import { Part, ContourItem, OperationItem } from 'types/part';
+import { App } from 'types/app';
 
 import useFormattedTools from './useFormattedTools';
 import useFormattedDressingTools from './useFormattedDressingTools';
@@ -20,14 +22,15 @@ const useHandleMachineDataChange = () => {
   const formattedDressingTools = useFormattedDressingTools();
   const dressingToolsNames = useRelatedTools();
 
-  const hasFixFromMachineDataChange = useSelector(
-    (state: { app: { hasFixFromMachineDataChange: boolean } }) =>
-      state.app.hasFixFromMachineDataChange,
-  );
+  const appState = useSelector((state: { app: App }) => state.app);
   const part = useSelector((state: { part: Part }) => state.part);
 
   useEffect(() => {
-    if (!hasFixFromMachineDataChange) return;
+    if (
+      !appState.hasFixFromMachineDataChange &&
+      appState.hasGrindingWheelUpdate
+    )
+      return;
 
     part.operations.forEach((operation: OperationItem) => {
       const tool = formattedTools.find(
@@ -71,13 +74,16 @@ const useHandleMachineDataChange = () => {
         }
       });
     });
+
+    dispatch(editApp({ hasFixFromMachineDataChange: undefined }));
   }, [
-    hasFixFromMachineDataChange,
+    appState.hasFixFromMachineDataChange,
     part,
     formattedTools,
     dispatch,
     formattedDressingTools,
     dressingToolsNames,
+    appState.hasGrindingWheelUpdate,
   ]);
 };
 
