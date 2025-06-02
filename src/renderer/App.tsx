@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
-import useRelatedTools from 'hooks/useRelatedTools';
-import useFormattedTools from 'hooks/useFormattedTools';
 import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
 import useHandleMachineDataChange from 'hooks/useHandleMachineDataChange';
-
-import { editApp } from 'state/app/appSlice';
-import { initialState } from 'state/part/partSlice';
-
-import { Part } from 'types/part';
-// import { App as AppType } from 'types/app';
-
-import { initializeGrindingWheels } from 'utils/initializeGrindingWheels';
+import useAppSaveStatus from 'hooks/useAppSaveStatus';
 
 // Pages
 import WorkGroup from 'pages/WorkGroup';
@@ -26,25 +16,14 @@ import BaseLayout from 'layouts/Base';
 import ModalCloseApp from 'components/ModalCloseApp';
 
 import './App.css';
-// import useInitializeOperationToolId from 'hooks/useInitializeOperationToolId';
 
 const App: React.FC = () => {
-  const dispatch = useDispatch();
-  const dressingToolNames = useRelatedTools();
-  const formattedTools = useFormattedTools();
-
-  const lastSavedFileState = useSelector(
-    (state: { app: { lastSavedFileState: string } }) =>
-      state.app.lastSavedFileState,
-  );
-  const part = useSelector((state: { part: Part }) => state.part);
-  // const app = useSelector((state: { app: AppType }) => state.app);
-
   const [isConfirmCloseModalOpen, setIsConfirmCloseModalOpen] = useState(false);
   const [isAttemptingToClose, setIsAttemptingToClose] = useState(false);
 
-  // useInitializeOperationToolId();
   useInitializeGrindingWheels();
+  useAppSaveStatus();
+  useHandleMachineDataChange();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -73,30 +52,6 @@ const App: React.FC = () => {
     setIsAttemptingToClose(true);
     setIsConfirmCloseModalOpen(false);
   };
-
-  useEffect(() => {
-    // Ensure that the grinding wheels are updated
-    const grindingWheelsUpdated = initializeGrindingWheels(
-      formattedTools,
-      dressingToolNames,
-    );
-
-    const initialStateUpdated = {
-      ...initialState,
-      grindingWheels: grindingWheelsUpdated,
-    };
-
-    if (lastSavedFileState && lastSavedFileState !== JSON.stringify(part)) {
-      dispatch(editApp({ isSaved: false }));
-    } else if (
-      !lastSavedFileState &&
-      JSON.stringify(part) !== JSON.stringify(initialStateUpdated)
-    ) {
-      dispatch(editApp({ isSaved: false }));
-    } else dispatch(editApp({ isSaved: true }));
-  }, [dispatch, dressingToolNames, formattedTools, lastSavedFileState, part]);
-
-  useHandleMachineDataChange();
 
   return (
     <Router>

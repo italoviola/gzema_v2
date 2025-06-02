@@ -87,6 +87,7 @@ const OSMenu: React.FC = () => {
         isSaved: true,
         lastFilePathSaved: (importedFile as FileObject).path,
         lastSavedFileState: JSON.stringify((importedFile as FileObject).data),
+        hasSaveStatusUpdate: undefined,
       }),
     );
     setImportedFileAux(null);

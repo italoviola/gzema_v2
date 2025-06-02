@@ -7,4 +7,5 @@ export interface App {
   hasImportedMachineDataChange?: true | undefined;
   hasFixFromMachineDataChange?: true | undefined;
   hasGrindingWheelUpdate?: true | undefined;
+  hasSaveStatusUpdate?: true | undefined;
 }

@@ -152,6 +152,7 @@ const EditableForm: React.FC = () => {
       editApp({
         hasFixFromMachineDataChange: true,
         hasGrindingWheelUpdate: true,
+        hasSaveStatusUpdate: true,
       }),
     );
   }, [dispatch, formState]);
@@ -162,14 +163,6 @@ const EditableForm: React.FC = () => {
       setShouldSaveData(false);
     }
   }, [formState, saveData, shouldSaveData]);
-
-  const changeAppState = useCallback(() => {
-    dispatch(
-      editApp({
-        isSaved: false,
-      }),
-    );
-  }, [dispatch]);
 
   const handleGetData = async () => {
     setIsLoading(true);
@@ -229,36 +222,6 @@ const EditableForm: React.FC = () => {
       <Content>
         <Title>Dados de Máquina</Title>
         <ButtonsHeader>
-          {/* <Button
-            onClick={() => {}}
-            color={colors.blue}
-            bgColor={colors.white}
-            borderColor={colors.blue}
-          >
-            <Wrap>
-              <Icon
-                className="icon-file_download"
-                color={colors.blue}
-                fontSize="24px"
-              />
-              <BtnText>Importar</BtnText>
-            </Wrap>
-          </Button>
-          <Button
-            onClick={() => {}}
-            color={colors.blue}
-            bgColor={colors.white}
-            borderColor={colors.blue}
-          >
-            <Wrap>
-              <Icon
-                className="icon-file_upload"
-                color={colors.blue}
-                fontSize="24px"
-              />
-              <BtnText>Exportar</BtnText>
-            </Wrap>
-          </Button> */}
           <Button
             onClick={toggleEdit}
             color={isEditing ? colors.white : colors.green}
@@ -345,7 +308,6 @@ const EditableForm: React.FC = () => {
           onConfirm={() => {
             setShouldSaveData(true);
             setIsModalConfirmSaveOpen(false);
-            changeAppState();
             setIsEditing(false);
           }}
           cancelText="Descartar"

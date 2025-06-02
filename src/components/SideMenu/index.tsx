@@ -72,7 +72,7 @@ const SideMenu: React.FC = () => {
 
       if (saveObj && saveObj.success) {
         if (saveObj.saveType === 'saveFile')
-          dispatch(editApp({ isSaved: true }));
+          dispatch(editApp({ isSaved: true, hasSaveStatusUpdate: undefined }));
         else if (saveObj.filePath)
           dispatch(
             editApp({
@@ -82,6 +82,7 @@ const SideMenu: React.FC = () => {
               isSaved: true,
               lastFilePathSaved: saveObj.filePath,
               lastSavedFileState: JSON.stringify(part),
+              hasSaveStatusUpdate: undefined,
             }),
           );
       }
