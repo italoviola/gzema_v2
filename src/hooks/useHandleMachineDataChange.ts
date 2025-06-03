@@ -5,6 +5,7 @@ import {
   removeContourFromOperation,
   deleteOperation,
   removeContour,
+  editGrindingWheelProperty,
 } from 'state/part/partSlice';
 import { editApp } from 'state/app/appSlice';
 
@@ -40,6 +41,7 @@ const useHandleMachineDataChange = () => {
         return;
       }
 
+      // Remove contours that do not match the operation tool type
       const operationToolType = tool.type;
       operation.contoursIds.forEach((contourId: number) => {
         const contour = part.contours.find(
@@ -54,6 +56,7 @@ const useHandleMachineDataChange = () => {
           );
         }
 
+        // Check if the contour's dressing tool is valid
         if (contour && contour.dressingTool) {
           const match = contour.dressingTool.match(/^([a-zA-Z]+)(\d+)$/);
           const baseName = match ? match[1] : '';
@@ -78,6 +81,7 @@ const useHandleMachineDataChange = () => {
       });
     });
 
+    // Check contours for dressing tools
     formattedDressingTools.forEach((dressingTool: ToolDressingOptionItem) => {
       const typeName = dressingTool.name
         .replace(/^tool\d/, '')
@@ -85,13 +89,37 @@ const useHandleMachineDataChange = () => {
 
       part.contours.forEach((contour) => {
         if (contour.dressingTool && contour.dressingTool.startsWith(typeName)) {
-          // Extrai o sufixo numérico do nome da ferramenta de dressagem
           const match = contour.dressingTool.match(/\d+$/);
           const suffix = match ? parseInt(match[0], 10) : 0;
 
           if (suffix > dressingTool.quantity) {
             dispatch(removeContour(contour.id));
           }
+        }
+      });
+    });
+
+    // Check grinding wheels for dressing tools
+    part.grindingWheels.forEach((grindingWheel) => {
+      grindingWheel.dressingToolsData.forEach((dressingToolData) => {
+        const match = dressingToolData.name.match(/^([a-zA-Z]+)(\d+)$/);
+        const baseName = match ? match[1] : '';
+        const usedQuantity = match ? parseInt(match[2], 10) : 0;
+
+        const dressingToolItem = formattedDressingTools.find((dt) => {
+          const dtBaseName = dt.name.replace(/^tool\d/, '').replace('Qtd', '');
+          return dtBaseName === baseName;
+        });
+
+        if (!dressingToolItem || usedQuantity > dressingToolItem.quantity) {
+          dispatch(
+            editGrindingWheelProperty({
+              id: grindingWheel.id,
+              property: 'bAxisAngle',
+              value: 0,
+              dressingToolName: dressingToolData.name,
+            }),
+          );
         }
       });
     });

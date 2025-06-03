@@ -167,6 +167,9 @@ table {
 .icon-download3:before {
   content: '\e9c7';
 }
+.icon-checkmark:before {
+  content: '\ea10';
+}
 .icon-loop2:before {
   content: '\ea2e';
 }
@@ -190,12 +193,6 @@ table {
 }
 .icon-box:before {
   content: '\e909';
-}
-.icon-notification:before {
-  content: '\e916';
-}
-.icon-make-group:before {
-  content: '\e90f';
 }
 .icon-x:before {
   content: '\e900';

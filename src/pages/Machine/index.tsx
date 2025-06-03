@@ -231,9 +231,9 @@ const EditableForm: React.FC = () => {
             <Wrap>
               {isEditing ? (
                 <Icon
-                  className="icon-floppy-disk"
+                  className="icon-checkmark"
                   color={colors.white}
-                  fontSize="16px"
+                  fontSize="20px"
                 />
               ) : (
                 <Icon
@@ -243,7 +243,7 @@ const EditableForm: React.FC = () => {
                 />
               )}
 
-              <BtnText>{isEditing ? 'Salvar' : 'Editar'}</BtnText>
+              <BtnText>{isEditing ? 'Concluir' : 'Editar'}</BtnText>
             </Wrap>
           </Button>
           <Button
