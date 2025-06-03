@@ -14,21 +14,20 @@ import { App } from 'types/app';
 
 import useFormattedTools from './useFormattedTools';
 import useFormattedDressingTools from './useFormattedDressingTools';
-import useRelatedTools from './useRelatedTools';
 
 const useHandleMachineDataChange = () => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
   const formattedDressingTools = useFormattedDressingTools();
-  const dressingToolsNames = useRelatedTools();
 
   const appState = useSelector((state: { app: App }) => state.app);
   const part = useSelector((state: { part: Part }) => state.part);
 
   useEffect(() => {
+    // Cannot execute useEffect if formattedTools or formattedDressingTools are not ready
     if (
       !appState.hasFixFromMachineDataChange &&
-      appState.hasGrindingWheelUpdate
+      (appState.hasFormattedToolsUpdate || appState.hasGrindingWheelUpdate)
     )
       return;
 
@@ -54,6 +53,28 @@ const useHandleMachineDataChange = () => {
             }),
           );
         }
+
+        if (contour && contour.dressingTool) {
+          const match = contour.dressingTool.match(/^([a-zA-Z]+)(\d+)$/);
+          const baseName = match ? match[1] : '';
+          const usedQuantity = match ? parseInt(match[2], 10) : 0;
+
+          const dressingToolItem = formattedDressingTools.find((dt) => {
+            const dtBaseName = dt.name
+              .replace(/^tool\d/, '')
+              .replace('Qtd', '');
+            return dtBaseName === baseName;
+          });
+
+          if (!dressingToolItem || usedQuantity > dressingToolItem.quantity) {
+            dispatch(
+              removeContourFromOperation({
+                operationId: operation.id,
+                contourId: contour.id,
+              }),
+            );
+          }
+        }
       });
     });
 
@@ -78,12 +99,12 @@ const useHandleMachineDataChange = () => {
     dispatch(editApp({ hasFixFromMachineDataChange: undefined }));
   }, [
     appState.hasFixFromMachineDataChange,
-    part,
-    formattedTools,
-    dispatch,
-    formattedDressingTools,
-    dressingToolsNames,
     appState.hasGrindingWheelUpdate,
+    appState.hasFormattedToolsUpdate,
+    formattedTools,
+    formattedDressingTools,
+    part,
+    dispatch,
   ]);
 };
 

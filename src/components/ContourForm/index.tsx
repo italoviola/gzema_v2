@@ -10,11 +10,12 @@ import {
   TYPE_EXTERNAL,
   TYPE_INTERNAL,
 } from 'utils/constants';
+import { DressingToolsNames } from 'utils/getDressingToolNames';
 
 import useFormattedTools from 'hooks/useFormattedTools';
 import { addContour, editContour } from 'state/part/partSlice';
 
-import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
+import useRelatedTools from 'hooks/useRelatedTools';
 
 import { ContourType, Machining, Contours } from 'types/part';
 import { ToolOptionItem } from 'types/formattedTools';

@@ -5,7 +5,9 @@ import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
 import TranslatedToolName from 'components/TranslatedToolName';
 
-import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
+import { DressingToolsNames } from 'utils/getDressingToolNames';
+
+import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
 
 import { editGrindingWheelProperty } from 'state/part/partSlice';

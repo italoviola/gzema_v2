@@ -9,6 +9,7 @@ export interface CardData {
   machining: Machining;
   type: ContourType;
   activities: Activities;
+  dressingTool?: string;
 }
 
 export interface CardProps {

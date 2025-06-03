@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { GrindingWheels, GWDressingToolsDataItem } from 'types/part';
-import { DressingToolsNames } from 'hooks/useRelatedTools';
+import { DressingToolsNames } from 'utils/getDressingToolNames';
+
 import { FormState } from './interface';
 
 const useInitializeFormState = (
