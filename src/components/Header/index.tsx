@@ -59,8 +59,8 @@ const Header: React.FC = () => {
           dispatch(
             editApp({
               isSaved: false,
-              lastFilePathSaved: undefined,
-              lastSavedFileState: undefined,
+              lastFilePathSaved: '',
+              lastSavedFileState: '',
             }),
           );
           clearInterval(intervalId);
