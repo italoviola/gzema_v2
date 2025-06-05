@@ -103,12 +103,7 @@ const WorkGroup: React.FC = () => {
       );
     };
 
-    if (
-      hasImportedMachineDataChange ||
-      hasImportedMachineDataChange === undefined
-    ) {
-      fetchData();
-    }
+    fetchData();
   }, [dispatch, hasImportedMachineDataChange]);
 
   const removeFromOperation = (operationId: number, contourId: number) => {

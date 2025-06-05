@@ -76,7 +76,7 @@ const OSMenu: React.FC = () => {
     toggleMenu();
   }, [isSaved, newFile, toggleMenu]);
 
-  const openedFileStateUpdate = useCallback(() => {
+  const openedFileStateUpdate = useCallback(async () => {
     dispatch(
       replacePart((importedFile as FileObject).data as unknown as GZemaFile),
     );
@@ -98,24 +98,28 @@ const OSMenu: React.FC = () => {
     const importedMachineData: Machine = { ...cncData, ...toolsData };
 
     try {
-      saveMachineDataAtElectronStore(importedMachineData as Machine);
+      await saveMachineDataAtElectronStore(importedMachineData as Machine);
     } catch (error: unknown) {
       alert(`Error setting machine data: ${(error as Error).message}`);
     } finally {
       dispatch(
         editApp({
           hasImportedMachineDataChange: true,
+          hasImportedMachineDataFToolsUpdate: true,
         }),
       );
     }
   }, [dispatch, importedFile]);
 
   useEffect(() => {
-    if (importedFile) {
-      if (importedFile.data.machine) handleSetMachineData();
+    const fetchData = async () => {
+      if (importedFile) {
+        if (importedFile.data.machine) await handleSetMachineData();
 
-      openedFileStateUpdate();
-    }
+        await openedFileStateUpdate();
+      }
+    };
+    fetchData();
   }, [handleSetMachineData, importedFile, openedFileStateUpdate]);
 
   const openFile = useCallback(async () => {

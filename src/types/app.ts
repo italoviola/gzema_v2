@@ -9,4 +9,5 @@ export interface App {
   hasGrindingWheelUpdate?: true | undefined;
   hasSaveStatusUpdate?: true | undefined;
   hasFormattedToolsUpdate?: true | undefined;
+  hasImportedMachineDataFToolsUpdate?: true | undefined;
 }
