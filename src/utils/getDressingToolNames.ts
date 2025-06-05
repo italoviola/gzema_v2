@@ -1,15 +1,8 @@
-import { ToolDressingOptionItem } from 'types/formattedTools';
-
-export type DressingToolsNames =
-  | 'fixedDiamond'
-  | 'refractableDiamond'
-  | 'dressingDisc'
-  | 'fixedDressingRoller'
-  | 'sCtrlMovableDressingRoller';
-
-export interface DressingTools {
-  [key: string]: string[];
-}
+import {
+  DressingTools,
+  DressingToolsNames,
+  ToolDressingOptionItem,
+} from 'types/tools';
 
 export function getDressingToolNames(
   formattedTools: { id: number }[],

@@ -32,7 +32,6 @@ import {
   Menu,
   SubMenu,
   Hr,
-  // SubButtonLabel,
 } from './styles';
 
 const OSMenu: React.FC = () => {
@@ -113,7 +112,6 @@ const OSMenu: React.FC = () => {
 
   useEffect(() => {
     if (importedFile) {
-      console.log('importedFile', importedFile);
       if (importedFile.data.machine) handleSetMachineData();
 
       openedFileStateUpdate();
@@ -169,10 +167,6 @@ const OSMenu: React.FC = () => {
         if (JSON.stringify(importedData) !== JSON.stringify(storedData)) {
           setImportedFileAux(file as FileObject);
           setIsModalMachineDataChangedOpen(true);
-          console.log('Machine data has changed:', {
-            imported: importedData,
-            stored: storedData,
-          });
         } else {
           setImportedFile(file as FileObject);
         }
@@ -220,7 +214,7 @@ const OSMenu: React.FC = () => {
     try {
       const machineData = await loadMachineData();
       const data: GZemaFile = { ...partState, machine: machineData };
-      console.log('data', data);
+
       saveObj = await saveFileAs(data);
       saveFileChangeAppState(saveObj);
     } catch (error: unknown) {
@@ -233,9 +227,8 @@ const OSMenu: React.FC = () => {
       let saveObj: SaveObject | undefined;
       try {
         const machineData = await loadMachineData();
-        // adicionar verificação pra avisar se alterou o machine de acordo com o arquivo ou não
         const data: GZemaFile = { ...partState, machine: machineData };
-        console.log('data', data);
+
         saveObj = await saveFile(data, lastFilePath);
         saveFileChangeAppState(saveObj);
       } catch (error: unknown) {

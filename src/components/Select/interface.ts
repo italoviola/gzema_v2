@@ -1,5 +1,5 @@
 import React from 'react';
-import { ToolOptions } from 'types/formattedTools';
+import { ToolOptions } from 'types/tools';
 
 export interface SelectOptionsItem {
   label: string;

@@ -5,14 +5,13 @@ import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
 import TranslatedToolName from 'components/TranslatedToolName';
 
-import { DressingToolsNames } from 'utils/getDressingToolNames';
-
 import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
 
 import { editGrindingWheelProperty } from 'state/part/partSlice';
 
 import { GrindingWheels } from 'types/part';
+import { DressingToolsNames } from 'types/tools';
 
 import { EditButton } from 'pages/Config/styles';
 import { colors } from 'styles/global.styles';

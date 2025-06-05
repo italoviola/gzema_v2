@@ -1,4 +1,4 @@
-import { ToolOptionItem } from 'types/formattedTools';
+import { ToolOptionItem } from 'types/tools';
 import {
   GrindingWheels,
   GrindingWheelsItem,

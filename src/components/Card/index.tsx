@@ -1,4 +1,3 @@
-// Card.tsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -19,7 +18,7 @@ import {
 } from 'state/part/partSlice';
 
 import { ContourType, OperationItem, Operations } from 'types/part';
-import { ToolOptionItem } from 'types/formattedTools';
+import { ToolOptionItem } from 'types/tools';
 
 import { MACHINING_GRINDING } from 'utils/constants';
 

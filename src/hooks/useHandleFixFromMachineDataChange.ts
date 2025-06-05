@@ -9,14 +9,14 @@ import {
 } from 'state/part/partSlice';
 import { editApp } from 'state/app/appSlice';
 
-import { ToolDressingOptionItem, ToolOptionItem } from 'types/formattedTools';
+import { ToolDressingOptionItem, ToolOptionItem } from 'types/tools';
 import { Part, ContourItem, OperationItem } from 'types/part';
 import { App } from 'types/app';
 
 import useFormattedTools from './useFormattedTools';
 import useFormattedDressingTools from './useFormattedDressingTools';
 
-const useHandleMachineDataChange = () => {
+const useHandleFixFromMachineDataChange = () => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
   const formattedDressingTools = useFormattedDressingTools();
@@ -136,4 +136,4 @@ const useHandleMachineDataChange = () => {
   ]);
 };
 
-export default useHandleMachineDataChange;
+export default useHandleFixFromMachineDataChange;

@@ -14,7 +14,7 @@ import { loadCncData } from 'utils/loadCncData';
 
 import { Part, ContourItem } from 'types/part';
 import { Config, StoredCncData } from 'types/api';
-import { ToolOptionItem } from 'types/formattedTools';
+import { ToolOptionItem } from 'types/tools';
 
 import { colors } from 'styles/global.styles';
 import {

@@ -9,14 +9,10 @@ import {
   Tools,
   NotationPattern,
   BAxisSpin,
+  GetToolsHandleResult,
 } from 'types/api';
 
-const getToolsHandle = async (): Promise<
-  | { status: 'success'; tools: Tools; cnc: StoredCncData }
-  | { status: 'error'; error: string }
-  | { status: 'noData' }
-  | { status: 'invalidStatusCode'; statusCode: number }
-> => {
+const getToolsHandle = async (): Promise<GetToolsHandleResult> => {
   const loadedConfig: Config = await loadConfig();
 
   const request: GetToolsRequest = {

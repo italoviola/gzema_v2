@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { DressingToolsNames } from 'utils/getDressingToolNames';
+import { DressingToolsNames } from 'types/tools';
 
 import translatedToolNames from 'mockdata/pt-br/dressingTools.json';
 

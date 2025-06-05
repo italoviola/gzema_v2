@@ -7,7 +7,7 @@ import {
   GWDressingToolsDataItem,
 } from 'types/part';
 import { StoredCncData } from 'types/api';
-import { ToolOptions } from 'types/formattedTools';
+import { ToolOptions } from 'types/tools';
 import {
   B_AXIS_NO_SPIN,
   MACHINING_DRESSING,

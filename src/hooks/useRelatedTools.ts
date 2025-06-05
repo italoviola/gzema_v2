@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 import useFormattedTools from 'hooks/useFormattedTools';
 import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
-import {
-  DressingTools,
-  getDressingToolNames,
-} from 'utils/getDressingToolNames';
+
+import { getDressingToolNames } from 'utils/getDressingToolNames';
+
+import { DressingTools } from 'types/tools';
 
 const useRelatedTools = () => {
   const formattedTools = useFormattedTools();

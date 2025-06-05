@@ -96,12 +96,10 @@ const EditableForm: React.FC = () => {
   }, [dispatch, hasImportedMachineDataChange]);
 
   const saveCncData = async (cncData: StoredCncData) => {
-    console.log('Saving CNC data:', cncData);
     await window.electron.store.set('cnc', cncData);
   };
 
   const saveToolsData = async (toolsData: Tools) => {
-    console.log('Saving tools data:', toolsData);
     await window.electron.store.set('tools', toolsData);
   };
 

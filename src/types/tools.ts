@@ -14,3 +14,14 @@ export interface ToolDressingOptionItem {
 }
 
 export interface ToolDressingOptions extends Array<ToolDressingOptionItem> {}
+
+export type DressingToolsNames =
+  | 'fixedDiamond'
+  | 'refractableDiamond'
+  | 'dressingDisc'
+  | 'fixedDressingRoller'
+  | 'sCtrlMovableDressingRoller';
+
+export interface DressingTools {
+  [key: string]: string[];
+}

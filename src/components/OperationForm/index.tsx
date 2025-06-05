@@ -13,7 +13,7 @@ import { B_AXIS_NO_SPIN } from 'utils/constants';
 
 import { OperationItem, Operations } from 'types/part';
 import { StoredCncData } from 'types/api';
-import { ToolOptions } from 'types/formattedTools';
+import { ToolOptions } from 'types/tools';
 
 import { FormProps, IFormData } from './interface';
 import { Container, Field, SButton } from './style';

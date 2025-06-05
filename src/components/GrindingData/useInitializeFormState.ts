@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { GrindingWheels, GWDressingToolsDataItem } from 'types/part';
-import { DressingToolsNames } from 'utils/getDressingToolNames';
+import { DressingToolsNames } from 'types/tools';
 
 import { FormState } from './interface';
 

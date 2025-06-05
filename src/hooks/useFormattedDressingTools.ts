@@ -6,7 +6,7 @@ import { loadTools } from 'utils/loadTools';
 import { editApp } from 'state/app/appSlice';
 
 import { DressingToolsQtds } from 'types/api';
-import { ToolDressingOptions } from 'types/formattedTools';
+import { ToolDressingOptions } from 'types/tools';
 
 const useFormattedDressingTools = () => {
   const dispatch = useDispatch();

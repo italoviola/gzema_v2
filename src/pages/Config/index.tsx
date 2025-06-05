@@ -1,5 +1,4 @@
 import React, { useEffect, useState, FormEvent } from 'react';
-// import { useDispatch } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Icon from 'components/Icon';
@@ -12,12 +11,6 @@ import { Config as ConfigType, StoredCncData, Tools } from 'types/api';
 import { loadConfig } from 'utils/loadConfig';
 import { loadTools } from 'utils/loadTools';
 import { loadCncData } from 'utils/loadCncData';
-
-// import {
-//   replacePart,
-//   initialState as partInitialState,
-// } from 'state/part/partSlice';
-// import { editApp, initialState as appInitialState } from 'state/app/appSlice';
 
 import { Label } from 'components/Input/style';
 import { ModalContent, ModalText } from 'components/SideMenu/styles';
@@ -51,8 +44,6 @@ const breadcrumbsItems = [
 ];
 
 const Config: React.FC = () => {
-  // const dispatch = useDispatch();
-
   const [loaded, setLoaded] = useState(false);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [toolsData, setToolsData] = useState<Tools>({} as Tools);
@@ -501,19 +492,6 @@ const Config: React.FC = () => {
       </React.Fragment>
     );
   };
-
-  // const newFile = useCallback(() => {
-  //   dispatch(
-  //     replacePart({
-  //       ...partInitialState,
-  //     }),
-  //   );
-  //   dispatch(
-  //     editApp({
-  //       ...appInitialState,
-  //     }),
-  //   );
-  // }, [dispatch]);
 
   const tabMenuItems = [
     {

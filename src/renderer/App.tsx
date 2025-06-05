@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
-import useHandleMachineDataChange from 'hooks/useHandleMachineDataChange';
+import useHandleFixFromMachineDataChange from 'hooks/useHandleFixFromMachineDataChange';
 import useAppSaveStatus from 'hooks/useAppSaveStatus';
 
 // Pages
@@ -23,7 +23,7 @@ const App: React.FC = () => {
 
   useInitializeGrindingWheels();
   useAppSaveStatus();
-  useHandleMachineDataChange();
+  useHandleFixFromMachineDataChange();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

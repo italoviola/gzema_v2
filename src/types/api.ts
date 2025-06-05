@@ -120,3 +120,9 @@ export interface GetToolsRequest {
   network: Network;
   pCodeAddresses: number[];
 }
+
+export type GetToolsHandleResult =
+  | { status: 'success'; tools: Tools; cnc: StoredCncData }
+  | { status: 'error'; error: string }
+  | { status: 'noData' }
+  | { status: 'invalidStatusCode'; statusCode: number };
