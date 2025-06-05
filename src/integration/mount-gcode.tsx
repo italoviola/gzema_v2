@@ -6,6 +6,8 @@ import {
   GrindingWheelsItem,
   GWDressingToolsDataItem,
 } from 'types/part';
+import { StoredCncData } from 'types/api';
+import { ToolOptions } from 'types/tools';
 import {
   B_AXIS_NO_SPIN,
   MACHINING_DRESSING,
@@ -14,9 +16,6 @@ import {
   TYPE_EXTERNAL,
   TYPE_INTERNAL,
 } from 'utils/constants';
-
-import { ToolOptions } from 'components/Select/interface';
-import { StoredCncData } from 'types/api';
 
 const macroRef = 'G65 P7001';
 

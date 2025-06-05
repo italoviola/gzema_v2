@@ -9,6 +9,7 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
   options,
   onChange,
   value,
+  disabled = false,
 }) => {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     onChange(event);
@@ -17,7 +18,12 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
   return (
     <Container>
       {label && <Label>{label}:</Label>}
-      <SSelect name={name} value={value} onChange={handleChange}>
+      <SSelect
+        name={name}
+        value={value}
+        onChange={handleChange}
+        disabled={disabled}
+      >
         {options.map((option) => {
           return (
             <option key={option.value} value={option.value}>

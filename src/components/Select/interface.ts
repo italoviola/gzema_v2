@@ -1,26 +1,18 @@
 import React from 'react';
+import { ToolOptions } from 'types/tools';
 
-export interface ToolOptionItem {
-  id: number;
+export interface SelectOptionsItem {
   label: string;
-  type: number;
   value: number;
 }
 
-export interface ToolOptions extends Array<ToolOptionItem> {}
-
-export interface ToolDressingOptionItem {
-  name: string;
-  quantity: number;
-  toolId: number;
-}
-
-export interface ToolDressingOptions extends Array<ToolDressingOptionItem> {}
+export interface SelectOptions extends Array<SelectOptionsItem> {}
 
 export interface SelectComponentProps {
-  label: string;
+  label?: string;
   name: string;
-  options: ToolOptions;
+  options: ToolOptions | SelectOptions;
   onChange: (value: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string | number;
+  disabled?: boolean;
 }

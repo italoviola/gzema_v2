@@ -52,15 +52,14 @@ const Header: React.FC = () => {
 
       const intervalId = setInterval(async () => {
         const result = await window.electron.ipcRenderer.checkFile(filePath);
-        // refatorar essa parte para o fileStatus ser um state do redux e não do componente
         setFileStatus(result);
 
         if (!result) {
           dispatch(
             editApp({
               isSaved: false,
-              lastFilePathSaved: undefined,
-              lastSavedFileState: undefined,
+              lastFilePathSaved: '',
+              lastSavedFileState: '',
             }),
           );
           clearInterval(intervalId);
@@ -77,6 +76,12 @@ const Header: React.FC = () => {
       name: 'Configurações',
       action: () => {
         navigate('/config');
+      },
+    },
+    {
+      name: 'Máquina',
+      action: () => {
+        navigate('/machine');
       },
     },
   ];

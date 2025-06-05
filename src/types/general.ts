@@ -1,7 +1,7 @@
-import { Part } from 'types/part';
+import { GZemaFile } from './fileTypes';
 
 export interface FileObject {
-  data: Part;
+  data: GZemaFile;
   path: string | undefined;
   fileName: string;
 }

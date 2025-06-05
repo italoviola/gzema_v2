@@ -5,16 +5,18 @@ import TabMenu from 'components/TabMenu';
 import Icon from 'components/Icon';
 import TranslatedToolName from 'components/TranslatedToolName';
 
-import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
+import useRelatedTools from 'hooks/useRelatedTools';
 import useFormattedTools from 'hooks/useFormattedTools';
-import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
 
 import { editGrindingWheelProperty } from 'state/part/partSlice';
 
 import { GrindingWheels } from 'types/part';
+import { DressingToolsNames } from 'types/tools';
 
 import { EditButton } from 'pages/Config/styles';
 import { colors } from 'styles/global.styles';
+
+import useInitializeFormState from './useInitializeFormState';
 import { FormState } from './interface';
 import {
   Container,
@@ -29,7 +31,6 @@ import {
   SSubTitle,
   ToolName,
 } from './styles';
-import useInitializeFormState from './useInitializeFormState';
 
 const GrindingData: React.FC = () => {
   const dispatch = useDispatch();
@@ -48,8 +49,6 @@ const GrindingData: React.FC = () => {
     formState,
     setFormState,
   );
-
-  useInitializeGrindingWheels();
 
   const handleSubmit = (field: string) => {
     const [toolKey, property, dressingToolName] = field.split('-');
@@ -145,8 +144,12 @@ const GrindingData: React.FC = () => {
     );
   };
 
-  const tabItems = Object.entries(dressingToolNames).map(
-    ([toolKey, toolNames]) => {
+  const tabItems = Object.entries(dressingToolNames)
+    .filter(([toolKey]) => {
+      const tool = formattedTools.find((t) => `tool${t.id}` === toolKey);
+      return tool && tool.type !== 0;
+    })
+    .map(([toolKey, toolNames]) => {
       const tool = formattedTools.find((t) => `tool${t.id}` === toolKey);
       const label = tool ? tool.label : toolKey;
 
@@ -260,8 +263,7 @@ const GrindingData: React.FC = () => {
           </form>
         ),
       };
-    },
-  );
+    });
 
   return (
     <Container>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ContourType, Machining, Contours } from 'types/part';
 
 import FormField from 'components/FormField';
 import TranslatedToolName from 'components/TranslatedToolName';
@@ -15,9 +14,11 @@ import {
 import useFormattedTools from 'hooks/useFormattedTools';
 import { addContour, editContour } from 'state/part/partSlice';
 
-import useRelatedTools, { DressingToolsNames } from 'hooks/useRelatedTools';
+import useRelatedTools from 'hooks/useRelatedTools';
 
-import { ToolOptionItem } from 'components/Select/interface';
+import { ContourType, Machining, Contours } from 'types/part';
+import { ToolOptionItem, DressingToolsNames } from 'types/tools';
+
 import { addContourPayload, FormProps, IFormData } from './interface';
 
 import {

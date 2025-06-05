@@ -13,6 +13,7 @@ import useFormattedTools from 'hooks/useFormattedTools';
 import { saveFile, saveFileAs } from 'utils/saveFile';
 import { loadConfig } from 'utils/loadConfig';
 import { loadCncData } from 'utils/loadCncData';
+import { loadMachineData } from 'utils/loadMachineData';
 import { generateGCodeForPart } from 'integration/mount-gcode';
 
 import { editApp } from 'state/app/appSlice';
@@ -20,6 +21,7 @@ import { editApp } from 'state/app/appSlice';
 import { Part } from 'types/part';
 import { App } from 'types/app';
 import { SaveObject } from 'types/general';
+import { GZemaFile } from 'types/fileTypes';
 import { Response, Request, Config, StoredCncData } from 'types/api';
 
 import { colors } from 'styles/global.styles';
@@ -60,12 +62,17 @@ const SideMenu: React.FC = () => {
     let saveObj: SaveObject | undefined;
 
     try {
-      if (lastFilePath) saveObj = await saveFile(part, lastFilePath);
-      else saveObj = await saveFileAs(part);
+      const machineData = await loadMachineData();
+      const data: GZemaFile = { ...part, machine: machineData };
+      if (lastFilePath) {
+        saveObj = await saveFile(data, lastFilePath);
+      } else {
+        saveObj = await saveFileAs(data);
+      }
 
       if (saveObj && saveObj.success) {
         if (saveObj.saveType === 'saveFile')
-          dispatch(editApp({ isSaved: true }));
+          dispatch(editApp({ isSaved: true, hasSaveStatusUpdate: undefined }));
         else if (saveObj.filePath)
           dispatch(
             editApp({
@@ -75,6 +82,7 @@ const SideMenu: React.FC = () => {
               isSaved: true,
               lastFilePathSaved: saveObj.filePath,
               lastSavedFileState: JSON.stringify(part),
+              hasSaveStatusUpdate: undefined,
             }),
           );
       }

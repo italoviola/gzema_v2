@@ -13,16 +13,14 @@ import { B_AXIS_NO_SPIN } from 'utils/constants';
 
 import { OperationItem, Operations } from 'types/part';
 import { StoredCncData } from 'types/api';
-import { FormProps, IFormData } from './interface';
+import { ToolOptions } from 'types/tools';
 
+import { FormProps, IFormData } from './interface';
 import { Container, Field, SButton } from './style';
 
-const initialFormData: IFormData = {
-  name: { value: '', error: false, message: undefined },
-  // toolId value 1 represents first tool fetched from API, wich has id 1
-  toolId: { value: 1, error: false, message: undefined },
-  bAxisAngle: { value: 0, error: false, message: undefined },
-};
+function getFirstValidToolId(formattedTools: ToolOptions) {
+  return formattedTools?.find((tool) => tool.type !== 0)?.id ?? '';
+}
 
 const OperationForm: React.FC<FormProps> = ({
   onButtonClick,
@@ -31,10 +29,20 @@ const OperationForm: React.FC<FormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
-  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
+
+  const initialFormData: IFormData = {
+    name: { value: '', error: false, message: undefined },
+    toolId: {
+      value: Number(getFirstValidToolId(formattedTools)),
+      error: false,
+      message: undefined,
+    },
+    bAxisAngle: { value: 0, error: false, message: undefined },
+  };
   let formValues: IFormData = initialFormData;
 
   useEffect(() => {
@@ -68,6 +76,18 @@ const OperationForm: React.FC<FormProps> = ({
   }
 
   const [formData, setFormData] = useState(formValues);
+
+  useEffect(() => {
+    if (formattedTools && formattedTools.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        toolId: {
+          ...prev.toolId,
+          value: Number(getFirstValidToolId(formattedTools)),
+        },
+      }));
+    }
+  }, [formattedTools]);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -158,10 +178,14 @@ const OperationForm: React.FC<FormProps> = ({
           name="toolId"
           onChange={handleChange}
           value={formData.toolId.value}
-          options={formattedTools}
+          options={
+            (formattedTools &&
+              formattedTools.filter((tool) => tool.type !== 0)) ||
+            []
+          }
         />
       </Field>
-      {cncData.hasBAxis !== B_AXIS_NO_SPIN ? (
+      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
         <Field>
           <FormField
             name="bAxisAngle"
@@ -172,8 +196,6 @@ const OperationForm: React.FC<FormProps> = ({
             handleInputChange={handleChange}
           />
         </Field>
-      ) : (
-        ''
       )}
       <SButton onClick={handleClick}>
         {variation === 'add' ? 'Adicionar' : 'Editar'}

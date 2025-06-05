@@ -28,15 +28,7 @@ export const initialState: Part = {
       activities: [initialActivity],
     },
   ],
-  operations: [
-    {
-      id: 0,
-      toolId: 1,
-      name: 'Operação',
-      contoursIds: [],
-      bAxisAngle: 0,
-    },
-  ],
+  operations: [],
   grindingWheels: [],
 };
 
@@ -237,6 +229,12 @@ const partSlice = createSlice({
         );
         if (dressingTool) {
           dressingTool.bAxisAngle = value;
+        } else {
+          const newDressingTool: GWDressingToolsDataItem = {
+            name: dressingToolName,
+            bAxisAngle: value,
+          };
+          grindingWheel.dressingToolsData.push(newDressingTool);
         }
       }
     },

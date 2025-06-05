@@ -1,4 +1,3 @@
-// Card.tsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -10,6 +9,7 @@ import GrindingTypeLabel from 'components/GrindingTypeLabel';
 import { MenuItem } from 'components/MoreMenu/interface';
 
 import useFormattedTools from 'hooks/useFormattedTools';
+import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
 import {
   addContour,
   addContourToOperation,
@@ -18,7 +18,7 @@ import {
 } from 'state/part/partSlice';
 
 import { ContourType, OperationItem, Operations } from 'types/part';
-import { ToolOptionItem } from 'components/Select/interface';
+import { ToolOptionItem } from 'types/tools';
 
 import { MACHINING_GRINDING } from 'utils/constants';
 
@@ -52,6 +52,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
+  const formattedDressingTools = useFormattedDressingTools();
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
@@ -81,15 +82,33 @@ const Card: React.FC<CardProps> = ({
 
   const moreMenuItems: MenuItem[] = [
     {
-      name: 'Adicionar à Sequência',
+      name: 'Adicionar à Operação',
       subItems: operations
         .filter((operation: OperationItem) => {
           const tool: ToolOptionItem | undefined = formattedTools.find(
             (t: ToolOptionItem) => t.id === operation.toolId,
           );
           if (!tool) return false;
-          if (content.type === tool.type) return true;
-          return false;
+          if (content.type !== tool.type) return false;
+
+          if (content.dressingTool) {
+            const match = content.dressingTool.match(/^([a-zA-Z]+)(\d+)$/);
+            const baseName = match ? match[1] : '';
+            const usedQuantity = match ? parseInt(match[2], 10) : 0;
+
+            const dressingToolItem = formattedDressingTools.find((dt) => {
+              const dtBaseName = dt.name
+                .replace(/^tool\d/, '')
+                .replace('Qtd', '');
+              return dtBaseName === baseName;
+            });
+
+            if (!dressingToolItem || usedQuantity > dressingToolItem.quantity) {
+              return false;
+            }
+          }
+
+          return true;
         })
         .map((operation: OperationItem) => ({
           name: operation.name,

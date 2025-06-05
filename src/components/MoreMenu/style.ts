@@ -30,7 +30,6 @@ export const DropDown = styled.nav`
   border-bottom: none;
 `;
 
-// use component
 export const Button = styled.button`
   position: relative;
   text-align: left;

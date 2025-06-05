@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ToolOptionItem } from 'components/Select/interface';
-
 import useFormattedTools from 'hooks/useFormattedTools';
 
 import {
@@ -16,6 +14,7 @@ import { loadCncData } from 'utils/loadCncData';
 
 import { Part, ContourItem } from 'types/part';
 import { Config, StoredCncData } from 'types/api';
+import { ToolOptionItem } from 'types/tools';
 
 import { colors } from 'styles/global.styles';
 import {

@@ -1,9 +1,21 @@
 import { useState, useEffect } from 'react';
-import { DressingToolsQtds } from 'types/api';
-import { ToolDressingOptions } from 'components/Select/interface';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { loadTools } from 'utils/loadTools';
 
+import { editApp } from 'state/app/appSlice';
+
+import { DressingToolsQtds } from 'types/api';
+import { ToolDressingOptions } from 'types/tools';
+
 const useFormattedDressingTools = () => {
+  const dispatch = useDispatch();
+
+  const hasFormattedToolsUpdate = useSelector(
+    (state: { app: { hasFormattedToolsUpdate: true | undefined } }) =>
+      state.app.hasFormattedToolsUpdate,
+  );
+
   const [formattedDressingTools, setFormattedDressingTools] =
     useState<ToolDressingOptions>([]);
 
@@ -49,7 +61,15 @@ const useFormattedDressingTools = () => {
     };
 
     fetchDressingTools();
-  }, []);
+
+    if (hasFormattedToolsUpdate) {
+      dispatch(
+        editApp({
+          hasFormattedToolsUpdate: undefined,
+        }),
+      );
+    }
+  }, [dispatch, hasFormattedToolsUpdate]);
 
   return formattedDressingTools;
 };

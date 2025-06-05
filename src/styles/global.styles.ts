@@ -1,4 +1,3 @@
-// Review later
 export const breakpoints = {
   desktop: '@media (min-width: 1024px)',
 };
@@ -30,6 +29,7 @@ export const colors = {
 export const measures = {
   gutter: '15px',
   contentToHeader: '255px',
+  contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',
 };

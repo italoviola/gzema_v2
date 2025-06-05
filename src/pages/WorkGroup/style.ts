@@ -101,7 +101,7 @@ export const Wrap = styled.div`
 `;
 
 export const TextAdd = styled.p`
-  margin-left: 5px;
+  margin-left: 4px;
   line-height: 27px;
   font-size: 18px;
 `;

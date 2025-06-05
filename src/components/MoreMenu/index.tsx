@@ -66,7 +66,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ menuItems }) => {
                 <SubMenu>
                   {item.subItems.map((subItem: SubMenuItem) => (
                     <SubButton
-                      key={subItem.name} // Replace 'key={subIndex}' with a unique identifier from the 'subItem' object
+                      key={subItem.name}
                       onClick={() => {
                         subItem.action();
                         setOpenSubMenuIndex(null);

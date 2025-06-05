@@ -30,5 +30,6 @@ export const Tab = styled.button<
 `;
 
 export const SContentBlock = styled(ContentBlock)`
-  max-height: 100%;
+  height: calc(100vh - ${measures.contentBellowTabToHeader});
+  overflow: auto;
 `;

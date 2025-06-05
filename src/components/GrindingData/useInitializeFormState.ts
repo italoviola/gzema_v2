@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { GrindingWheels, GWDressingToolsDataItem } from 'types/part';
-import { DressingToolsNames } from 'hooks/useRelatedTools';
+import { DressingToolsNames } from 'types/tools';
+
 import { FormState } from './interface';
 
 const useInitializeFormState = (
@@ -36,7 +37,6 @@ const useInitializeFormState = (
             const dressingToolData = grindingWheel?.dressingToolsData.find(
               (item: GWDressingToolsDataItem) => item.name === name,
             );
-
             acc[`${toolKey}-bAxisAngle-${name}`] = {
               value: dressingToolData?.bAxisAngle || 0,
               edit: false,

@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { Part } from 'types/part';
-import { editApp } from 'state/app/appSlice';
-import { initialState } from 'state/part/partSlice';
-
-import BaseLayout from 'layouts/Base';
-import ModalCloseApp from 'components/ModalCloseApp';
+import useInitializeGrindingWheels from 'hooks/useInitializeGrindingWheels';
+import useHandleFixFromMachineDataChange from 'hooks/useHandleFixFromMachineDataChange';
+import useAppSaveStatus from 'hooks/useAppSaveStatus';
 
 // Pages
 import WorkGroup from 'pages/WorkGroup';
 import Contour from 'pages/Contour';
 import OffPage from 'pages/OffPage';
-
-import './App.css';
+import Machine from 'pages/Machine';
 import Config from 'pages/Config';
 
-const App: React.FC = () => {
-  const dispatch = useDispatch();
-  const lastSavedFileState = useSelector(
-    (state: { app: { lastSavedFileState: string } }) =>
-      state.app.lastSavedFileState,
-  );
-  const part = useSelector((state: { part: Part }) => state.part);
+import BaseLayout from 'layouts/Base';
+import ModalCloseApp from 'components/ModalCloseApp';
 
+import './App.css';
+
+const App: React.FC = () => {
   const [isConfirmCloseModalOpen, setIsConfirmCloseModalOpen] = useState(false);
   const [isAttemptingToClose, setIsAttemptingToClose] = useState(false);
+
+  useInitializeGrindingWheels();
+  useAppSaveStatus();
+  useHandleFixFromMachineDataChange();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -56,16 +53,6 @@ const App: React.FC = () => {
     setIsConfirmCloseModalOpen(false);
   };
 
-  useEffect(() => {
-    if (lastSavedFileState && lastSavedFileState !== JSON.stringify(part))
-      dispatch(editApp({ isSaved: false }));
-    else if (
-      !lastSavedFileState &&
-      JSON.stringify(part) !== JSON.stringify(initialState)
-    )
-      dispatch(editApp({ isSaved: false }));
-    else dispatch(editApp({ isSaved: true }));
-  }, [dispatch, lastSavedFileState, part]);
   return (
     <Router>
       <BaseLayout>
@@ -75,6 +62,7 @@ const App: React.FC = () => {
             <Route path="/workgroup" element={<WorkGroup />} />
             <Route path="/contour/:id" element={<Contour />} />
             <Route path="/config" element={<Config />} />
+            <Route path="/machine" element={<Machine />} />
           </Routes>
           <ModalCloseApp
             isOpen={isConfirmCloseModalOpen}
