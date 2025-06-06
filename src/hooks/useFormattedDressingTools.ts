@@ -5,16 +5,14 @@ import { loadTools } from 'utils/loadTools';
 
 import { editApp } from 'state/app/appSlice';
 
+import { App } from 'types/app';
 import { DressingToolsQtds } from 'types/api';
 import { ToolDressingOptions } from 'types/tools';
 
 const useFormattedDressingTools = () => {
   const dispatch = useDispatch();
 
-  const hasFormattedToolsUpdate = useSelector(
-    (state: { app: { hasFormattedToolsUpdate: true | undefined } }) =>
-      state.app.hasFormattedToolsUpdate,
-  );
+  const appState = useSelector((state: { app: App }) => state.app);
 
   const [formattedDressingTools, setFormattedDressingTools] =
     useState<ToolDressingOptions>([]);
@@ -62,14 +60,15 @@ const useFormattedDressingTools = () => {
 
     fetchDressingTools();
 
-    if (hasFormattedToolsUpdate) {
+    if (appState.hasFormattedToolsUpdate) {
       dispatch(
         editApp({
           hasFormattedToolsUpdate: undefined,
+          hasImportedMachineDataFToolsUpdate: undefined,
         }),
       );
     }
-  }, [dispatch, hasFormattedToolsUpdate]);
+  }, [dispatch, appState.hasFormattedToolsUpdate]);
 
   return formattedDressingTools;
 };

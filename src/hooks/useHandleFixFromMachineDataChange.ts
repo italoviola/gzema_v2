@@ -28,7 +28,9 @@ const useHandleFixFromMachineDataChange = () => {
     // Cannot execute useEffect if formattedTools or formattedDressingTools are not ready
     if (
       !appState.hasFixFromMachineDataChange &&
-      (appState.hasFormattedToolsUpdate || appState.hasGrindingWheelUpdate)
+      (appState.hasFormattedToolsUpdate ||
+        appState.hasGrindingWheelUpdate ||
+        appState.hasImportedMachineDataFToolsUpdate)
     )
       return;
 
@@ -129,6 +131,8 @@ const useHandleFixFromMachineDataChange = () => {
     appState.hasFixFromMachineDataChange,
     appState.hasGrindingWheelUpdate,
     appState.hasFormattedToolsUpdate,
+    appState.hasImportedMachineDataChange,
+    appState.hasImportedMachineDataFToolsUpdate,
     formattedTools,
     formattedDressingTools,
     part,

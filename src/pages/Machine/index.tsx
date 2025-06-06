@@ -87,12 +87,7 @@ const EditableForm: React.FC = () => {
       );
     }
 
-    if (
-      hasImportedMachineDataChange ||
-      hasImportedMachineDataChange === undefined
-    ) {
-      fetchData();
-    }
+    fetchData();
   }, [dispatch, hasImportedMachineDataChange]);
 
   const saveCncData = async (cncData: StoredCncData) => {

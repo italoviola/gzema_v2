@@ -6,6 +6,7 @@ import { editApp } from 'state/app/appSlice';
 import { loadTools } from 'utils/loadTools';
 import { TYPE_EXTERNAL, TYPE_INTERNAL } from 'utils/constants';
 
+import { App } from 'types/app';
 import { Tools } from 'types/api';
 import { ToolOptions } from 'types/tools';
 
@@ -42,15 +43,10 @@ export const fetchFormattedTools = async (): Promise<ToolOptions> => {
 
 const useFormattedTools = () => {
   const dispatch = useDispatch();
+
+  const appState = useSelector((state: { app: App }) => state.app);
+
   const [formattedTools, setFormattedTools] = useState<ToolOptions>([]);
-  const hasMachineDataChange = useSelector(
-    (state: { app: { hasMachineDataChange: true | undefined } }) =>
-      state.app.hasMachineDataChange,
-  );
-  const hasGrindingWheelUpdate = useSelector(
-    (state: { app: { hasGrindingWheelUpdate: true | undefined } }) =>
-      state.app.hasGrindingWheelUpdate,
-  );
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -60,7 +56,7 @@ const useFormattedTools = () => {
 
     fetchTools();
 
-    if (hasGrindingWheelUpdate) {
+    if (appState.hasGrindingWheelUpdate) {
       dispatch(
         editApp({
           hasGrindingWheelUpdate: undefined,
@@ -68,7 +64,12 @@ const useFormattedTools = () => {
         }),
       );
     }
-  }, [hasMachineDataChange, hasGrindingWheelUpdate, dispatch]);
+  }, [
+    dispatch,
+    appState.hasGrindingWheelUpdate,
+    appState.hasImportedMachineDataChange,
+    appState.hasImportedMachineDataFToolsUpdate,
+  ]);
 
   return formattedTools;
 };
