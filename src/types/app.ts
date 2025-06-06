@@ -4,10 +4,10 @@ export interface App {
   lastSavedFileState?: string;
   lastFilePathSaved?: string;
   lastGeneratedCodes?: string[];
-  hasImportedMachineDataChange?: true | undefined;
-  hasFixFromMachineDataChange?: true | undefined;
-  hasGrindingWheelUpdate?: true | undefined;
-  hasSaveStatusUpdate?: true | undefined;
-  hasFormattedToolsUpdate?: true | undefined;
-  hasImportedMachineDataFToolsUpdate?: true | undefined;
+  hasImportedMachineDataChange?: true;
+  hasFixFromMachineDataChange?: true;
+  hasGrindingWheelUpdate?: true;
+  hasSaveStatusUpdate?: true;
+  hasFormattedToolsUpdate?: true;
+  hasImportedMachineDataFToolsUpdate?: true;
 }
