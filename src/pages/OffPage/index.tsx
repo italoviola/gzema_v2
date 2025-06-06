@@ -15,7 +15,7 @@ const OffPage: React.FC = () => {
       <Content>
         <img src={bg} alt="Background" />
       </Content>
-      <Text>© 2025 Zema. All rights reserved. Version: 1.4.0 Build: 0006</Text>
+      <Text>© 2025 Zema. All rights reserved. Version: 1.4.1 Build: 0007</Text>
     </Container>
   );
 };
