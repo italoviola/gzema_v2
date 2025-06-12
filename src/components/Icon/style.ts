@@ -4,4 +4,5 @@ import { IconProps } from './interface';
 export const IconWrapper = styled.p<IconProps>`
   font-size: ${(props) => props.fontSize};
   color: ${(props) => props.color};
+  cursor: pointer;
 `;

@@ -1,25 +1,68 @@
 import styled from 'styled-components';
-import { PageTitle, PageContent, ContentBlock } from 'styles/Components';
+import { PageTitle, ContentBlock, Link } from 'styles/Components';
 import { colors, measures } from 'styles/global.styles';
+
+import LinkAction from 'components/LinkAction';
+import Icon from 'components/Icon';
 
 export const Container = styled.div`
   width: 100%;
 `;
 
-export const Content = styled(PageContent)``;
+export const BackBtn = styled(Link)`
+  display: inline-block;
+  font-size: 14px;
+  margin-bottom: 4px;
+  padding: 4px 4px 4px 0;
+  color: ${colors.blueLight};
+`;
+
+export const BackBtnContent = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+`;
+
+export const IconBack = styled(Icon)`
+  transform: rotate(-90deg);
+  color: inherit;
+`;
 
 export const PageHead = styled.div`
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const TitleContainer = styled.div`
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+`;
+
+export const DressingLabelsContainer = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+`;
+
+export const DressingLabels = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: left;
+  gap: ${measures.gutter};
+  color: ${colors.greyFont};
+`;
+
+export const DressingItem = styled.div`
+  margin-bottom: 24px;
+`;
+
+export const SLinkAction = styled(LinkAction)`
+  font-weight: bold;
+  color: ${colors.blueDark};
 `;
 
 export const Title = styled(PageTitle)`
@@ -92,6 +135,11 @@ export const TableHead = styled.thead`
   font-weight: bold;
 `;
 
+export const TableDesc = styled.thead`
+  text-align: left;
+  font-size: 14px;
+`;
+
 export const TableH = styled.th`
   padding: 0 2px 10px 2px;
 `;
@@ -100,6 +148,12 @@ export const HText = styled.p`
   padding: 5px;
   border-bottom: 1px solid ${colors.greyMedium};
   color: ${colors.greyLogo};
+`;
+
+export const HDesc = styled.p`
+  padding: 0 5px;
+  border-bottom: 0;
+  color: ${colors.greyFont};
 `;
 
 export const TableBody = styled.tbody`
@@ -148,6 +202,10 @@ export const TableInputLabeled = styled.input`
     background-color: ${colors.greyMedium};
     opacity: 0.3;
   }
+
+  &::placeholder {
+    color: ${colors.greyMedium};
+  }
 `;
 
 export const TableInputLabel = styled.label`
@@ -163,6 +221,28 @@ export const TableInputLabel = styled.label`
   box-sizing: border-box;
   font-weight: bold;
   text-align: center;
+`;
+
+export const TableScroll = styled.div``;
+
+export const ScrollBtn = styled.button<{ color: string }>`
+  background-color: ${(props) => props.color};
+  border: 0;
+  margin: 0;
+  font-size: 22px;
+  line-height: 22px;
+  width: 30px;
+  height: 40px;
+  padding: 5px 0;
+  vertical-align: middle;
+  border-radius: ${measures.borderRadius};
+  font-weight: bolder;
+  cursor: pointer;
+  box-sizing: border-box;
+`;
+
+export const RotatedIcon = styled(Icon)`
+  transform: rotate(-90deg);
 `;
 
 export const AddBtn = styled.button`

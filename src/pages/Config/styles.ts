@@ -1,30 +1,58 @@
 import styled from 'styled-components';
+
 import Input from 'components/Input';
+import Button from 'components/Button';
 
-import { colors } from 'styles/global.styles';
+import { colors, measures, shadows } from 'styles/global.styles';
 
-import {
-  PageContent,
-  PageTitle,
-  ContentBlock,
-  SubTitle,
-} from 'styles/Components';
+import { ContentBlock, SubTitle } from 'styles/Components';
 
 export const Container = styled.div`
   width: 100%;
   height: 100%;
 `;
 
-export const Content = styled(PageContent)`
-  max-height: calc(100vh - 242px);
-  overflow-y: auto;
-  padding-top: 9px;
+export const SContentBlock = styled(ContentBlock)`
+  height: calc(100vh - ${measures.contentBellowBtnToHeader});
+  overflow: auto;
 `;
 
-export const Title = styled(PageTitle)``;
-
-export const SContentBlock = styled(ContentBlock)`
+export const SContentBlockBtn = styled.div`
   margin-bottom: 20px;
+  max-height: 100%;
+  box-shadow: ${shadows.std};
+`;
+
+export const SContentBlockSpinner = styled.div`
+  margin-bottom: 20px;
+  max-height: 100%;
+`;
+
+export const SideBySideContainer = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+`;
+
+export const Side = styled.div`
+  width: 50%;
+`;
+
+export const ContentText = styled.div<{ color: string }>`
+  padding: 15px;
+  font-size: 18px;
+  box-sizing: border-box;
+  min-width: 150px;
+  height: 53px;
+  background-color: ${colors.white};
+  border: 1px solid ${(props) => props.color};
+  color: ${(props) => props.color};
+  text-align: center;
+`;
+
+export const SButton = styled(Button)`
+  width: auto;
+  /* align-self: flex-start; */
+  margin-bottom: 15px;
 `;
 
 export const SSubTitle = styled(SubTitle)`

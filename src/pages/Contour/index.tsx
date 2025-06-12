@@ -8,19 +8,27 @@ import { editContour } from 'state/part/partSlice';
 import Breadcrumbs from 'components/Breadcrumbs';
 import GrindingTypeLabel from 'components/GrindingTypeLabel';
 import Modal from 'components/Modal';
+import ContourForm from 'components/ContourForm';
 import CodePreview from 'components/CodePreview';
+import Tooltip from 'components/Tooltip';
+import InfoLabel from 'components/InfoLabel';
+import TranslatedToolName from 'components/TranslatedToolName';
+
+import { actionParams as actionParamsAux } from 'integration/functions-code';
+import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
+
+import { ActionParamItem, ActivitiyItem, ContourItem, Part } from 'types/part';
 
 import { StyledIcon } from 'components/SideMenu/styles';
-
-import { XZ_REGEX } from 'utils/constants';
-import { ContourItem, Part } from 'types/part';
+import { PageContent } from 'styles/Components';
 import { colors } from 'styles/global.styles';
-import { actionParams as actionParamsAux } from 'integration/functions-code';
+
 import defineActionParams from './defineActionParams';
+
+import { ActionParamsValidation } from './interface';
 
 import {
   Container,
-  Content,
   TitleContainer,
   Title,
   TitleEdit,
@@ -46,35 +54,54 @@ import {
   CodePreviewBtn,
   PageHead,
   BtnText,
+  ScrollBtn,
+  RotatedIcon,
+  BackBtn,
+  BackBtnContent,
+  IconBack,
 } from './style';
 
 const defaultValue: ContourItem = {
   id: 0,
   name: '',
-  type: 'Internal',
+  machining: MACHINING_GRINDING,
+  type: TYPE_EXTERNAL,
   activities: [],
 };
 
 const Contour: React.FC = () => {
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  // const initialState: ContourItem = useSelector(
-  //   (state: { part: Part }) =>
-  //     state.part.contours.find((contour) => contour.id === Number(id)) ||
-  //     defaultValue,
-  // );
   const initialState: ContourItem = useSelector((state: { part: Part }) => {
     const contour = state.part.contours.find((c) => c.id === Number(id));
-    console.log('contour encontrado:', contour);
     return contour || defaultValue;
   });
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isModalEditDressingOpen, setIsModalEditDressingOpen] =
+    useState<boolean>(false);
   const [formData, setFormData] = useState<ContourItem>({
     ...initialState,
   });
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const prevFormDataRef = useRef<ContourItem>(formData);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [visibleFields, setVisibleFields] = useState<number[][]>(
+    formData.activities.map(() => [0, 1, 2, 3]),
+  );
+  const [canNavigateNext, setCanNavigateNext] = useState<boolean[]>([]);
+  const [canNavigatePrev, setCanNavigatePrev] = useState<boolean[]>([]);
+
+  const [focusedField, setFocusedField] = useState<{
+    fieldId: string;
+    index: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (isEditingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [isEditingName]);
 
   const breadcrumbsItems = [
     {
@@ -88,6 +115,84 @@ const Contour: React.FC = () => {
       isActive: true,
     },
   ];
+
+  const updateNavigationAvailability = (
+    index: number,
+    newVisibleFields: number[][],
+  ) => {
+    setCanNavigateNext((prev) => {
+      const newCanNavigateNext = [...prev];
+      newCanNavigateNext[index] =
+        newVisibleFields[index][3] <
+        formData.activities[index].actionParams.length - 1;
+      return newCanNavigateNext;
+    });
+
+    setCanNavigatePrev((prev) => {
+      const newCanNavigatePrev = [...prev];
+      newCanNavigatePrev[index] = newVisibleFields[index][0] > 0;
+      return newCanNavigatePrev;
+    });
+  };
+
+  const handleNext = (index: number) => {
+    setVisibleFields((prev) => {
+      const newVisibleFields = [...prev];
+      if (
+        newVisibleFields[index][3] >=
+        formData.activities[index].actionParams.length - 1
+      ) {
+        return prev;
+      }
+      newVisibleFields[index] = [
+        newVisibleFields[index][0] + 4,
+        newVisibleFields[index][1] + 4,
+        newVisibleFields[index][2] + 4,
+        newVisibleFields[index][3] + 4,
+      ];
+      updateNavigationAvailability(index, newVisibleFields);
+      return newVisibleFields;
+    });
+  };
+
+  const handlePrev = (index: number) => {
+    setVisibleFields((prev) => {
+      const newVisibleFields = [...prev];
+      if (newVisibleFields[index][0] === 0) {
+        return prev;
+      }
+      newVisibleFields[index] = [
+        newVisibleFields[index][0] - 4,
+        newVisibleFields[index][1] - 4,
+        newVisibleFields[index][2] - 4,
+        newVisibleFields[index][3] - 4,
+      ];
+      updateNavigationAvailability(index, newVisibleFields);
+      return newVisibleFields;
+    });
+  };
+
+  useEffect(() => {
+    setCanNavigateNext((prev) => {
+      const newCanNavigateNext = formData.activities.map((activity, index) => {
+        if (prev[index] !== undefined) {
+          return prev[index];
+        }
+        return activity.actionParams.length > 3;
+      });
+      return newCanNavigateNext;
+    });
+
+    setCanNavigatePrev((prev) => {
+      const newCanNavigatePrev = formData.activities.map((_, index) => {
+        if (prev[index] !== undefined) {
+          return prev[index];
+        }
+        return false;
+      });
+      return newCanNavigatePrev;
+    });
+  }, [formData.activities]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -107,20 +212,45 @@ const Contour: React.FC = () => {
         ...formData,
         activities: formData.activities.map((item, i) => {
           if (i === index) {
-            const actionParams = defineActionParams(value);
-            const {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              aParamValidation,
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              bParamValidation,
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              cParamValidation,
-              ...rest
-            } = actionParams;
+            const newActionParams: ActionParamsValidation =
+              defineActionParams(value);
+
+            // Remove props to prevent user error
+            const updatedItem = { ...item };
+            Object.keys(updatedItem).forEach((key) => {
+              if (key.startsWith('adtParam')) {
+                // adtParam = short for additionalParam
+                delete (updatedItem as any)[key];
+              }
+            });
+
+            newActionParams.forEach((param) => {
+              const paramName = `adtParam${param.id}`;
+              (updatedItem as any)[paramName] = '';
+            });
+
+            setVisibleFields((prev) => {
+              const newVisibleFields = [...prev];
+              newVisibleFields[index] = [0, 1, 2, 3];
+              return newVisibleFields;
+            });
+
+            setCanNavigateNext((prev) => {
+              const newCanNavigateNext = [...prev];
+              newCanNavigateNext[index] = newActionParams.length > 3;
+              return newCanNavigateNext;
+            });
+
+            setCanNavigatePrev((prev) => {
+              const newCanNavigatePrev = [...prev];
+              newCanNavigatePrev[index] = false;
+              return newCanNavigatePrev;
+            });
+
             return {
-              ...item,
+              ...updatedItem,
+              actionParams: newActionParams,
               [e.currentTarget.name]: value,
-              ...rest,
             };
           }
           return item;
@@ -128,25 +258,26 @@ const Contour: React.FC = () => {
       });
     } else if (
       index !== undefined &&
-      (e.currentTarget.name === 'aParamValue' ||
-        e.currentTarget.name === 'bParamValue' ||
-        e.currentTarget.name === 'cParamValue')
+      e.currentTarget.name.startsWith('adtParam')
     ) {
       const actionCodeValue = formData.activities[index].actionCode;
       const params = actionParamsAux.find(
         (p) => p.actionCode === actionCodeValue,
       );
+      const actionParamId = params?.actionParams.find((ap) => {
+        const name = `adtParam${ap.id}`;
+        return name === e.currentTarget.name;
+      })?.id;
+      const actionParamFieldName = `adtParam${actionParamId}`;
+      const actionParamFieldValidation = params?.actionParams.find(
+        (ap) => ap.id === actionParamId,
+      )?.validation;
+
       if (
         (params &&
-          ((e.currentTarget.name === 'aParamValue' &&
-            params.aParamValidation &&
-            value.match(params.aParamValidation)) ||
-            (e.currentTarget.name === 'bParamValue' &&
-              params.bParamValidation &&
-              value.match(params.bParamValidation)) ||
-            (e.currentTarget.name === 'cParamValue' &&
-              params.cParamValidation &&
-              value.match(params.cParamValidation)))) ||
+          e.currentTarget.name === actionParamFieldName &&
+          actionParamFieldValidation &&
+          value.match(RegExp(actionParamFieldValidation))) ||
         value === ''
       ) {
         setFormData({
@@ -178,9 +309,7 @@ const Contour: React.FC = () => {
       ...formData.activities[index],
       id: index + 2,
     };
-    // função splice adiciona o novo item na posição index + 1
     newActivities.splice(index + 1, 0, newActivity);
-    // função map atualiza os ids dos itens seguintes
     newActivities = newActivities.map((activity, i) => {
       if (i >= index + 2) {
         return { ...activity, id: activity.id + 1 };
@@ -190,6 +319,28 @@ const Contour: React.FC = () => {
     setFormData({
       ...formData,
       activities: newActivities,
+    });
+
+    setVisibleFields((prev) => {
+      const newVisibleFields = [...prev];
+      newVisibleFields.splice(index + 1, 0, [0, 1, 2, 3]);
+      return newVisibleFields;
+    });
+
+    setCanNavigateNext((prev) => {
+      const newCanNavigateNext = [...prev];
+      newCanNavigateNext.splice(
+        index + 1,
+        0,
+        newActivity.actionParams.length > 4,
+      );
+      return newCanNavigateNext;
+    });
+
+    setCanNavigatePrev((prev) => {
+      const newCanNavigatePrev = [...prev];
+      newCanNavigatePrev.splice(index + 1, 0, false);
+      return newCanNavigatePrev;
     });
   };
 
@@ -204,7 +355,41 @@ const Contour: React.FC = () => {
         ...formData,
         activities: newActivities,
       });
+
+      setVisibleFields((prev) => {
+        const newVisibleFields = [...prev];
+        newVisibleFields.splice(index, 1);
+        return newVisibleFields;
+      });
+
+      setCanNavigateNext((prev) => {
+        const newCanNavigateNext = [...prev];
+        newCanNavigateNext.splice(index, 1);
+        return newCanNavigateNext;
+      });
+
+      setCanNavigatePrev((prev) => {
+        const newCanNavigatePrev = [...prev];
+        newCanNavigatePrev.splice(index, 1);
+        return newCanNavigatePrev;
+      });
     }
+  };
+
+  const renderTableBlocks = (length: number, vFields: number[]) => {
+    const blocks = [];
+    const renderCount = Math.max(...vFields) - length;
+    for (let i = 0; i <= renderCount; i += 1) {
+      blocks.push(
+        <TableD key={i}>
+          <TableDContent>
+            <TableInputLabel />
+            <TableInputLabeled type="text" disabled />
+          </TableDContent>
+        </TableD>,
+      );
+    }
+    return blocks;
   };
 
   const toggleEdit = () => {
@@ -227,20 +412,57 @@ const Contour: React.FC = () => {
     }
   }, [isEditingName]);
 
+  const renderField = (
+    item: ActivitiyItem, // ActivitiyItem with additional keys dynamically included in handleChange
+    param: ActionParamItem,
+    fieldName: string,
+    index: number,
+  ) => {
+    const fId = param.fakeId ? param.fakeId : param.id;
+
+    if (fId && fId !== '') {
+      return (
+        <TableD key={fieldName}>
+          <TableDContent>
+            <TableInputLabel>{fId}</TableInputLabel>
+            <TableInputLabeled
+              className="input is-edit"
+              type="text"
+              name={fieldName}
+              value={item[fieldName as keyof ActivitiyItem] as string} // as the fields need to be controlled by the dynamic keys of formData, we adjusted the typing to handle them accordingly
+              placeholder={param.placeholder}
+              onChange={(e) => handleChange(e, index)}
+              onFocus={() => setFocusedField({ fieldId: param.id, index })}
+              onBlur={() => setFocusedField(null)}
+            />
+            {focusedField?.fieldId === param.id &&
+              focusedField?.index === index && (
+                <Tooltip>{param.placeholder}</Tooltip>
+              )}
+          </TableDContent>
+        </TableD>
+      );
+    }
+    return null;
+  };
+
   return (
     <Container>
-      <Modal
-        title={`Code Preview de ${formData.name}`}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      >
-        <CodePreview contourId={formData.id} />
-      </Modal>
       {formData.activities ? (
         <>
           <Breadcrumbs items={breadcrumbsItems} />
-          <Content>
+          <PageContent>
             <form name="activity-items-table" className="activity-items-table">
+              <BackBtn to="/workgroup">
+                <BackBtnContent>
+                  <IconBack
+                    className="icon-expand_less"
+                    color={colors.green}
+                    fontSize="16px"
+                  />
+                  <div>Voltar</div>
+                </BackBtnContent>
+              </BackBtn>
               <PageHead>
                 <TitleContainer>
                   {isEditingName ? (
@@ -268,6 +490,11 @@ const Contour: React.FC = () => {
                     contourType={formData.type}
                     fontSize="14px"
                   />
+                  {formData.dressingTool && (
+                    <InfoLabel fontSize="14px" color={colors.blue}>
+                      <TranslatedToolName name={formData.dressingTool} />
+                    </InfoLabel>
+                  )}
                   <CodePreviewBtn>
                     <StyledIcon
                       className="icon-code"
@@ -295,19 +522,10 @@ const Contour: React.FC = () => {
                         <TableH />
                         <TableH />
                         <TableH>
-                          <HText>X</HText>
-                        </TableH>
-                        <TableH>
-                          <HText>Z</HText>
-                        </TableH>
-                        <TableH>
-                          <HText>F</HText>
-                        </TableH>
-                        <TableH>
                           <HText>Código</HText>
                         </TableH>
                         <TableH />
-                        <TableH colSpan={3}>
+                        <TableH colSpan={6}>
                           <HText>Parâmetros Adicionais</HText>
                         </TableH>
                         <TableH />
@@ -330,33 +548,6 @@ const Contour: React.FC = () => {
                             <TableInput
                               className="input is-edit"
                               type="text"
-                              name="xaxis"
-                              value={item.xaxis}
-                              onChange={(e) => handleChange(e, index)}
-                            />
-                          </TableD>
-                          <TableD>
-                            <TableInput
-                              className="input is-edit"
-                              type="text"
-                              name="zaxis"
-                              value={item.zaxis}
-                              onChange={(e) => handleChange(e, index)}
-                            />
-                          </TableD>
-                          <TableD>
-                            <TableInput
-                              className="input is-edit"
-                              type="text"
-                              name="fvalue"
-                              value={item.fvalue}
-                              onChange={(e) => handleChange(e, index)}
-                            />
-                          </TableD>
-                          <TableD>
-                            <TableInput
-                              className="input is-edit"
-                              type="text"
                               name="actionCode"
                               value={item.actionCode}
                               onChange={(e) => handleChange(e, index)}
@@ -365,75 +556,55 @@ const Contour: React.FC = () => {
                           <TableD>
                             <TableDivision>|</TableDivision>
                           </TableD>
-                          {item.aParamValue || item.aParamValue === '' ? (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel>
-                                  {item.aParamId}
-                                </TableInputLabel>
-                                <TableInputLabeled
-                                  className="input is-edit"
-                                  type="text"
-                                  name="aParamValue"
-                                  value={item.aParamValue}
-                                  onChange={(e) => handleChange(e, index)}
-                                />
-                              </TableDContent>
-                            </TableD>
-                          ) : (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel />
-                                <TableInputLabeled type="text" disabled />
-                              </TableDContent>
-                            </TableD>
+                          <TableD>
+                            <ScrollBtn
+                              type="button"
+                              onClick={() => handlePrev(index)}
+                              color={
+                                canNavigatePrev[index]
+                                  ? colors.blue
+                                  : colors.greyMedium
+                              }
+                            >
+                              <RotatedIcon
+                                className="icon-expand_less"
+                                color={colors.white}
+                                fontSize="22px"
+                              />
+                            </ScrollBtn>
+                          </TableD>
+                          {item.actionParams.map((param, paramIndex) => {
+                            if (visibleFields[index].includes(paramIndex)) {
+                              return renderField(
+                                item,
+                                param,
+                                `adtParam${param.id}` as keyof ActionParamItem,
+                                index,
+                              );
+                            }
+                            return null;
+                          })}
+                          {renderTableBlocks(
+                            item.actionParams.length,
+                            visibleFields[index],
                           )}
-                          {item.bParamValue || item.bParamValue === '' ? (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel>
-                                  {item.bParamId}
-                                </TableInputLabel>
-                                <TableInputLabeled
-                                  className="input is-edit"
-                                  type="text"
-                                  name="bParamValue"
-                                  value={item.bParamValue}
-                                  onChange={(e) => handleChange(e, index)}
-                                />
-                              </TableDContent>
-                            </TableD>
-                          ) : (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel />
-                                <TableInputLabeled type="text" disabled />
-                              </TableDContent>
-                            </TableD>
-                          )}
-                          {item.cParamValue || item.cParamValue === '' ? (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel>
-                                  {item.cParamId}
-                                </TableInputLabel>
-                                <TableInputLabeled
-                                  className="input is-edit"
-                                  type="text"
-                                  name="cParamValue"
-                                  value={item.cParamValue}
-                                  onChange={(e) => handleChange(e, index)}
-                                />
-                              </TableDContent>
-                            </TableD>
-                          ) : (
-                            <TableD>
-                              <TableDContent>
-                                <TableInputLabel />
-                                <TableInputLabeled type="text" disabled />
-                              </TableDContent>
-                            </TableD>
-                          )}
+                          <TableD>
+                            <ScrollBtn
+                              type="button"
+                              onClick={() => handleNext(index)}
+                              color={
+                                canNavigateNext[index]
+                                  ? colors.blue
+                                  : colors.greyMedium
+                              }
+                            >
+                              <RotatedIcon
+                                className="icon-expand_more"
+                                color={colors.white}
+                                fontSize="22px"
+                              />
+                            </ScrollBtn>
+                          </TableD>
                           <TableD>
                             <DeleteBtn
                               type="button"
@@ -448,11 +619,30 @@ const Contour: React.FC = () => {
                 </TableWrapper>
               </Block>
             </form>
-          </Content>
+          </PageContent>
         </>
       ) : (
         'Página não encontrada'
       )}
+      <Modal
+        title={`Code Preview de ${formData.name}`}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        <CodePreview contourId={formData.id} />
+      </Modal>
+      <Modal
+        title="Editar Dressagem"
+        isOpen={isModalEditDressingOpen}
+        onClose={() => setIsModalEditDressingOpen(false)}
+      >
+        <ContourForm
+          variation="edit"
+          machining={initialState.machining}
+          contourId={initialState.id}
+          onButtonClick={() => setIsModalEditDressingOpen(false)}
+        />
+      </Modal>
     </Container>
   );
 };

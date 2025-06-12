@@ -1,8 +1,8 @@
-import { Part } from 'types/part';
+import { GZemaFile } from 'types/fileTypes';
 import { SaveObject } from 'types/general';
 import { isElectron } from 'utils/constants';
 
-export const saveFileAs = async (data: Part) => {
+export const saveFileAs = async (data: GZemaFile) => {
   let saveObj: SaveObject = {
     success: false,
     saveType: 'saveFileAs',
@@ -20,7 +20,7 @@ export const saveFileAs = async (data: Part) => {
 };
 
 export const saveFile = async (
-  data: Part,
+  data: GZemaFile,
   lastFilePath: string | undefined,
 ) => {
   let saveObj: SaveObject = {

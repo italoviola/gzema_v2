@@ -1,14 +1,18 @@
 import React from 'react';
+import { ToolOptions } from 'types/tools';
 
-export interface OptionType {
-  value: string | number;
+export interface SelectOptionsItem {
   label: string;
+  value: number;
 }
 
+export interface SelectOptions extends Array<SelectOptionsItem> {}
+
 export interface SelectComponentProps {
-  label: string;
+  label?: string;
   name: string;
-  options: OptionType[];
+  options: ToolOptions | SelectOptions;
   onChange: (value: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string | number;
+  disabled?: boolean;
 }

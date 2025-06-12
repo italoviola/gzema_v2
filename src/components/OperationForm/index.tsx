@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Select from 'components/Select';
@@ -6,24 +6,21 @@ import FormField from 'components/FormField';
 
 import { addOperation, editOperation } from 'state/part/partSlice';
 
-import { grindingWheels } from 'integration/grindingWheels';
+import useFormattedTools from 'hooks/useFormattedTools';
 
-// Types
-import { OptionType } from 'components/Select/interface';
-import { Operations } from 'types/part';
+import { loadCncData } from 'utils/loadCncData';
+import { B_AXIS_NO_SPIN } from 'utils/constants';
+
+import { OperationItem, Operations } from 'types/part';
+import { StoredCncData } from 'types/api';
+import { ToolOptions } from 'types/tools';
+
 import { FormProps, IFormData } from './interface';
 import { Container, Field, SButton } from './style';
 
-const formattedGrindingWheels: OptionType[] = grindingWheels.map((wheel) => ({
-  value: wheel.id,
-  label: wheel.name,
-}));
-
-const initialFormData: IFormData = {
-  name: { value: '', error: false, message: undefined },
-  toolId: { value: 1, error: false, message: undefined },
-  bAxisAngle: { value: 0, error: false, message: undefined },
-};
+function getFirstValidToolId(formattedTools: ToolOptions) {
+  return formattedTools?.find((tool) => tool.type !== 0)?.id ?? '';
+}
 
 const OperationForm: React.FC<FormProps> = ({
   onButtonClick,
@@ -31,14 +28,36 @@ const OperationForm: React.FC<FormProps> = ({
   operationId,
 }) => {
   const dispatch = useDispatch();
+  const formattedTools = useFormattedTools();
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
 
+  const initialFormData: IFormData = {
+    name: { value: '', error: false, message: undefined },
+    toolId: {
+      value: Number(getFirstValidToolId(formattedTools)),
+      error: false,
+      message: undefined,
+    },
+    bAxisAngle: { value: 0, error: false, message: undefined },
+  };
   let formValues: IFormData = initialFormData;
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const loadedCncData: StoredCncData = await loadCncData();
+      setCncData(loadedCncData);
+    };
+
+    fetchData();
+  }, []);
+
   if (variation === 'edit') {
-    const operation = operations.find((op) => op.id === operationId);
+    const operation = operations.find(
+      (op: OperationItem) => op.id === operationId,
+    );
     if (operation) {
       formValues = {
         name: { value: operation.name, error: false, message: undefined },
@@ -58,6 +77,18 @@ const OperationForm: React.FC<FormProps> = ({
 
   const [formData, setFormData] = useState(formValues);
 
+  useEffect(() => {
+    if (formattedTools && formattedTools.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        toolId: {
+          ...prev.toolId,
+          value: Number(getFirstValidToolId(formattedTools)),
+        },
+      }));
+    }
+  }, [formattedTools]);
+
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -66,7 +97,7 @@ const OperationForm: React.FC<FormProps> = ({
       ...prevData,
       [name]: {
         ...prevData[name as keyof typeof initialFormData],
-        value: name === 'toolId' ? parseInt(value, 10) : value,
+        value,
       },
     }));
   };
@@ -143,23 +174,29 @@ const OperationForm: React.FC<FormProps> = ({
       </Field>
       <Field>
         <Select
-          label="Rebolo:"
+          label="Rebolo"
           name="toolId"
           onChange={handleChange}
           value={formData.toolId.value}
-          options={formattedGrindingWheels}
+          options={
+            (formattedTools &&
+              formattedTools.filter((tool) => tool.type !== 0)) ||
+            []
+          }
         />
       </Field>
-      <Field>
-        <FormField
-          name="bAxisAngle"
-          label="Ângulo Eixo B"
-          type="number"
-          placeholder="Valor do ângulo..."
-          fieldState={formData.bAxisAngle}
-          handleInputChange={handleChange}
-        />
-      </Field>
+      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
+        <Field>
+          <FormField
+            name="bAxisAngle"
+            label="Ângulo Eixo B (Retificação)"
+            type="number"
+            placeholder="Valor do ângulo..."
+            fieldState={formData.bAxisAngle}
+            handleInputChange={handleChange}
+          />
+        </Field>
+      )}
       <SButton onClick={handleClick}>
         {variation === 'add' ? 'Adicionar' : 'Editar'}
       </SButton>

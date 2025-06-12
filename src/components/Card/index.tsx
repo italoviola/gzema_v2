@@ -1,4 +1,3 @@
-// Card.tsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -7,17 +6,27 @@ import ConfirmAction from 'components/ConfirmAction';
 import Icon from 'components/Icon';
 import MoreMenu from 'components/MoreMenu';
 import GrindingTypeLabel from 'components/GrindingTypeLabel';
+import { MenuItem } from 'components/MoreMenu/interface';
 
-import { colors } from 'styles/global.styles';
-
+import useFormattedTools from 'hooks/useFormattedTools';
+import useFormattedDressingTools from 'hooks/useFormattedDressingTools';
 import {
   addContour,
   addContourToOperation,
   changeContourPositionAtOperation,
   removeContour,
 } from 'state/part/partSlice';
-import { ContourType, Operations } from 'types/part';
-import { MenuItem } from 'components/MoreMenu/interface';
+
+import { ContourType, OperationItem, Operations } from 'types/part';
+import { ToolOptionItem } from 'types/tools';
+
+import { MACHINING_GRINDING } from 'utils/constants';
+
+import { colors } from 'styles/global.styles';
+
+import dresserImg from '../../../assets/images/dresser.png';
+import partImg from '../../../assets/images/part.png';
+
 import { CardProps } from './interface';
 
 import {
@@ -32,7 +41,7 @@ import {
   Up,
   Down,
   UpDownContainer,
-  Drag,
+  ImgContainer,
 } from './styles';
 
 const Card: React.FC<CardProps> = ({
@@ -42,6 +51,8 @@ const Card: React.FC<CardProps> = ({
   onToggle,
 }) => {
   const dispatch = useDispatch();
+  const formattedTools = useFormattedTools();
+  const formattedDressingTools = useFormattedDressingTools();
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
@@ -71,17 +82,44 @@ const Card: React.FC<CardProps> = ({
 
   const moreMenuItems: MenuItem[] = [
     {
-      name: 'Adicionar à Sequência',
-      subItems: operations.map((operation) => ({
-        name: operation.name,
-        action: () =>
-          dispatch(
-            addContourToOperation({
-              operationId: operation.id,
-              contourId: content.id,
-            }),
-          ),
-      })),
+      name: 'Adicionar à Operação',
+      subItems: operations
+        .filter((operation: OperationItem) => {
+          const tool: ToolOptionItem | undefined = formattedTools.find(
+            (t: ToolOptionItem) => t.id === operation.toolId,
+          );
+          if (!tool) return false;
+          if (content.type !== tool.type) return false;
+
+          if (content.dressingTool) {
+            const match = content.dressingTool.match(/^([a-zA-Z]+)(\d+)$/);
+            const baseName = match ? match[1] : '';
+            const usedQuantity = match ? parseInt(match[2], 10) : 0;
+
+            const dressingToolItem = formattedDressingTools.find((dt) => {
+              const dtBaseName = dt.name
+                .replace(/^tool\d/, '')
+                .replace('Qtd', '');
+              return dtBaseName === baseName;
+            });
+
+            if (!dressingToolItem || usedQuantity > dressingToolItem.quantity) {
+              return false;
+            }
+          }
+
+          return true;
+        })
+        .map((operation: OperationItem) => ({
+          name: operation.name,
+          action: () =>
+            dispatch(
+              addContourToOperation({
+                operationId: operation.id,
+                contourId: content.id,
+              }),
+            ),
+        })),
     },
     { name: 'Duplicar', action: duplicateContour },
     { name: 'Excluir', action: () => setIsModalOpen(true) },
@@ -125,13 +163,15 @@ const Card: React.FC<CardProps> = ({
         />
       </Modal>
       <ContentLeft>
-        <Drag>
-          <Icon
-            className="icon-drag_indicator"
-            color={colors.greyDark}
-            fontSize="24px"
+        <ImgContainer>
+          <img
+            src={
+              content.machining === MACHINING_GRINDING ? partImg : dresserImg
+            }
+            alt="Dresser Icon"
+            height={37}
           />
-        </Drag>
+        </ImgContainer>
         {variation === 'operation' && (
           <>
             <Toggle onClick={() => toggleCard()}>

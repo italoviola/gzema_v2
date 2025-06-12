@@ -1,19 +1,27 @@
+import {
+  TYPE_EXTERNAL,
+  TYPE_INTERNAL,
+  MACHINING_GRINDING,
+  MACHINING_DRESSING,
+} from 'utils/constants';
+
 // Types
-export type ContourType = 'Internal' | 'External';
+export type ContourType = typeof TYPE_EXTERNAL | typeof TYPE_INTERNAL;
+export type Machining = typeof MACHINING_GRINDING | typeof MACHINING_DRESSING;
 
 // Interfaces
+export interface ActionParamItem {
+  id: string;
+  fakeId?: string;
+  placeholder: string;
+}
+
+export interface ActionParams extends Array<ActionParamItem> {}
+
 export interface ActivitiyItem {
   id: number;
-  xaxis: string;
-  zaxis: string;
-  fvalue: string;
   actionCode: string;
-  aParamId: string;
-  aParamValue: string | null;
-  bParamId: string;
-  bParamValue: string | null;
-  cParamId: string;
-  cParamValue: string | null;
+  actionParams: ActionParams;
 }
 
 export interface Activities extends Array<ActivitiyItem> {}
@@ -21,8 +29,10 @@ export interface Activities extends Array<ActivitiyItem> {}
 export interface ContourItem {
   id: number;
   name: string;
+  machining: Machining;
   type: ContourType;
   activities: Activities;
+  dressingTool?: string;
 }
 
 export interface Contours extends Array<ContourItem> {}
@@ -38,8 +48,26 @@ export interface OperationItem {
 
 export interface Operations extends Array<OperationItem> {}
 
+export interface GWDressingToolsDataItem {
+  name: string;
+  bAxisAngle: number;
+}
+
+export interface GWDressingToolsData extends Array<GWDressingToolsDataItem> {}
+
+export interface GrindingWheelsItem {
+  id: number;
+  label: string;
+  xSafetyDistance: number;
+  zSafetyDistance: number;
+  dressingToolsData: GWDressingToolsData;
+}
+
+export interface GrindingWheels extends Array<GrindingWheelsItem> {}
+
 export interface Part {
   id: string;
   contours: Contours;
   operations: Operations;
+  grindingWheels: GrindingWheels;
 }

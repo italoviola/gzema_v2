@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Breadcrumbs from 'components/Breadcrumbs';
@@ -9,24 +9,36 @@ import Icon from 'components/Icon';
 import Button from 'components/Button';
 import AddOperationForm from 'components/OperationForm';
 import ConfirmAction from 'components/ConfirmAction';
+import GrindingData from 'components/GrindingData';
 
-import { grindingWheels } from 'integration/grindingWheels';
+import { B_AXIS_NO_SPIN } from 'utils/constants';
+import { loadCncData } from 'utils/loadCncData';
+
+import useFormattedTools from 'hooks/useFormattedTools';
 
 import {
   removeContourFromOperation,
   deleteOperation,
   editOperation,
 } from 'state/part/partSlice';
+import { editApp } from 'state/app/appSlice';
 
-import { Contours, Operations } from 'types/part';
+import { ToolOptionItem } from 'types/tools';
+import { App } from 'types/app';
+import { StoredCncData } from 'types/api';
+import { Contours, Machining, OperationItem, Operations } from 'types/part';
 
+import { PageTitle } from 'styles/Components';
 import { colors } from 'styles/global.styles';
+
+import dresserImg from '../../../assets/images/dresser.png';
+import partImg from '../../../assets/images/part.png';
+
 import {
   Block,
   Container,
   Content,
   AddBtn,
-  Title,
   TextAdd,
   Wrap,
   OpWrapper,
@@ -40,6 +52,9 @@ import {
   BAxisAngleText,
   WheelText,
   OpItemHeaderContent,
+  BtnsWrapper,
+  IconButton,
+  IconBtn,
 } from './style';
 
 const breadcrumbsItems = [
@@ -52,20 +67,44 @@ const breadcrumbsItems = [
 
 const WorkGroup: React.FC = () => {
   const dispatch = useDispatch();
+  const formattedTools = useFormattedTools();
+
   const contours = useSelector(
     (state: { part: { contours: Contours } }) => state.part.contours,
   );
   const operations = useSelector(
     (state: { part: { operations: Operations } }) => state.part.operations,
   );
+  const hasImportedMachineDataChange = useSelector(
+    (state: { app: App }) => state.app.hasImportedMachineDataChange,
+  );
+
+  const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const [isModalContourOpen, setIsModalContourOpen] = useState<boolean>(false);
+  const [selectedMachining, setSelectedMachining] = useState<Machining>(1);
   const [isModalOperationOpen, setIsModalOperationOpen] =
     useState<boolean>(false);
   const [isModalEditOperationOpen, setIsModalEditOperationOpen] =
     useState<boolean>(false);
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
     useState<boolean>(false);
+  const [isModalGrindingDataOpen, setIsModalGrindingDataOpen] =
+    useState<boolean>(false);
   const [opIdAux, setOpIdAux] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const loadedCncData: StoredCncData = await loadCncData();
+      setCncData(loadedCncData);
+      dispatch(
+        editApp({
+          hasImportedMachineDataChange: undefined,
+        }),
+      );
+    };
+
+    fetchData();
+  }, [dispatch, hasImportedMachineDataChange]);
 
   const removeFromOperation = (operationId: number, contourId: number) => {
     dispatch(
@@ -116,13 +155,181 @@ const WorkGroup: React.FC = () => {
 
   return (
     <Container>
+      <Breadcrumbs items={breadcrumbsItems} />
+      <Content>
+        <Block>
+          <PageTitle>Contornos</PageTitle>
+          <BtnsWrapper>
+            <IconBtn>
+              <IconButton
+                onClick={() => setSelectedMachining(1)}
+                bgColor={selectedMachining === 1 ? colors.yellow : colors.white}
+                shadow={selectedMachining === 1}
+              >
+                <img src={partImg} height={34} alt="Part Icon" />
+              </IconButton>
+            </IconBtn>
+            <IconBtn>
+              <IconButton
+                onClick={() => setSelectedMachining(2)}
+                bgColor={selectedMachining === 2 ? colors.yellow : colors.white}
+                shadow={selectedMachining === 2}
+              >
+                <img src={dresserImg} height={34} alt="Dressing Icon" />
+              </IconButton>
+            </IconBtn>
+            <AddBtn>
+              <Button
+                onClick={() => setIsModalContourOpen(true)}
+                color={colors.white}
+                bgColor={colors.green}
+              >
+                <Wrap>
+                  <Icon
+                    className="icon-add"
+                    color={colors.white}
+                    fontSize="26px"
+                  />
+                  <TextAdd>
+                    Cadastrar{' '}
+                    {selectedMachining === 1 ? 'Retificação' : 'Dressagem'}
+                  </TextAdd>
+                </Wrap>
+              </Button>
+            </AddBtn>
+          </BtnsWrapper>
+          <CContentBlock>
+            <div>
+              {contours
+                .filter((contour) => contour.machining === selectedMachining)
+                .map((contour) => (
+                  <Card
+                    key={contour.id}
+                    content={contour}
+                    variation="contour"
+                  />
+                ))}
+            </div>
+          </CContentBlock>
+        </Block>
+        <Block>
+          <PageTitle>Sequência de Execução</PageTitle>
+          <BtnsWrapper>
+            <AddBtn>
+              <Button
+                onClick={() => setIsModalOperationOpen(true)}
+                color={colors.white}
+                bgColor={colors.blue}
+              >
+                <Wrap>
+                  <Icon
+                    className="icon-add"
+                    color={colors.white}
+                    fontSize="26px"
+                  />
+                  <TextAdd>Adicionar Operação</TextAdd>
+                </Wrap>
+              </Button>
+            </AddBtn>
+            <AddBtn>
+              <Button
+                onClick={() => setIsModalGrindingDataOpen(true)}
+                color={colors.blue}
+                bgColor={colors.white}
+                borderColor={colors.blue}
+              >
+                <TextAdd>Dados de Rebolo</TextAdd>
+              </Button>
+            </AddBtn>
+          </BtnsWrapper>
+          <OpWrapper>
+            {operations.map((operation: OperationItem) => {
+              const matchedTool = formattedTools.find(
+                (tool: ToolOptionItem) => tool.id === operation.toolId,
+              );
+              return (
+                <SContentBlock key={operation.id}>
+                  <OpItemHeader>
+                    <OpItemHeaderTitle>{operation.name}</OpItemHeaderTitle>
+                    <div>
+                      <SButton
+                        onClick={() => {
+                          setOpIdAux(operation.id);
+                          setIsModalEditOperationOpen(true);
+                        }}
+                      >
+                        <Icon
+                          className="icon-create"
+                          color={colors.greyFont}
+                          fontSize="28px"
+                        />
+                      </SButton>
+                      <SButton
+                        onClick={() => {
+                          setOpIdAux(operation.id);
+                          setIsModalCofirmDeleteOpOpen(true);
+                        }}
+                      >
+                        <Icon
+                          className="icon-delete"
+                          color={colors.greyFont}
+                          fontSize="28px"
+                        />
+                      </SButton>
+                    </div>
+                  </OpItemHeader>
+                  <OpItemHeaderContent>
+                    <OpItemHeaderSubTitle>
+                      <WheelText>{matchedTool && matchedTool.label}</WheelText>
+                      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
+                        <BAxisAngleText>
+                          Ângulo Eixo B (Retificação): {operation.bAxisAngle}
+                        </BAxisAngleText>
+                      )}
+                    </OpItemHeaderSubTitle>
+                  </OpItemHeaderContent>
+                  <OpItemCards>
+                    {operation.contoursIds.map((contourId) => {
+                      const contour = contours.find(
+                        // eslint-disable-next-line @typescript-eslint/no-shadow
+                        (contour) => contour.id === contourId,
+                      );
+                      if (!contour) return null;
+                      return (
+                        <Card
+                          key={contourId}
+                          content={{ ...contour, operationId: operation.id }}
+                          variation="operation"
+                          removeFromOperation={() =>
+                            removeFromOperation(operation.id, contour.id)
+                          }
+                          onToggle={(isActive: boolean) => {
+                            handleToggleCard(
+                              isActive,
+                              operation.id,
+                              contour.id,
+                            );
+                          }}
+                        />
+                      );
+                    })}
+                  </OpItemCards>
+                </SContentBlock>
+              );
+            })}
+          </OpWrapper>
+        </Block>
+      </Content>
       <Modal
-        title="Cadastrar Contorno"
+        title={`Cadastrar ${
+          selectedMachining === 1 ? 'Retificação' : 'Dressagem'
+        }`}
         isOpen={isModalContourOpen}
         onClose={() => setIsModalContourOpen(false)}
       >
         <ContourForm
-          action="add"
+          variation="add"
+          machining={selectedMachining}
           onButtonClick={() => setIsModalContourOpen(false)}
         />
       </Modal>
@@ -160,130 +367,13 @@ const WorkGroup: React.FC = () => {
           onCancel={() => setIsModalCofirmDeleteOpOpen(false)}
         />
       </Modal>
-      <Breadcrumbs items={breadcrumbsItems} />
-      <Content>
-        <Block>
-          <Title>Contornos</Title>
-          <AddBtn>
-            <Button
-              onClick={() => setIsModalContourOpen(true)}
-              color={colors.white}
-              bgColor={colors.green}
-            >
-              <Wrap>
-                <Icon
-                  className="icon-add"
-                  color={colors.white}
-                  fontSize="26px"
-                />
-                <TextAdd>Cadastrar Contorno</TextAdd>
-              </Wrap>
-            </Button>
-          </AddBtn>
-          <CContentBlock>
-            <div>
-              {contours.map((contour) => (
-                <Card key={contour.id} content={contour} variation="contour" />
-              ))}
-            </div>
-          </CContentBlock>
-        </Block>
-        <Block>
-          <Title>Sequência de Execução</Title>
-          <AddBtn>
-            <Button
-              onClick={() => setIsModalOperationOpen(true)}
-              color={colors.white}
-              bgColor={colors.blue}
-            >
-              <Wrap>
-                <Icon
-                  className="icon-add"
-                  color={colors.white}
-                  fontSize="26px"
-                />
-                <TextAdd>Adicionar Operação</TextAdd>
-              </Wrap>
-            </Button>
-          </AddBtn>
-          <OpWrapper>
-            {operations.map((operation) => {
-              const matchedGrindingWheel = grindingWheels.find(
-                (wheel) => wheel.id === operation.toolId,
-              );
-              return (
-                <SContentBlock key={operation.id}>
-                  <OpItemHeader>
-                    <OpItemHeaderTitle>{operation.name}</OpItemHeaderTitle>
-                    <div>
-                      <SButton
-                        onClick={() => {
-                          setOpIdAux(operation.id);
-                          setIsModalEditOperationOpen(true);
-                        }}
-                      >
-                        <Icon
-                          className="icon-create"
-                          color={colors.greyFont}
-                          fontSize="28px"
-                        />
-                      </SButton>
-                      <SButton
-                        onClick={() => {
-                          setOpIdAux(operation.id);
-                          setIsModalCofirmDeleteOpOpen(true);
-                        }}
-                      >
-                        <Icon
-                          className="icon-delete"
-                          color={colors.greyFont}
-                          fontSize="28px"
-                        />
-                      </SButton>
-                    </div>
-                  </OpItemHeader>
-                  <OpItemHeaderContent>
-                    <OpItemHeaderSubTitle>
-                      <WheelText>
-                        {matchedGrindingWheel && matchedGrindingWheel.name}
-                      </WheelText>
-                      <BAxisAngleText>
-                        Ângulo Eixo B: {operation.bAxisAngle}
-                      </BAxisAngleText>
-                    </OpItemHeaderSubTitle>
-                  </OpItemHeaderContent>
-                  <OpItemCards>
-                    {operation.contoursIds.map((contourId) => {
-                      const contour = contours.find(
-                        // eslint-disable-next-line @typescript-eslint/no-shadow
-                        (contour) => contour.id === contourId,
-                      );
-                      if (!contour) return null;
-                      return (
-                        <Card
-                          key={contourId}
-                          content={{ ...contour, operationId: operation.id }}
-                          variation="operation"
-                          removeFromOperation={() =>
-                            removeFromOperation(operation.id, contour.id)
-                          }
-                          onToggle={(isActive: boolean) => {
-                            handleToggleCard(
-                              isActive,
-                              operation.id,
-                              contour.id,
-                            );
-                          }}
-                        />
-                      );
-                    })}
-                  </OpItemCards>
-                </SContentBlock>
-              );
-            })}
-          </OpWrapper>
-        </Block>
-      </Content>
+      <Modal
+        title="Dados de Rebolo"
+        isOpen={isModalGrindingDataOpen}
+        onClose={() => setIsModalGrindingDataOpen(false)}
+      >
+        <GrindingData />
+      </Modal>
     </Container>
   );
 };

@@ -1,4 +1,3 @@
-// Review later
 export const breakpoints = {
   desktop: '@media (min-width: 1024px)',
 };
@@ -14,6 +13,7 @@ export const colors = {
   greyCodeBg: '#282c34',
   blue: '#0069b5',
   blueLight: '#72B2FF',
+  blueLighter: '#D7E8FC',
   blueDark: '#2772CE',
   blueCodeFont: '#6D9CBE',
   black: '#363636',
@@ -26,11 +26,13 @@ export const colors = {
   orangeDark: '#F68D00',
   silver: '#D3D3D3',
   silverDark: '#BEBEBE',
+  yellow: '#FCEB00',
 };
 
 export const measures = {
   gutter: '15px',
   contentToHeader: '255px',
+  contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',
 };
@@ -41,5 +43,7 @@ export const fonts = {
 
 export const shadows = {
   std: '0px 5px 8px -3px rgba(0, 0, 0, 0.4)',
+  inStd: '0px 5px 8px -3px rgba(0, 0, 0, 0.4) inset',
   strong: '0px 10px 16px -3px rgba(0, 0, 0, 0.8)',
+  inBottom: '0px -3px 8px -3px rgba(0, 0, 0, 0.4) inset',
 };

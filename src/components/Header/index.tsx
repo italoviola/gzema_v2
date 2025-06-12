@@ -9,6 +9,8 @@ import { MenuItem } from 'components/MoreMenu/interface';
 
 import { editApp } from 'state/app/appSlice';
 
+import { App } from 'types/app';
+
 import logo from '../../../assets/images/zema-logo.png';
 
 import {
@@ -34,10 +36,19 @@ const Header: React.FC = () => {
 
   const [loaded, setLoaded] = useState(false);
   const [fileStatus, setFileStatus] = useState<boolean>(true);
-  const lastFilePath = useSelector(
-    (state: { app: { lastFilePathSaved: string | undefined } }) =>
-      state.app.lastFilePathSaved,
-  );
+  const appState = useSelector((state: { app: App }) => state.app);
+
+  useEffect(() => {
+    if (fileStatus === false) {
+      dispatch(
+        editApp({
+          isSaved: false,
+          lastFilePathSaved: undefined,
+          lastSavedFileState: undefined,
+        }),
+      );
+    }
+  }, [fileStatus, dispatch]);
 
   const showUnsavedHighlight = () => {
     if (!isSaved) return '*';
@@ -46,30 +57,18 @@ const Header: React.FC = () => {
 
   const startFileExistenceCheck = useCallback(
     (filePath: string | undefined) => {
-      if (!filePath) return;
+      if (!filePath) return undefined;
 
       const checkInterval = 1000;
 
       const intervalId = setInterval(async () => {
         const result = await window.electron.ipcRenderer.checkFile(filePath);
-        // refatorar essa parte para o fileStatus ser um state do redux e não do componente
         setFileStatus(result);
-
-        if (!result) {
-          dispatch(
-            editApp({
-              isSaved: false,
-              lastFilePathSaved: undefined,
-              lastSavedFileState: undefined,
-            }),
-          );
-          clearInterval(intervalId);
-        }
-
-        setLoaded(true);
       }, checkInterval);
+
+      return intervalId;
     },
-    [dispatch],
+    [],
   );
 
   const moreMenuItems: MenuItem[] = [
@@ -79,6 +78,12 @@ const Header: React.FC = () => {
         navigate('/config');
       },
     },
+    {
+      name: 'Máquina',
+      action: () => {
+        navigate('/machine');
+      },
+    },
   ];
 
   useEffect(() => {
@@ -86,10 +91,18 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (lastFilePath) {
-      startFileExistenceCheck(lastFilePath);
+    if (appState.lastFilePathSaved && appState.lastFilePathSaved !== '') {
+      const intervalId = startFileExistenceCheck(appState.lastFilePathSaved);
+
+      return () => {
+        if (intervalId) clearInterval(intervalId);
+      };
     }
-  }, [lastFilePath, startFileExistenceCheck]);
+    if (appState.lastFilePathSaved === '') {
+      setFileStatus(true);
+    }
+    return undefined;
+  }, [appState.lastFilePathSaved, startFileExistenceCheck]);
 
   return (
     <div>
