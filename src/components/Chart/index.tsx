@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
+// import CartesianPlane from 'components/CartesianPlane';
 
 import { colors } from 'styles/global.styles';
 import { Container } from './styles';
@@ -10,6 +11,11 @@ const Chart: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+  const [shapeStrokeWidth, setShapeStrokeWidth] = useState(1);
+
+  useEffect(() => {
+    setShapeStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
+  }, [zoomLevel]);
 
   const handleDragMove = (e: any) => {
     const stage = e.target;
@@ -47,7 +53,7 @@ const Chart: React.FC = () => {
       type: 'polygon',
       points: [0, 0, 50, 50, 50, -50],
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'polygon1',
     },
     {
@@ -57,7 +63,7 @@ const Chart: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'rect1',
     },
     // {
@@ -67,7 +73,7 @@ const Chart: React.FC = () => {
     //   width: 100,
     //   height: 800,
     //   fill: colors.silver,
-    // opacity: 0.7,
+    //  opacity: 0.9,
     //   id: 'rect1',
     // },
     {
@@ -77,7 +83,7 @@ const Chart: React.FC = () => {
       width: 150,
       height: 70,
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'rect2',
     },
     {
@@ -87,14 +93,14 @@ const Chart: React.FC = () => {
       width: 100,
       height: 100,
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'rect3',
     },
     {
       type: 'polygon',
       points: [400, 50, 440, 30, 440, -30, 400, -50],
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'polygon2',
     },
     {
@@ -104,7 +110,7 @@ const Chart: React.FC = () => {
       width: 10,
       height: 60,
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
       id: 'concaveRoundedRect1',
     },
@@ -112,7 +118,7 @@ const Chart: React.FC = () => {
       type: 'polygon',
       points: [450, 20, 450, -20, 500, 0],
       fill: colors.silver,
-      opacity: 0.7,
+      opacity: 0.9,
       id: 'polygon3',
     },
   ];
@@ -129,6 +135,7 @@ const Chart: React.FC = () => {
 
   return (
     <Container>
+      {/* <CartesianPlane /> */}
       <div>
         <button type="button" onClick={() => setZoomLevel(zoomLevel + 1)}>
           Zoom In
@@ -140,7 +147,6 @@ const Chart: React.FC = () => {
           Zoom Out
         </button>
       </div>
-      {/* <CartesianPlane /> */}
       <Stage
         width={870}
         height={450}
@@ -155,7 +161,12 @@ const Chart: React.FC = () => {
         style={{ border: '1px solid black' }}
       >
         <Layer>
-          <CartesianGrid zoomLevel={zoomLevel} stagePosition={stagePosition} />
+          <CartesianGrid
+            zoomLevel={zoomLevel}
+            stagePosition={stagePosition}
+            stageWidth={870}
+            stageHeight={450}
+          />
         </Layer>
         <Layer>
           {shapes.map((shape) => {
@@ -169,7 +180,9 @@ const Chart: React.FC = () => {
                   height={shape.height}
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  strokeWidth={
+                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                  }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
                 />
@@ -184,7 +197,9 @@ const Chart: React.FC = () => {
                   )}
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  strokeWidth={
+                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                  }
                   closed
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
@@ -223,7 +238,9 @@ const Chart: React.FC = () => {
                   data={pathData}
                   fill={fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={selectedShape === shape.id ? 2 : 1}
+                  strokeWidth={
+                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                  }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
                 />
@@ -239,7 +256,7 @@ const Chart: React.FC = () => {
               radius={point.radius}
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
-              strokeWidth={selectedShape === point.id ? 2 : 1}
+              strokeWidth={selectedShape === point.id ? 2 : shapeStrokeWidth}
               onClick={() => handleShapeClick(point.id)}
             />
           ))}

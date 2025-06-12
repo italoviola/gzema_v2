@@ -1,159 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import { Line, Text } from 'react-konva';
+import React, { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
+
+import { generateGrid } from './generateGrid';
 import { Container } from './styles';
 
+// Defina as constantes de cor no topo do arquivo
 interface CartesianGridProps {
   zoomLevel: number;
+  stagePosition: { x: number; y: number };
+  stageWidth?: number;
+  stageHeight?: number;
 }
 
-const CartesianGrid: React.FC<CartesianGridProps> = ({ zoomLevel }) => {
-  const [strokeWidth, setStrokeWidth] = useState(1);
+const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
+  ({ zoomLevel, stagePosition, stageWidth = 870, stageHeight = 450 }) => {
+    const baseGridSize = 1000;
+    const intermediateSteps = zoomLevel > 10 ? 100 : 10;
+    const intermediateStepSize = baseGridSize / intermediateSteps;
 
-  useEffect(() => {
-    if (zoomLevel > 10) {
-      setStrokeWidth(0.1);
-    } else {
-      setStrokeWidth(0.5);
-    }
-  }, [zoomLevel]);
+    const [strokeWidth, setStrokeWidth] = useState(1);
 
-  const lines = [];
-  const baseGridSize = 1000; // Tamanho da grade base
-  const intermediateSteps = 100;
-  const intermediateStepSize = baseGridSize / intermediateSteps;
+    useEffect(() => {
+      setStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
+    }, [zoomLevel]);
 
-  const maxX = 1500; // Limite máximo no eixo X
-  const maxY = 1500; // Limite máximo no eixo Y
-
-  for (
-    let i = -Math.ceil(maxX / baseGridSize);
-    i <= Math.ceil(maxX / baseGridSize);
-    i += 1
-  ) {
-    lines.push(
-      <Line
-        key={`v-${i}`}
-        points={[i * baseGridSize, -maxY, i * baseGridSize, maxY]}
-        stroke="#ddd"
-        strokeWidth={strokeWidth}
-      />,
-    );
-    lines.push(
-      <Text
-        key={`v-label-${i}`}
-        x={i * baseGridSize + 5}
-        y={-5}
-        text={`${i * baseGridSize}`}
-        fontSize={8}
-        fill="black"
-      />,
+    const getFontSize = React.useCallback(
+      () => Math.max(strokeWidth, 0.5),
+      [strokeWidth],
     );
 
-    // Adiciona linhas intermediárias
-    for (let j = 1; j <= intermediateSteps; j += 1) {
-      const intermediateX = i * baseGridSize + j * intermediateStepSize;
-      lines.push(
-        <Line
-          key={`v-intermediate-${i}-${j}`}
-          points={[intermediateX, -maxY, intermediateX, maxY]}
-          stroke={zoomLevel > 10 ? '#ccc' : '#eee'}
-          strokeWidth={strokeWidth}
-        />,
-      );
-      lines.push(
-        <Text
-          key={`v-intermediate-label-${i}-${j}`}
-          x={intermediateX + 2}
-          y={2}
-          text={`${Math.round(intermediateX)}`}
-          fontSize={4}
-          fill="gray"
-        />,
-      );
+    const lines = useMemo(() => {
+      // Calcula os limites visíveis no Stage
+      const left = -stagePosition.x / zoomLevel;
+      const right = (stageWidth - stagePosition.x) / zoomLevel;
+      const top = -stagePosition.y / zoomLevel;
+      const bottom = (stageHeight - stagePosition.y) / zoomLevel;
 
-      // Adiciona sublinhas intermediárias se o zoomLevel for maior que 10
-      if (zoomLevel > 10) {
-        const subIntermediateStepSize = intermediateStepSize / 10;
-        for (let k = 1; k < 10; k += 1) {
-          const subIntermediateX = intermediateX + k * subIntermediateStepSize;
-          lines.push(
-            <Line
-              key={`v-sub-intermediate-${i}-${j}-${k}`}
-              points={[subIntermediateX, -maxY, subIntermediateX, maxY]}
-              stroke="#f0f0f0"
-              strokeWidth={strokeWidth}
-            />,
-          );
-        }
-      }
-    }
-  }
+      const minX =
+        Math.floor(left / intermediateStepSize) * intermediateStepSize;
+      const maxX =
+        Math.ceil(right / intermediateStepSize) * intermediateStepSize;
+      const minY =
+        Math.floor(top / intermediateStepSize) * intermediateStepSize;
+      const maxY =
+        Math.ceil(bottom / intermediateStepSize) * intermediateStepSize;
 
-  for (
-    let i = -Math.ceil(maxY / baseGridSize);
-    i <= Math.ceil(maxY / baseGridSize);
-    i += 1
-  ) {
-    lines.push(
-      <Line
-        key={`h-${i}`}
-        points={[-maxX, i * baseGridSize, maxX, i * baseGridSize]}
-        stroke="#ddd"
-        strokeWidth={strokeWidth}
-      />,
-    );
-    lines.push(
-      <Text
-        key={`h-label-${i}`}
-        x={5}
-        y={-i * baseGridSize}
-        text={`${i * baseGridSize}`}
-        fontSize={8}
-        fill="black"
-      />,
-    );
+      return [
+        ...generateGrid({
+          isVertical: true,
+          min: minX,
+          max: maxX,
+          fixed1: top,
+          fixed2: bottom,
+          mainKey: 'v',
+          labelKey: 'v-label',
+          subKey: 'v-sub',
+          intermediateStepSize,
+          baseGridSize,
+          zoomLevel,
+          strokeWidth,
+          getFontSize,
+        }),
+        ...generateGrid({
+          isVertical: false,
+          min: minY,
+          max: maxY,
+          fixed1: left,
+          fixed2: right,
+          mainKey: 'h',
+          labelKey: 'h-label',
+          subKey: 'h-sub',
+          intermediateStepSize,
+          baseGridSize,
+          zoomLevel,
+          strokeWidth,
+          getFontSize,
+        }),
+      ];
+    }, [
+      stagePosition.x,
+      stagePosition.y,
+      zoomLevel,
+      stageWidth,
+      stageHeight,
+      intermediateStepSize,
+      strokeWidth,
+      baseGridSize,
+      getFontSize,
+    ]);
 
-    // Adiciona linhas intermediárias
-    for (let j = 1; j <= intermediateSteps; j += 1) {
-      const intermediateY = i * baseGridSize + j * intermediateStepSize;
-      lines.push(
-        <Line
-          key={`h-intermediate-${i}-${j}`}
-          points={[-maxX, intermediateY, maxX, intermediateY]}
-          stroke={zoomLevel > 10 ? '#ccc' : '#eee'}
-          strokeWidth={strokeWidth}
-        />,
-      );
-      lines.push(
-        <Text
-          key={`h-intermediate-label-${i}-${j}`}
-          x={5}
-          y={-intermediateY}
-          text={`${Math.round(intermediateY)}`}
-          fontSize={4}
-          fill="gray"
-        />,
-      );
+    return <Container>{lines}</Container>;
+  },
+);
 
-      // Adiciona sublinhas intermediárias se o zoomLevel for maior que 10
-      if (zoomLevel > 10) {
-        const subIntermediateStepSize = intermediateStepSize / 10;
-        for (let k = 1; k < 10; k += 1) {
-          const subIntermediateY = intermediateY + k * subIntermediateStepSize;
-          lines.push(
-            <Line
-              key={`h-sub-intermediate-${i}-${j}-${k}`}
-              points={[-maxX, subIntermediateY, maxX, subIntermediateY]}
-              stroke="#f0f0f0"
-              strokeWidth={strokeWidth}
-            />,
-          );
-        }
-      }
-    }
-  }
+CartesianGrid.propTypes = {
+  zoomLevel: PropTypes.number.isRequired,
+  stagePosition: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
+  stageWidth: PropTypes.number,
+  stageHeight: PropTypes.number,
+};
 
-  return <Container>{lines}</Container>;
+CartesianGrid.defaultProps = {
+  stageWidth: 870,
+  stageHeight: 450,
 };
 
 export default CartesianGrid;
