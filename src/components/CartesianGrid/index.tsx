@@ -25,8 +25,12 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
     }, [zoomLevel]);
 
     const getFontSize = React.useCallback(
-      () => Math.max(strokeWidth, 0.5),
-      [strokeWidth],
+      () =>
+        Math.min(
+          intermediateStepSize * 90,
+          Math.max((strokeWidth * 35) / zoomLevel, 0.7),
+        ),
+      [intermediateStepSize, strokeWidth, zoomLevel],
     );
 
     const lines = useMemo(() => {

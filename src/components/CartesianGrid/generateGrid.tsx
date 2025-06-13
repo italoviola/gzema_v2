@@ -1,10 +1,12 @@
 import React from 'react';
-import { Line, Text } from 'react-konva';
+import { Line, Rect, Text } from 'react-konva';
 
-const MAIN_LINE_COLOR = '#1a1a1a';
+import { getTextOffset } from './utils';
+
+const MAIN_LINE_COLOR = '#000000';
 const SECONDARY_LINE_COLOR = '#7a7979';
-const INTERMEDIATE_LINE_COLOR = '#eee';
-const SUB_LINE_COLOR = '#e5e9e5';
+const INTERMEDIATE_LINE_COLOR = '#7a7979';
+const SUB_LINE_COLOR = '#60db60';
 
 export interface GenerateGridParams {
   isVertical: boolean;
@@ -55,34 +57,39 @@ export function generateGrid({
         strokeWidth={strokeWidth}
       />,
     );
-    // Label
-    if (v % baseGridSize === 0) {
-      elements.push(
-        <Text
-          key={`${labelKey}-${v}`}
-          x={isVertical ? v : 0}
-          y={isVertical ? 0 : v}
-          text={`${Math.round(v)}`}
-          fontSize={getFontSize()}
-          fill="black"
-          offsetX={0}
-          offsetY={0}
-        />,
-      );
-    } else if (zoomLevel > 5 && v % (baseGridSize / 10) === 0) {
-      elements.push(
-        <Text
-          key={`${labelKey}-small-${v}`}
-          x={isVertical ? v : 0}
-          y={isVertical ? 0 : v}
-          text={`${Math.round(v)}`}
-          fontSize={getFontSize()}
-          fill="gray"
-          offsetX={0}
-          offsetY={0}
-        />,
-      );
-    }
+
+    const fontSize = getFontSize();
+    const padding = fontSize * 0.1; // ajuste conforme necessário
+    const textValue = `${Math.round(v)}`;
+    const textWidth = fontSize * textValue.length * 0.6; // aproximação
+    const textHeight = fontSize;
+    const { offsetX, offsetY } = getTextOffset(v, isVertical, fontSize);
+
+    elements.push(
+      <Rect
+        key={`bg-${labelKey}-${v}`}
+        x={(isVertical ? v : 0) - offsetX - padding / 2}
+        y={(isVertical ? 0 : v) - offsetY - padding / 2}
+        width={textWidth + padding}
+        height={textHeight + padding}
+        fill="white"
+      />,
+    );
+
+    elements.push(
+      <Text
+        key={`${labelKey}-${v}`}
+        x={isVertical ? v : 0}
+        y={isVertical ? 0 : v}
+        text={textValue}
+        fontSize={fontSize}
+        fill="black"
+        offsetX={offsetX}
+        offsetY={offsetY}
+        fontFamily="monospace"
+        fontStyle="bold"
+      />,
+    );
     // Sublinhas
     if (zoomLevel > 10) {
       const subStep = intermediateStepSize / 10;
