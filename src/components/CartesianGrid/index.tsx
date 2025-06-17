@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 import { generateGrid } from './generateGrid';
@@ -8,30 +8,24 @@ import { Container } from './styles';
 interface CartesianGridProps {
   zoomLevel: number;
   stagePosition: { x: number; y: number };
+  strokeWidth: number;
+  getFontSize: () => number;
   stageWidth?: number;
   stageHeight?: number;
 }
 
 const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
-  ({ zoomLevel, stagePosition, stageWidth = 870, stageHeight = 450 }) => {
+  ({
+    zoomLevel,
+    stagePosition,
+    strokeWidth,
+    getFontSize,
+    stageWidth = 870,
+    stageHeight = 450,
+  }) => {
     const baseGridSize = 1000;
-    const intermediateSteps = zoomLevel > 10 ? 100 : 10;
+    const intermediateSteps = zoomLevel > 4 ? 100 : 10;
     const intermediateStepSize = baseGridSize / intermediateSteps;
-
-    const [strokeWidth, setStrokeWidth] = useState(1);
-
-    useEffect(() => {
-      setStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
-    }, [zoomLevel]);
-
-    const getFontSize = React.useCallback(
-      () =>
-        Math.min(
-          intermediateStepSize * 90,
-          Math.max((strokeWidth * 35) / zoomLevel, 0.7),
-        ),
-      [intermediateStepSize, strokeWidth, zoomLevel],
-    );
 
     const lines = useMemo(() => {
       // Calcula os limites visíveis no Stage
@@ -89,7 +83,6 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
       stageHeight,
       intermediateStepSize,
       strokeWidth,
-      baseGridSize,
       getFontSize,
     ]);
 
@@ -103,6 +96,8 @@ CartesianGrid.propTypes = {
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
   }).isRequired,
+  strokeWidth: PropTypes.number.isRequired,
+  getFontSize: PropTypes.func.isRequired,
   stageWidth: PropTypes.number,
   stageHeight: PropTypes.number,
 };

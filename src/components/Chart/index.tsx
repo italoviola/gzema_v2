@@ -11,10 +11,29 @@ const Chart: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
-  const [shapeStrokeWidth, setShapeStrokeWidth] = useState(1);
+  const [strokeWidth, setStrokeWidth] = useState(1);
 
   useEffect(() => {
-    setShapeStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
+    if (zoomLevel > 1024) setStrokeWidth(0.02);
+    else if (zoomLevel >= 512) setStrokeWidth(0.005);
+    else if (zoomLevel >= 256) setStrokeWidth(0.02);
+    else if (zoomLevel >= 128) setStrokeWidth(0.02);
+    else if (zoomLevel >= 16) setStrokeWidth(0.05);
+    else if (zoomLevel >= 8) setStrokeWidth(0.1);
+    else if (zoomLevel >= 4) setStrokeWidth(0.3);
+    else if (zoomLevel >= 2) setStrokeWidth(0.3);
+    else setStrokeWidth(0.5);
+  }, [zoomLevel]);
+
+  const getFontSize = React.useCallback(() => {
+    if (zoomLevel >= 512) return 0.1;
+    if (zoomLevel >= 256) return 0.3;
+    if (zoomLevel >= 128) return 0.5;
+    if (zoomLevel >= 16) return 0.7;
+    if (zoomLevel >= 8) return 2;
+    if (zoomLevel >= 4) return 8;
+    if (zoomLevel >= 2) return 8;
+    return 14;
   }, [zoomLevel]);
 
   const handleDragMove = (e: any) => {
@@ -133,19 +152,27 @@ const Chart: React.FC = () => {
     setSelectedShape(id);
   };
 
+  const ZOOM_FACTOR = 2; // Fator de zoom exponencial
+
   return (
     <Container>
       {/* <CartesianPlane /> */}
       <div>
-        <button type="button" onClick={() => setZoomLevel(zoomLevel + 1)}>
+        <button
+          type="button"
+          onClick={() => setZoomLevel((prev) => prev * ZOOM_FACTOR)}
+        >
           Zoom In
         </button>
         <button
           type="button"
-          onClick={() => setZoomLevel(Math.max(1, zoomLevel - 1))}
+          onClick={() =>
+            setZoomLevel((prev) => Math.max(1, prev / ZOOM_FACTOR))
+          }
         >
           Zoom Out
         </button>
+        <div>Zoom Level: {zoomLevel}</div>
       </div>
       <Stage
         width={870}
@@ -166,6 +193,8 @@ const Chart: React.FC = () => {
             stagePosition={stagePosition}
             stageWidth={870}
             stageHeight={450}
+            strokeWidth={strokeWidth}
+            getFontSize={getFontSize}
           />
         </Layer>
         <Layer>
@@ -181,7 +210,7 @@ const Chart: React.FC = () => {
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
@@ -198,7 +227,7 @@ const Chart: React.FC = () => {
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   closed
                   opacity={shape.opacity}
@@ -239,7 +268,7 @@ const Chart: React.FC = () => {
                   fill={fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
@@ -256,7 +285,9 @@ const Chart: React.FC = () => {
               radius={point.radius}
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
-              strokeWidth={selectedShape === point.id ? 2 : shapeStrokeWidth}
+              strokeWidth={
+                selectedShape === point.id ? strokeWidth * 2 : strokeWidth
+              }
               onClick={() => handleShapeClick(point.id)}
             />
           ))}

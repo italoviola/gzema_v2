@@ -11,7 +11,7 @@ export function getTextOffset(
   // Positivos verticais
   if (!isHorizontal && v > 0) {
     return {
-      offsetX: fontSize - fontSize * 0.15,
+      offsetX: fontSize - fontSize * 0.1,
       offsetY: -(fontSize - fontSize * 1.5),
     };
   }

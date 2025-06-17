@@ -6,7 +6,8 @@ import { getTextOffset } from './utils';
 const MAIN_LINE_COLOR = '#000000';
 const SECONDARY_LINE_COLOR = '#7a7979';
 const INTERMEDIATE_LINE_COLOR = '#7a7979';
-const SUB_LINE_COLOR = '#60db60';
+const SUB_LINE_COLOR = '#7a7979';
+const SUB_SUB_LINE_COLOR = '#91df91eb';
 
 export interface GenerateGridParams {
   isVertical: boolean;
@@ -93,13 +94,12 @@ export function generateGrid({
     // Sublinhas
     if (zoomLevel > 10) {
       const subStep = intermediateStepSize / 10;
-      for (let sub = 1; sub < 10; sub += 1) {
-        const subV = v + sub * subStep;
-        if (subV > max) break;
+      const subStart = Math.floor(min / subStep) * subStep;
+      for (let subV = subStart; subV <= max; subV += subStep) {
         if (subV >= min && subV <= max) {
           elements.push(
             <Line
-              key={`${subKey}-${v}-${sub}`}
+              key={`${subKey}-${v}-${subV}`}
               points={
                 isVertical
                   ? [subV, fixed1, subV, fixed2]
@@ -109,6 +109,31 @@ export function generateGrid({
               strokeWidth={strokeWidth / 2}
             />,
           );
+          // Sub-sublinhas (apenas para zoom muito alto)
+          if (zoomLevel >= 512) {
+            const subSubStep = subStep / 10;
+            const subSubStart = Math.floor(subV / subSubStep) * subSubStep;
+            for (
+              let subSubV = subSubStart;
+              subSubV < subV + subStep && subSubV <= max;
+              subSubV += subSubStep
+            ) {
+              if (subSubV >= min && subSubV <= max) {
+                elements.push(
+                  <Line
+                    key={`${subKey}-subsub-${v}-${subV}-${subSubV}`}
+                    points={
+                      isVertical
+                        ? [subSubV, fixed1, subSubV, fixed2]
+                        : [fixed1, subSubV, fixed2, subSubV]
+                    }
+                    stroke={SUB_SUB_LINE_COLOR}
+                    strokeWidth={strokeWidth / 4}
+                  />,
+                );
+              }
+            }
+          }
         }
       }
     }
