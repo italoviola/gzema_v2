@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
@@ -26,10 +26,11 @@ const Chart: React.FC = () => {
   }, [zoomLevel]);
 
   const getFontSize = React.useCallback(() => {
-    if (zoomLevel >= 512) return 0.1;
+    if (zoomLevel >= 512) return 0.07;
     if (zoomLevel >= 256) return 0.3;
     if (zoomLevel >= 128) return 0.5;
-    if (zoomLevel >= 16) return 0.7;
+    if (zoomLevel >= 32) return 0.7;
+    if (zoomLevel >= 16) return 1;
     if (zoomLevel >= 8) return 2;
     if (zoomLevel >= 4) return 8;
     if (zoomLevel >= 2) return 8;
@@ -154,6 +155,23 @@ const Chart: React.FC = () => {
 
   const ZOOM_FACTOR = 2; // Fator de zoom exponencial
 
+  const cartesianGrid = useMemo(
+    () => (
+      <CartesianGrid
+        // due to a problem with konva not removing Text elements when zooming out,
+        // it was used conditional to zoomLevel to force useMemo to re-render when needed
+        key={`grid-${zoomLevel < 512 ? 'low' : 'high'}`}
+        zoomLevel={zoomLevel}
+        stagePosition={stagePosition}
+        stageWidth={870}
+        stageHeight={450}
+        strokeWidth={strokeWidth}
+        getFontSize={getFontSize}
+      />
+    ),
+    [zoomLevel, stagePosition, strokeWidth, getFontSize],
+  );
+
   return (
     <Container>
       {/* <CartesianPlane /> */}
@@ -187,16 +205,7 @@ const Chart: React.FC = () => {
         onDragMove={handleDragMove}
         style={{ border: '1px solid black' }}
       >
-        <Layer>
-          <CartesianGrid
-            zoomLevel={zoomLevel}
-            stagePosition={stagePosition}
-            stageWidth={870}
-            stageHeight={450}
-            strokeWidth={strokeWidth}
-            getFontSize={getFontSize}
-          />
-        </Layer>
+        <Layer>{cartesianGrid}</Layer>
         <Layer>
           {shapes.map((shape) => {
             if (shape.type === 'rect') {

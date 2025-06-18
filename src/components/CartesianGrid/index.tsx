@@ -58,6 +58,9 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
           zoomLevel,
           strokeWidth,
           getFontSize,
+          stagePosition,
+          stageWidth,
+          stageHeight,
         }),
         ...generateGrid({
           isVertical: false,
@@ -73,11 +76,13 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
           zoomLevel,
           strokeWidth,
           getFontSize,
+          stagePosition,
+          stageWidth,
+          stageHeight,
         }),
       ];
     }, [
-      stagePosition.x,
-      stagePosition.y,
+      stagePosition,
       zoomLevel,
       stageWidth,
       stageHeight,
