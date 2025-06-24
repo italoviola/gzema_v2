@@ -14,7 +14,8 @@ const Chart: React.FC = () => {
   const [strokeWidth, setStrokeWidth] = useState(1);
 
   useEffect(() => {
-    if (zoomLevel > 1024) setStrokeWidth(0.02);
+    if (zoomLevel >= 2048) setStrokeWidth(0.001);
+    else if (zoomLevel >= 1024) setStrokeWidth(0.02);
     else if (zoomLevel >= 512) setStrokeWidth(0.005);
     else if (zoomLevel >= 256) setStrokeWidth(0.02);
     else if (zoomLevel >= 128) setStrokeWidth(0.02);
@@ -26,6 +27,8 @@ const Chart: React.FC = () => {
   }, [zoomLevel]);
 
   const getFontSize = React.useCallback(() => {
+    if (zoomLevel >= 2048) return 0.01;
+    if (zoomLevel >= 1024) return 0.07;
     if (zoomLevel >= 512) return 0.07;
     if (zoomLevel >= 256) return 0.3;
     if (zoomLevel >= 128) return 0.5;
