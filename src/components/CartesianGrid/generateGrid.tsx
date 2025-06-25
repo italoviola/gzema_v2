@@ -9,6 +9,13 @@ const INTERMEDIATE_LINE_COLOR = '#7a7979';
 const SUB_LINE_COLOR = '#a8a8a8';
 const SUB_SUB_LINE_COLOR = '#91df91eb';
 
+// Atualizar as constantes no início do arquivo
+const MAX_LINES = 3000; // Limite para linhas normais
+const MAX_TEXTS = 2000; // Limite para textos normais e retângulos
+const MAX_MICRO_LINES = 100; // Limite específico para micro linhas
+const MAX_MICRO_TEXTS = Math.floor(MAX_MICRO_LINES * 0.0833); // 8,33% de MAX_MICRO_LINES (~249)
+const MAX_DETAIL_ELEMENTS = MAX_MICRO_LINES + MAX_MICRO_TEXTS; // Limite auxiliar geral para detalhes
+
 export interface GenerateGridParams {
   isVertical: boolean;
   min: number;
@@ -49,11 +56,9 @@ export function generateGrid({
   // Separamos os elementos principais dos detalhes para garantir prioridade
   const mainElements = [];
   const detailElements = [];
-  const MAX_ELEMENTS = 5000; // Aumentamos o limite para acomodar mais linhas
-  const MAX_DETAIL_ELEMENTS = 4000; // Limite para elementos de detalhe
 
   // Calcula os limites visíveis do grid com uma margem de segurança
-  const margin = intermediateStepSize * 2; // Margem para evitar aparecimento abrupto de elementos
+  const margin = 0; // Margem para evitar aparecimento abrupto de elementos
 
   let visibleMin = isVertical
     ? -stagePosition.x / zoomLevel - margin
@@ -72,7 +77,11 @@ export function generateGrid({
   const effectiveMax = Math.min(max, visibleMax);
 
   // PRIMEIRA ETAPA: Renderizar as linhas principais e seus textos
-  for (let v = effectiveMin; v <= effectiveMax; v += intermediateStepSize) {
+  // CORREÇÃO: Alinhar o início do loop à grade para que as linhas se movam com o stage
+  const startValue =
+    Math.floor(effectiveMin / intermediateStepSize) * intermediateStepSize;
+
+  for (let v = startValue; v <= effectiveMax; v += intermediateStepSize) {
     if (v >= visibleMin && v <= visibleMax) {
       // Usa as constantes de cor
       let strokeColor = INTERMEDIATE_LINE_COLOR;
@@ -246,53 +255,50 @@ export function generateGrid({
   }
 
   // 4. Microlinhas (zoom >= 2048)
-  if (zoomLevel >= 2048 && detailElements.length < MAX_DETAIL_ELEMENTS) {
+  if (zoomLevel >= 2048) {
     const subStep = intermediateStepSize / 10;
     const subSubStep = subStep / 10;
     const microStep = subSubStep / 10;
-    const microStart = Math.floor(visibleMin / microStep) * microStep;
-    const microEnd = Math.ceil(visibleMax / microStep) * microStep;
 
-    // Primeiro: Coletar todos os elementos para renderização separada
     const microLines = [];
     const microTexts = [];
 
-    for (let microV = microStart; microV <= microEnd; microV += microStep) {
+    // Margem específica para microlinhas
+    for (let i = 0; ; i += 1) {
+      let added = false;
+
+      // Valor positivo
+      const positiveV = i * microStep;
       if (
-        microV >= visibleMin &&
-        microV <= visibleMax &&
-        detailElements.length < MAX_DETAIL_ELEMENTS
+        positiveV >= visibleMin &&
+        positiveV <= visibleMax &&
+        microLines.length < MAX_MICRO_LINES
       ) {
-        // Adicionar todas as microlinhas primeiro
         microLines.push(
           <Line
-            key={`${subKey}-micro-${microV.toFixed(2)}`}
+            key={`${subKey}-micro-${positiveV.toFixed(2)}`}
             points={
               isVertical
-                ? [microV, fixed1, microV, fixed2]
-                : [fixed1, microV, fixed2, microV]
+                ? [positiveV, fixed1, positiveV, fixed2]
+                : [fixed1, positiveV, fixed2, positiveV]
             }
             stroke="#c7f8c7"
             strokeWidth={strokeWidth / 4}
           />,
         );
 
-        // Números de microlinhas - apenas a cada 5 linhas
-        const roundedMicroV = Math.round(microV * 100) / 100;
-        if (
-          Math.round(roundedMicroV * 100) % 10 === 0 &&
-          microTexts.length + microLines.length < MAX_DETAIL_ELEMENTS
-        ) {
+        // Texto para valores positivos
+        const roundedPositiveV = Math.round(positiveV * 100) / 100;
+        if (Math.round(roundedPositiveV * 100) % 10 === 0) {
           const microFontSize = getFontSize();
           const microPadding = microFontSize * 0.1;
-          const microTextValue = roundedMicroV.toFixed(2);
+          const microTextValue = roundedPositiveV.toFixed(2);
           const microTextWidth = microFontSize * microTextValue.length * 0.6;
           const microTextHeight = microFontSize;
           const { offsetX: microOffsetX, offsetY: microOffsetY } =
-            getTextOffset(roundedMicroV, isVertical, microFontSize);
+            getTextOffset(roundedPositiveV, isVertical, microFontSize);
 
-          // consts for Text component
-          const isZero = roundedMicroV === 0;
+          const isZero = roundedPositiveV === 0;
           let microTextY;
 
           if (isVertical) {
@@ -300,22 +306,21 @@ export function generateGrid({
           } else if (isZero) {
             microTextY = 0 - microOffsetY + microPadding * 8;
           } else {
-            microTextY = roundedMicroV - microOffsetY + microPadding * 16;
+            microTextY = roundedPositiveV - microOffsetY + microPadding * 16;
           }
 
-          // Adicionar retângulos de fundo à coleção separada
           microTexts.push(
             <Rect
               key={`bg-zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
                 isVertical ? 'v' : 'h'
-              }-${roundedMicroV.toFixed(2)}`}
+              }-${roundedPositiveV.toFixed(2)}`}
               x={
-                (isVertical ? roundedMicroV : 0) -
+                (isVertical ? roundedPositiveV : 0) -
                 microOffsetX -
                 microPadding / 2
               }
               y={
-                (isVertical ? 0 : roundedMicroV) -
+                (isVertical ? 0 : roundedPositiveV) -
                 microOffsetY -
                 microPadding / 4
               }
@@ -324,14 +329,12 @@ export function generateGrid({
               fill="white"
             />,
           );
-
-          // Adicionar textos à coleção separada
           microTexts.push(
             <Text
               key={`zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
                 isVertical ? 'v' : 'h'
-              }-${roundedMicroV.toFixed(2)}`}
-              x={isVertical ? roundedMicroV : 0}
+              }-${roundedPositiveV.toFixed(2)}`}
+              x={isVertical ? roundedPositiveV : 0}
               y={microTextY}
               text={microTextValue}
               fontSize={microFontSize}
@@ -343,10 +346,100 @@ export function generateGrid({
             />,
           );
         }
+        added = true;
+      }
+
+      // Valor negativo (não repete zero)
+      if (i > 0) {
+        const negativeV = -i * microStep;
+        if (negativeV >= visibleMin && negativeV <= visibleMax) {
+          microLines.push(
+            <Line
+              key={`${subKey}-micro-${negativeV.toFixed(2)}`}
+              points={
+                isVertical
+                  ? [negativeV, fixed1, negativeV, fixed2]
+                  : [fixed1, negativeV, fixed2, negativeV]
+              }
+              stroke="#c7f8c7"
+              strokeWidth={strokeWidth / 4}
+            />,
+          );
+
+          // Texto para valores negativos
+          const roundedNegativeV = Math.round(negativeV * 100) / 100;
+          if (
+            Math.round(roundedNegativeV * 100) % 10 === 0 &&
+            microTexts.length < MAX_MICRO_TEXTS * 2
+          ) {
+            const microFontSize = getFontSize();
+            const microPadding = microFontSize * 0.1;
+            const microTextValue = roundedNegativeV.toFixed(2);
+            const microTextWidth = microFontSize * microTextValue.length * 0.6;
+            const microTextHeight = microFontSize;
+            const { offsetX: microOffsetX, offsetY: microOffsetY } =
+              getTextOffset(roundedNegativeV, isVertical, microFontSize);
+
+            let microTextY;
+            if (isVertical) {
+              microTextY = 0 - microOffsetY + microPadding * 8;
+            } else {
+              microTextY = roundedNegativeV - microOffsetY + microPadding * 16;
+            }
+
+            microTexts.push(
+              <Rect
+                key={`bg-zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
+                  isVertical ? 'v' : 'h'
+                }-${roundedNegativeV.toFixed(2)}`}
+                x={
+                  (isVertical ? roundedNegativeV : 0) -
+                  microOffsetX -
+                  microPadding / 2
+                }
+                y={
+                  (isVertical ? 0 : roundedNegativeV) -
+                  microOffsetY -
+                  microPadding / 4
+                }
+                width={microTextWidth}
+                height={microTextHeight}
+                fill="white"
+              />,
+            );
+            microTexts.push(
+              <Text
+                key={`zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
+                  isVertical ? 'v' : 'h'
+                }-${roundedNegativeV.toFixed(2)}`}
+                x={isVertical ? roundedNegativeV : 0}
+                y={microTextY}
+                text={microTextValue}
+                fontSize={microFontSize}
+                fill="#006600"
+                offsetX={microOffsetX}
+                offsetY={microOffsetY}
+                fontFamily="monospace"
+                fontStyle="bold"
+              />,
+            );
+          }
+          added = true;
+        }
+      }
+
+      // Para quando não há mais nada visível para adicionar
+      if (
+        (!added &&
+          i * microStep >
+            Math.max(Math.abs(visibleMin), Math.abs(visibleMax))) ||
+        (microLines.length >= MAX_MICRO_LINES &&
+          microTexts.length >= MAX_MICRO_TEXTS * 2)
+      ) {
+        break;
       }
     }
 
-    // Adicionar ao array de detalhes mantendo a ordem: linhas primeiro, depois textos
     detailElements.push(...microLines, ...microTexts);
   }
 
@@ -382,22 +475,15 @@ export function generateGrid({
         // Linhas normais vão para o final do array
         lines.push(element);
       }
-      return;
     }
   });
 
-  // 3. Combinar todos os elementos na ordem correta
-  const allElements = [...lines, ...textsAndRects];
+  // 3. Limitar individualmente e depois combinar
+  const linesToRender = lines.slice(0, MAX_LINES);
+  const textsToRender = textsAndRects.slice(0, MAX_TEXTS);
 
-  // Limita o número máximo de elementos para evitar travamentos
-  if (allElements.length > MAX_ELEMENTS) {
-    const totalTextsAndRects = textsAndRects.length;
-    const maxLines = MAX_ELEMENTS - totalTextsAndRects;
-    const linesToKeep = lines.slice(0, Math.max(0, maxLines));
-
-    // Prioriza manter os textos visíveis
-    return [...linesToKeep, ...textsAndRects];
-  }
+  // Combinar respeitando os limites individuais
+  const allElements = [...linesToRender, ...textsToRender];
 
   return allElements;
 }
