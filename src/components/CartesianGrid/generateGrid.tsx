@@ -9,12 +9,12 @@ const INTERMEDIATE_LINE_COLOR = '#7a7979';
 const SUB_LINE_COLOR = '#a8a8a8';
 const SUB_SUB_LINE_COLOR = '#91df91eb';
 
-// Atualizar as constantes no início do arquivo
-const MAX_LINES = 3000; // Limite para linhas normais
-const MAX_TEXTS = 2000; // Limite para textos normais e retângulos
-const MAX_MICRO_LINES = 100; // Limite específico para micro linhas
-const MAX_MICRO_TEXTS = Math.floor(MAX_MICRO_LINES * 0.0833); // 8,33% de MAX_MICRO_LINES (~249)
-const MAX_DETAIL_ELEMENTS = MAX_MICRO_LINES + MAX_MICRO_TEXTS; // Limite auxiliar geral para detalhes
+// Constantes de Limite para Elementos Renderizados
+const MAX_LINES = 3000; // Limite total para linhas
+const MAX_TEXTS = 2000; // Limite total para textos e seus fundos
+const MAX_MICRO_LINES = 100; // Limite específico para microlinhas
+const MAX_MICRO_TEXTS = Math.floor(MAX_MICRO_LINES * 0.0833); // Limite para microtextos (aprox. 8.33% das microlinhas)
+const MAX_DETAIL_ELEMENTS = MAX_MICRO_LINES + MAX_MICRO_TEXTS * 2; // Limite combinado para todos os elementos de detalhe
 
 export interface GenerateGridParams {
   isVertical: boolean;
@@ -35,6 +35,74 @@ export interface GenerateGridParams {
   stageHeight: number;
 }
 
+/**
+ * Cria um par de componentes Rect e Text para exibir um rótulo no grid.
+ * Abstrai a lógica de criação de texto com fundo branco para reutilização.
+ */
+function createGridText(
+  key: string,
+  value: number,
+  text: string,
+  isVertical: boolean,
+  fontSize: number,
+  fill: string,
+  isMicroText?: boolean, // Flag para lidar com o caso dos micro-textos
+): React.ReactNode[] {
+  const padding = fontSize * 0.1;
+  const textWidth = fontSize * text.length * 0.6; // Aproximação da largura do texto
+  const textHeight = fontSize;
+  const { offsetX, offsetY } = getTextOffset(value, isVertical, fontSize);
+
+  // --- Valores Padrão ---
+  const xPos = isVertical ? value : 0;
+  let yPos = isVertical ? 0 : value;
+  const rectX = xPos - offsetX - padding / 2;
+  let rectY = yPos - offsetY - padding / 2;
+  let rectWidth = textWidth + padding;
+  let rectHeight = textHeight + padding;
+
+  // --- Sobrescreve os valores se for um micro-texto ---
+  if (isMicroText) {
+    const isZero = value === 0;
+
+    // Lógica de posicionamento Y específica para o texto
+    if (isVertical || isZero) {
+      yPos = 0 - offsetY + padding * 8;
+    } else {
+      yPos = value - offsetY + padding * 16;
+    }
+
+    // Lógica de posicionamento e dimensão específica para o Rect
+    const rectBaseY = isVertical ? 0 : value;
+    rectY = rectBaseY - offsetY - padding / 4;
+    rectWidth = textWidth; // Sem padding
+    rectHeight = textHeight; // Sem padding
+  }
+
+  return [
+    <Rect
+      key={`bg-${key}`}
+      x={rectX}
+      y={rectY}
+      width={rectWidth}
+      height={rectHeight}
+      fill="white"
+    />,
+    <Text
+      key={key}
+      x={xPos}
+      y={yPos}
+      text={text}
+      fontSize={fontSize}
+      fill={fill}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      fontFamily="monospace"
+      fontStyle="bold"
+    />,
+  ];
+}
+
 export function generateGrid({
   isVertical,
   min,
@@ -53,92 +121,60 @@ export function generateGrid({
   stageWidth,
   stageHeight,
 }: GenerateGridParams): React.ReactNode[] {
-  // Separamos os elementos principais dos detalhes para garantir prioridade
-  const mainElements = [];
-  const detailElements = [];
+  const mainElements: React.ReactNode[] = [];
+  const detailElements: React.ReactNode[] = [];
 
-  // Calcula os limites visíveis do grid com uma margem de segurança
-  const margin = 0; // Margem para evitar aparecimento abrupto de elementos
-
-  let visibleMin = isVertical
+  // Calcula os limites visíveis do grid com base na posição e zoom do "stage"
+  const margin = 0; // Margem de segurança para renderização
+  const visibleMin = isVertical
     ? -stagePosition.x / zoomLevel - margin
     : -stagePosition.y / zoomLevel - margin;
-  let visibleMax = isVertical
+  const visibleMax = isVertical
     ? (stageWidth - stagePosition.x) / zoomLevel + margin
     : (stageHeight - stagePosition.y) / zoomLevel + margin;
 
-  // Garante que min < max
-  if (visibleMin > visibleMax) {
-    [visibleMin, visibleMax] = [visibleMax, visibleMin];
-  }
-
-  // Restringe o min/max para a área visível
   const effectiveMin = Math.max(min, visibleMin);
   const effectiveMax = Math.min(max, visibleMax);
 
-  // PRIMEIRA ETAPA: Renderizar as linhas principais e seus textos
-  // CORREÇÃO: Alinhar o início do loop à grade para que as linhas se movam com o stage
+  // ETAPA 1: Renderizar as linhas principais e seus textos
   const startValue =
     Math.floor(effectiveMin / intermediateStepSize) * intermediateStepSize;
-
   for (let v = startValue; v <= effectiveMax; v += intermediateStepSize) {
-    if (v >= visibleMin && v <= visibleMax) {
-      // Usa as constantes de cor
-      let strokeColor = INTERMEDIATE_LINE_COLOR;
-      if (v % baseGridSize === 0) {
-        strokeColor = MAIN_LINE_COLOR;
-      } else if (zoomLevel > 10) {
-        strokeColor = SECONDARY_LINE_COLOR;
-      }
+    let strokeColor = INTERMEDIATE_LINE_COLOR;
+    if (v % baseGridSize === 0) {
+      strokeColor = MAIN_LINE_COLOR;
+    } else if (zoomLevel > 10) {
+      strokeColor = SECONDARY_LINE_COLOR;
+    }
 
+    mainElements.push(
+      <Line
+        key={`${mainKey}-${v}`}
+        points={isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]}
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
+      />,
+    );
+
+    // Renderiza textos principais apenas em níveis de zoom mais baixos
+    if (zoomLevel < 512) {
       mainElements.push(
-        <Line
-          key={`${mainKey}-${v}`}
-          points={isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]}
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-        />,
+        ...createGridText(
+          `${labelKey}-main-${v}`,
+          v,
+          `${Math.round(v)}`,
+          isVertical,
+          getFontSize(),
+          'black',
+        ),
       );
-
-      const fontSize = getFontSize();
-      const padding = fontSize * 0.1; // ajuste conforme necessário
-      const textValue = `${Math.round(v)}`;
-      const textWidth = fontSize * textValue.length * 0.6; // aproximação
-      const textHeight = fontSize;
-      const { offsetX, offsetY } = getTextOffset(v, isVertical, fontSize);
-
-      // Renderiza o texto principal apenas se zoomLevel < 512
-      if (zoomLevel < 512) {
-        mainElements.push(
-          <Rect
-            key={`bg-zoom${zoomLevel < 512 ? 'Low' : 'High'}-${labelKey}-${v}`}
-            x={(isVertical ? v : 0) - offsetX - padding / 2}
-            y={(isVertical ? 0 : v) - offsetY - padding / 2}
-            width={textWidth + padding}
-            height={textHeight + padding}
-            fill="white"
-          />,
-        );
-        mainElements.push(
-          <Text
-            key={`zoom${zoomLevel < 512 ? 'Low' : 'High'}-${labelKey}-${v}`}
-            x={isVertical ? v : 0}
-            y={isVertical ? 0 : v}
-            text={textValue}
-            fontSize={fontSize}
-            fill="black"
-            offsetX={offsetX}
-            offsetY={offsetY}
-            fontFamily="monospace"
-            fontStyle="bold"
-          />,
-        );
-      }
     }
   }
 
-  // SEGUNDA ETAPA: Renderizar as sublinhas e detalhes com IFs independentes para melhor performance
-  // 1. Sublinhas (zoom > 10)
+  // ETAPA 2: Renderizar detalhes (sublinhas, sub-textos, etc.) com base no zoom
+  // A renderização é feita em blocos `if` independentes para clareza e performance.
+
+  // 2.1. Sublinhas (aparecem com um pouco de zoom)
   if (zoomLevel > 10 && detailElements.length < MAX_DETAIL_ELEMENTS) {
     const subStep = intermediateStepSize / 10;
     const subStart = Math.floor(visibleMin / subStep) * subStep;
@@ -148,7 +184,7 @@ export function generateGrid({
       if (subV >= visibleMin && subV <= visibleMax) {
         detailElements.push(
           <Line
-            key={`${subKey}-${subV}`}
+            key={`${subKey}-sub-${subV}`}
             points={
               isVertical
                 ? [subV, fixed1, subV, fixed2]
@@ -162,7 +198,7 @@ export function generateGrid({
     }
   }
 
-  // 2. Sub-textos (zoom >= 512)
+  // 2.2. Sub-textos (aparecem com mais zoom)
   if (
     zoomLevel >= 512 &&
     zoomLevel < 2048 &&
@@ -178,61 +214,27 @@ export function generateGrid({
         subV <= visibleMax &&
         detailElements.length < MAX_DETAIL_ELEMENTS
       ) {
-        const subFontSize = getFontSize();
-        const subPadding = subFontSize * 0.1;
-        const subTextValue = subV.toFixed(1);
-        const subTextWidth = subFontSize * subTextValue.length * 0.6;
-        const subTextHeight = subFontSize;
-        const { offsetX: subOffsetX, offsetY: subOffsetY } = getTextOffset(
-          subV,
-          isVertical,
-          subFontSize,
-        );
-
         detailElements.push(
-          <Rect
-            key={`bg-zoom${zoomLevel < 512 ? 'Low' : 'High'}-subText-${
-              isVertical ? 'v' : 'h'
-            }-${subV}`}
-            x={(isVertical ? subV : 0) - subOffsetX - subPadding / 2}
-            y={(isVertical ? 0 : subV) - subOffsetY - subPadding / 2}
-            width={subTextWidth + subPadding}
-            height={subTextHeight + subPadding}
-            fill="white"
-          />,
-        );
-        detailElements.push(
-          <Text
-            key={`zoom${zoomLevel < 512 ? 'Low' : 'High'}-subText-${
-              isVertical ? 'v' : 'h'
-            }-${subV}`}
-            x={isVertical ? subV : 0}
-            y={isVertical ? 0 : subV}
-            text={subTextValue}
-            fontSize={subFontSize}
-            fill="black"
-            offsetX={subOffsetX}
-            offsetY={subOffsetY}
-            fontFamily="monospace"
-            fontStyle="bold"
-          />,
+          ...createGridText(
+            `${labelKey}-sub-${subV}`,
+            subV,
+            subV.toFixed(1),
+            isVertical,
+            getFontSize(),
+            'black',
+          ),
         );
       }
     }
   }
 
-  // 3. Sub-sublinhas (zoom >= 1024)
+  // 2.3. Sub-sublinhas (ainda mais zoom)
   if (zoomLevel >= 1024 && detailElements.length < MAX_DETAIL_ELEMENTS) {
-    const subStep = intermediateStepSize / 10;
-    const subSubStep = subStep / 10;
-    const subSubStart = Math.floor(visibleMin / subSubStep) * subSubStep;
-    const subSubEnd = Math.ceil(visibleMax / subSubStep) * subSubStep;
+    const subStep = intermediateStepSize / 100; // Mais finas
+    const subSubStart = Math.floor(visibleMin / subStep) * subStep;
+    const subSubEnd = Math.ceil(visibleMax / subStep) * subStep;
 
-    for (
-      let subSubV = subSubStart;
-      subSubV <= subSubEnd;
-      subSubV += subSubStep
-    ) {
+    for (let subSubV = subSubStart; subSubV <= subSubEnd; subSubV += subStep) {
       if (
         subSubV >= visibleMin &&
         subSubV <= visibleMax &&
@@ -254,236 +256,110 @@ export function generateGrid({
     }
   }
 
-  // 4. Microlinhas (zoom >= 2048)
+  // 2.4. Microlinhas e Microtextos (zoom máximo)
   if (zoomLevel >= 2048) {
-    const subStep = intermediateStepSize / 10;
-    const subSubStep = subStep / 10;
-    const microStep = subSubStep / 10;
+    const microStep = intermediateStepSize / 1000;
+    const microLines: React.ReactNode[] = [];
+    const microTexts: React.ReactNode[] = [];
 
-    const microLines = [];
-    const microTexts = [];
-
-    // Margem específica para microlinhas
+    // Otimização: Renderiza do centro (0) para fora, priorizando elementos na área de foco do usuário.
     for (let i = 0; ; i += 1) {
-      let added = false;
+      const centerOffset = i * microStep;
+      let addedInIteration = false;
 
-      // Valor positivo
-      const positiveV = i * microStep;
-      if (
-        positiveV >= visibleMin &&
-        positiveV <= visibleMax &&
-        microLines.length < MAX_MICRO_LINES
-      ) {
-        microLines.push(
-          <Line
-            key={`${subKey}-micro-${positiveV.toFixed(2)}`}
-            points={
-              isVertical
-                ? [positiveV, fixed1, positiveV, fixed2]
-                : [fixed1, positiveV, fixed2, positiveV]
-            }
-            stroke="#c7f8c7"
-            strokeWidth={strokeWidth / 4}
-          />,
-        );
+      // Processa ambos os lados (positivo e negativo) para expandir a partir do centro.
+      const valuesToProcess = i === 0 ? [0] : [centerOffset, -centerOffset];
 
-        // Texto para valores positivos
-        const roundedPositiveV = Math.round(positiveV * 100) / 100;
-        if (Math.round(roundedPositiveV * 100) % 10 === 0) {
-          const microFontSize = getFontSize();
-          const microPadding = microFontSize * 0.1;
-          const microTextValue = roundedPositiveV.toFixed(2);
-          const microTextWidth = microFontSize * microTextValue.length * 0.6;
-          const microTextHeight = microFontSize;
-          const { offsetX: microOffsetX, offsetY: microOffsetY } =
-            getTextOffset(roundedPositiveV, isVertical, microFontSize);
-
-          const isZero = roundedPositiveV === 0;
-          let microTextY;
-
-          if (isVertical) {
-            microTextY = 0 - microOffsetY + microPadding * 8;
-          } else if (isZero) {
-            microTextY = 0 - microOffsetY + microPadding * 8;
-          } else {
-            microTextY = roundedPositiveV - microOffsetY + microPadding * 16;
+      valuesToProcess.forEach((v) => {
+        if (v >= visibleMin && v <= visibleMax) {
+          let elementAdded = false;
+          // Adiciona microlinhas até o limite
+          if (microLines.length < MAX_MICRO_LINES) {
+            microLines.push(
+              <Line
+                key={`${subKey}-micro-${v.toFixed(3)}`}
+                points={
+                  isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]
+                }
+                stroke="#c7f8c7"
+                strokeWidth={strokeWidth / 4}
+              />,
+            );
+            elementAdded = true;
           }
 
-          microTexts.push(
-            <Rect
-              key={`bg-zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
-                isVertical ? 'v' : 'h'
-              }-${roundedPositiveV.toFixed(2)}`}
-              x={
-                (isVertical ? roundedPositiveV : 0) -
-                microOffsetX -
-                microPadding / 2
-              }
-              y={
-                (isVertical ? 0 : roundedPositiveV) -
-                microOffsetY -
-                microPadding / 4
-              }
-              width={microTextWidth}
-              height={microTextHeight}
-              fill="white"
-            />,
-          );
-          microTexts.push(
-            <Text
-              key={`zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
-                isVertical ? 'v' : 'h'
-              }-${roundedPositiveV.toFixed(2)}`}
-              x={isVertical ? roundedPositiveV : 0}
-              y={microTextY}
-              text={microTextValue}
-              fontSize={microFontSize}
-              fill="#006600"
-              offsetX={microOffsetX}
-              offsetY={microOffsetY}
-              fontFamily="monospace"
-              fontStyle="bold"
-            />,
-          );
-        }
-        added = true;
-      }
-
-      // Valor negativo (não repete zero)
-      if (i > 0) {
-        const negativeV = -i * microStep;
-        if (negativeV >= visibleMin && negativeV <= visibleMax) {
-          microLines.push(
-            <Line
-              key={`${subKey}-micro-${negativeV.toFixed(2)}`}
-              points={
-                isVertical
-                  ? [negativeV, fixed1, negativeV, fixed2]
-                  : [fixed1, negativeV, fixed2, negativeV]
-              }
-              stroke="#c7f8c7"
-              strokeWidth={strokeWidth / 4}
-            />,
-          );
-
-          // Texto para valores negativos
-          const roundedNegativeV = Math.round(negativeV * 100) / 100;
+          // Adiciona microtextos em intervalos específicos e até o limite
+          const roundedV = Math.round(v * 100) / 100;
           if (
-            Math.round(roundedNegativeV * 100) % 10 === 0 &&
-            microTexts.length < MAX_MICRO_TEXTS * 2
+            Math.round(roundedV * 100) % 10 === 0 &&
+            microTexts.length < MAX_MICRO_TEXTS * 2 // *2 pois cada texto tem um Rect
           ) {
             const microFontSize = getFontSize();
-            const microPadding = microFontSize * 0.1;
-            const microTextValue = roundedNegativeV.toFixed(2);
-            const microTextWidth = microFontSize * microTextValue.length * 0.6;
-            const microTextHeight = microFontSize;
-            const { offsetX: microOffsetX, offsetY: microOffsetY } =
-              getTextOffset(roundedNegativeV, isVertical, microFontSize);
-
-            let microTextY;
-            if (isVertical) {
-              microTextY = 0 - microOffsetY + microPadding * 8;
-            } else {
-              microTextY = roundedNegativeV - microOffsetY + microPadding * 16;
-            }
 
             microTexts.push(
-              <Rect
-                key={`bg-zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
-                  isVertical ? 'v' : 'h'
-                }-${roundedNegativeV.toFixed(2)}`}
-                x={
-                  (isVertical ? roundedNegativeV : 0) -
-                  microOffsetX -
-                  microPadding / 2
-                }
-                y={
-                  (isVertical ? 0 : roundedNegativeV) -
-                  microOffsetY -
-                  microPadding / 4
-                }
-                width={microTextWidth}
-                height={microTextHeight}
-                fill="white"
-              />,
+              ...createGridText(
+                `micro-${labelKey}-${roundedV.toFixed(2)}`,
+                roundedV,
+                roundedV.toFixed(2),
+                isVertical,
+                microFontSize,
+                '#006600',
+                true, // Passa a flag para indicar que é um micro-texto
+              ),
             );
-            microTexts.push(
-              <Text
-                key={`zoom${zoomLevel < 4096 ? 'Low' : 'High'}-microText-${
-                  isVertical ? 'v' : 'h'
-                }-${roundedNegativeV.toFixed(2)}`}
-                x={isVertical ? roundedNegativeV : 0}
-                y={microTextY}
-                text={microTextValue}
-                fontSize={microFontSize}
-                fill="#006600"
-                offsetX={microOffsetX}
-                offsetY={microOffsetY}
-                fontFamily="monospace"
-                fontStyle="bold"
-              />,
-            );
+            elementAdded = true;
           }
-          added = true;
-        }
-      }
 
-      // Para quando não há mais nada visível para adicionar
-      if (
-        (!added &&
-          i * microStep >
-            Math.max(Math.abs(visibleMin), Math.abs(visibleMax))) ||
-        (microLines.length >= MAX_MICRO_LINES &&
-          microTexts.length >= MAX_MICRO_TEXTS * 2)
-      ) {
+          if (elementAdded) {
+            addedInIteration = true;
+          }
+        }
+      });
+
+      // Condição de parada: sai do loop se não há mais elementos visíveis para adicionar
+      // ou se os limites de renderização foram atingidos.
+      const outOfBounds =
+        centerOffset > Math.max(Math.abs(visibleMin), Math.abs(visibleMax));
+      const limitsReached =
+        microLines.length >= MAX_MICRO_LINES &&
+        microTexts.length >= MAX_MICRO_TEXTS * 2;
+
+      if ((!addedInIteration && outOfBounds) || limitsReached) {
         break;
       }
     }
-
     detailElements.push(...microLines, ...microTexts);
   }
 
-  // Agora vamos reorganizar todos os elementos para renderizar primeiro as linhas, depois os textos
-  // Isso garante que os textos sempre apareçam por cima das linhas
+  // ETAPA 3: Reorganizar todos os elementos para garantir a ordem de renderização correta.
+  // Textos e seus fundos devem sempre aparecer por cima das linhas.
 
-  // 1. Separar todos os elementos em dois arrays: linhas e texto+backgrounds
   const lines: React.ReactNode[] = [];
   const textsAndRects: React.ReactNode[] = [];
 
-  // 2. Preencher os arrays separados com tratamento especial para a linha horizontal do eixo X (valor 0)
+  // Separa os elementos em 'linhas' e 'textos/fundos'
   [...mainElements, ...detailElements].forEach((element: any) => {
-    // Verificar se é um elemento de texto/fundo
     if (element && (element.type === Text || element.type === Rect)) {
       textsAndRects.push(element);
       return;
     }
 
-    // Verificar se é uma linha
     if (element && element.type === Line) {
-      // Extrair informações da chave para identificar o tipo de linha
       const key = element.key?.toString() || '';
-
-      // Checar se é a linha horizontal do eixo X (uma linha onde y=0)
-      // Linhas horizontais têm pontos como [x1, 0, x2, 0]
+      // Tratamento especial para a linha do eixo X (y=0) para que fique no fundo
       const isHorizontalAxisLine = !isVertical && key.includes(`${mainKey}-0`);
 
       if (isHorizontalAxisLine) {
-        // Adiciona a linha horizontal do eixo X no início do array
-        // para garantir que seja renderizada primeiro (abaixo de tudo)
-        lines.unshift(element);
+        lines.unshift(element); // Renderiza primeiro (no fundo)
       } else {
-        // Linhas normais vão para o final do array
-        lines.push(element);
+        lines.push(element); // Ordem normal
       }
     }
   });
 
-  // 3. Limitar individualmente e depois combinar
+  // Aplica os limites de renderização individuais antes de combinar
   const linesToRender = lines.slice(0, MAX_LINES);
   const textsToRender = textsAndRects.slice(0, MAX_TEXTS);
 
-  // Combinar respeitando os limites individuais
-  const allElements = [...linesToRender, ...textsToRender];
-
-  return allElements;
+  return [...linesToRender, ...textsToRender];
 }
