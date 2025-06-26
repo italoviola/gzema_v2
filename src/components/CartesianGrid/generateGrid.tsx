@@ -8,6 +8,8 @@ const SECONDARY_LINE_COLOR = '#7a7979';
 const INTERMEDIATE_LINE_COLOR = '#7a7979';
 const SUB_LINE_COLOR = '#a8a8a8';
 const SUB_SUB_LINE_COLOR = '#91df91eb';
+const MICRO_LINE_COLOR = '#c7f8c7';
+const HIGHLIGHTED_MICRO_LINE_COLOR = '#a8a8a8'; // Cor cinza para as linhas demarcadas
 
 // Constantes de Limite para Elementos Renderizados
 const MAX_LINES = 3000; // Limite total para linhas
@@ -44,14 +46,31 @@ function createGridText(
   value: number,
   text: string,
   isVertical: boolean,
-  fontSize: number,
+  fontSize: number, // Tamanho da fonte desejado (pode ser < 0.01)
   fill: string,
+  zoomLevel: number,
   isMicroText?: boolean, // Flag para lidar com o caso dos micro-textos
 ): React.ReactNode[] {
-  const padding = fontSize * 0.1;
-  const textWidth = fontSize * text.length * 0.6; // Aproximação da largura do texto
-  const textHeight = fontSize;
-  const { offsetX, offsetY } = getTextOffset(value, isVertical, fontSize);
+  const MIN_RENDERABLE_FONT_SIZE = 0.01;
+  let scaleFactor = 1;
+  let renderFontSize = fontSize;
+
+  // Se o tamanho desejado for menor que o mínimo, calcula a escala
+  if (fontSize < MIN_RENDERABLE_FONT_SIZE) {
+    scaleFactor = fontSize / MIN_RENDERABLE_FONT_SIZE;
+    renderFontSize = MIN_RENDERABLE_FONT_SIZE;
+  }
+
+  // Divide o scaleFactor por 2 quando o zoom for muito alto
+  if (zoomLevel >= 2048) {
+    scaleFactor /= 1.5;
+  }
+
+  // Usa o renderFontSize (tamanho renderizável) para todos os cálculos de layout
+  const padding = renderFontSize * 0.1;
+  const textWidth = renderFontSize * text.length * 0.6; // Aproximação da largura do texto
+  const textHeight = renderFontSize;
+  const { offsetX, offsetY } = getTextOffset(value, isVertical, renderFontSize);
 
   // --- Valores Padrão ---
   const xPos = isVertical ? value : 0;
@@ -61,15 +80,26 @@ function createGridText(
   let rectWidth = textWidth + padding;
   let rectHeight = textHeight + padding;
 
+  let rectOffsetX = 0;
+  let rectOffsetY = 0;
+
   // --- Sobrescreve os valores se for um micro-texto ---
   if (isMicroText) {
     const isZero = value === 0;
 
     // Lógica de posicionamento Y específica para o texto
-    if (isVertical || isZero) {
-      yPos = 0 - offsetY + padding * 8;
+    if (isZero) {
+      yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
+      rectOffsetX = offsetX * -0.5;
+      rectOffsetY = offsetY * -1;
+    } else if (isVertical) {
+      yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
     } else {
-      yPos = value - offsetY + padding * 16;
+      if (zoomLevel >= 2048) {
+        rectOffsetX = offsetX * -0.5;
+        rectOffsetY = offsetY * -0.5;
+      }
+      yPos = value - offsetY + padding * (zoomLevel >= 2048 ? 12 : 20);
     }
 
     // Lógica de posicionamento e dimensão específica para o Rect
@@ -87,18 +117,24 @@ function createGridText(
       width={rectWidth}
       height={rectHeight}
       fill="white"
+      scaleX={scaleFactor}
+      scaleY={scaleFactor}
+      offsetX={rectOffsetX}
+      offsetY={rectOffsetY}
     />,
     <Text
       key={key}
       x={xPos}
       y={yPos}
       text={text}
-      fontSize={fontSize}
+      fontSize={renderFontSize} // Usa o tamanho renderizável
       fill={fill}
       offsetX={offsetX}
       offsetY={offsetY}
       fontFamily="monospace"
       fontStyle="bold"
+      scaleX={scaleFactor} // Aplica a escala
+      scaleY={scaleFactor}
     />,
   ];
 }
@@ -166,6 +202,7 @@ export function generateGrid({
           isVertical,
           getFontSize(),
           'black',
+          zoomLevel,
         ),
       );
     }
@@ -175,13 +212,13 @@ export function generateGrid({
   // A renderização é feita em blocos `if` independentes para clareza e performance.
 
   // 2.1. Sublinhas (aparecem com um pouco de zoom)
-  if (zoomLevel > 10 && detailElements.length < MAX_DETAIL_ELEMENTS) {
+  if (zoomLevel > 8 && detailElements.length < MAX_DETAIL_ELEMENTS) {
     const subStep = intermediateStepSize / 10;
     const subStart = Math.floor(visibleMin / subStep) * subStep;
     const subEnd = Math.ceil(visibleMax / subStep) * subStep;
 
     for (let subV = subStart; subV <= subEnd; subV += subStep) {
-      if (subV >= visibleMin && subV <= visibleMax) {
+      if (subV !== 0 && subV >= visibleMin && subV <= visibleMax) {
         detailElements.push(
           <Line
             key={`${subKey}-sub-${subV}`}
@@ -200,7 +237,7 @@ export function generateGrid({
 
   // 2.2. Sub-textos (aparecem com mais zoom)
   if (
-    zoomLevel >= 512 &&
+    zoomLevel > 256 &&
     zoomLevel < 2048 &&
     detailElements.length < MAX_DETAIL_ELEMENTS
   ) {
@@ -214,14 +251,16 @@ export function generateGrid({
         subV <= visibleMax &&
         detailElements.length < MAX_DETAIL_ELEMENTS
       ) {
+        const subText = subV === 0 ? '0' : subV.toFixed(1);
         detailElements.push(
           ...createGridText(
             `${labelKey}-sub-${subV}`,
             subV,
-            subV.toFixed(1),
+            subText,
             isVertical,
             getFontSize(),
             'black',
+            zoomLevel,
           ),
         );
       }
@@ -229,13 +268,14 @@ export function generateGrid({
   }
 
   // 2.3. Sub-sublinhas (ainda mais zoom)
-  if (zoomLevel >= 1024 && detailElements.length < MAX_DETAIL_ELEMENTS) {
+  if (zoomLevel > 512 && detailElements.length < MAX_DETAIL_ELEMENTS) {
     const subStep = intermediateStepSize / 100; // Mais finas
     const subSubStart = Math.floor(visibleMin / subStep) * subStep;
     const subSubEnd = Math.ceil(visibleMax / subStep) * subStep;
 
     for (let subSubV = subSubStart; subSubV <= subSubEnd; subSubV += subStep) {
       if (
+        subSubV !== 0 &&
         subSubV >= visibleMin &&
         subSubV <= visibleMax &&
         detailElements.length < MAX_DETAIL_ELEMENTS
@@ -249,7 +289,7 @@ export function generateGrid({
                 : [fixed1, subSubV, fixed2, subSubV]
             }
             stroke={SUB_SUB_LINE_COLOR}
-            strokeWidth={strokeWidth / 16}
+            strokeWidth={strokeWidth / 4}
           />,
         );
       }
@@ -273,16 +313,23 @@ export function generateGrid({
       valuesToProcess.forEach((v) => {
         if (v >= visibleMin && v <= visibleMax) {
           let elementAdded = false;
-          // Adiciona microlinhas até o limite
-          if (microLines.length < MAX_MICRO_LINES) {
+
+          // Adiciona microlinhas até o limite, pulando a linha 0
+          if (v !== 0 && microLines.length < MAX_MICRO_LINES) {
+            const isHighlighted = Math.round(v * 100) % 10 === 0;
+
             microLines.push(
               <Line
                 key={`${subKey}-micro-${v.toFixed(3)}`}
                 points={
                   isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]
                 }
-                stroke="#c7f8c7"
-                strokeWidth={strokeWidth / 4}
+                stroke={
+                  isHighlighted
+                    ? HIGHLIGHTED_MICRO_LINE_COLOR
+                    : MICRO_LINE_COLOR
+                }
+                strokeWidth={isHighlighted ? strokeWidth / 2 : strokeWidth / 4}
               />,
             );
             elementAdded = true;
@@ -294,16 +341,16 @@ export function generateGrid({
             Math.round(roundedV * 100) % 10 === 0 &&
             microTexts.length < MAX_MICRO_TEXTS * 2 // *2 pois cada texto tem um Rect
           ) {
-            const microFontSize = getFontSize();
-
+            const microText = roundedV === 0 ? '0' : roundedV.toFixed(2);
             microTexts.push(
               ...createGridText(
                 `micro-${labelKey}-${roundedV.toFixed(2)}`,
                 roundedV,
-                roundedV.toFixed(2),
+                microText,
                 isVertical,
-                microFontSize,
+                getFontSize(),
                 '#006600',
+                zoomLevel,
                 true, // Passa a flag para indicar que é um micro-texto
               ),
             );
