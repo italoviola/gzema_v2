@@ -31,7 +31,7 @@ const Chart: React.FC = () => {
     if (zoomLevel >= 2048) return 0.01;
     if (zoomLevel >= 1024) return 0.05;
     if (zoomLevel >= 512) return 0.07;
-    if (zoomLevel >= 256) return 0.3;
+    if (zoomLevel >= 256) return 0.15;
     if (zoomLevel >= 128) return 0.5;
     if (zoomLevel >= 32) return 0.7;
     if (zoomLevel >= 16) return 1;
@@ -122,7 +122,7 @@ const Chart: React.FC = () => {
     },
     {
       type: 'polygon',
-      points: [400, 50, 440, 30, 440, -30, 400, -50],
+      points: [400, 50, 440, 30, 440, -30, 400, -100],
       fill: colors.silver,
       opacity: 0.9,
       id: 'polygon2',
@@ -294,7 +294,7 @@ const Chart: React.FC = () => {
             <Circle
               key={point.id}
               x={point.x}
-              y={-point.y}
+              y={point.y}
               radius={point.radius}
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}

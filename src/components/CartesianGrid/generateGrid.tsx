@@ -1,5 +1,5 @@
 import React from 'react';
-import { Line, Rect, Text } from 'react-konva';
+import { Line, Rect, Text, Group } from 'react-konva';
 
 import { getTextOffset } from './utils';
 
@@ -19,7 +19,7 @@ const MAX_MICRO_TEXTS = Math.floor(MAX_MICRO_LINES * 0.0833); // Limite para mic
 const MAX_DETAIL_ELEMENTS = MAX_MICRO_LINES + MAX_MICRO_TEXTS * 2; // Limite combinado para todos os elementos de detalhe
 
 export interface GenerateGridParams {
-  isVertical: boolean;
+  isHorizontal: boolean;
   min: number;
   max: number;
   fixed1: number;
@@ -45,12 +45,12 @@ function createGridText(
   key: string,
   value: number,
   text: string,
-  isVertical: boolean,
+  isHorizontal: boolean,
   fontSize: number, // Tamanho da fonte desejado (pode ser < 0.01)
   fill: string,
   zoomLevel: number,
   isMicroText?: boolean, // Flag para lidar com o caso dos micro-textos
-): React.ReactNode[] {
+): React.ReactNode {
   const MIN_RENDERABLE_FONT_SIZE = 0.01;
   let scaleFactor = 1;
   let renderFontSize = fontSize;
@@ -70,18 +70,25 @@ function createGridText(
   const padding = renderFontSize * 0.1;
   const textWidth = renderFontSize * text.length * 0.6; // Aproximação da largura do texto
   const textHeight = renderFontSize;
-  const { offsetX, offsetY } = getTextOffset(value, isVertical, renderFontSize);
+  const { offsetX, offsetY } = getTextOffset(
+    value,
+    isHorizontal,
+    renderFontSize,
+  );
 
   // --- Valores Padrão ---
-  const xPos = isVertical ? value : 0;
-  let yPos = isVertical ? 0 : value;
+  const xPos = isHorizontal ? value : 0;
+  let yPos = isHorizontal ? 0 : value;
   const rectX = xPos - offsetX - padding / 2;
   let rectY = yPos - offsetY - padding / 2;
-  let rectWidth = textWidth + padding;
-  let rectHeight = textHeight + padding;
+  let rectWidth = isHorizontal ? textWidth + padding : textWidth * 0.75;
+  const rectHeight = textHeight + padding;
 
   let rectOffsetX = 0;
   let rectOffsetY = 0;
+
+  const rectBaseY = isHorizontal ? 0 : value;
+  rectY = rectBaseY - offsetY - padding / 4;
 
   // --- Sobrescreve os valores se for um micro-texto ---
   if (isMicroText) {
@@ -92,7 +99,7 @@ function createGridText(
       yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
       rectOffsetX = offsetX * -0.5;
       rectOffsetY = offsetY * -1;
-    } else if (isVertical) {
+    } else if (isHorizontal) {
       yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
     } else {
       if (zoomLevel >= 2048) {
@@ -101,46 +108,44 @@ function createGridText(
       }
       yPos = value - offsetY + padding * (zoomLevel >= 2048 ? 12 : 20);
     }
-
-    // Lógica de posicionamento e dimensão específica para o Rect
-    const rectBaseY = isVertical ? 0 : value;
-    rectY = rectBaseY - offsetY - padding / 4;
-    rectWidth = textWidth; // Sem padding
-    rectHeight = textHeight; // Sem padding
+  } else if (!isHorizontal && value > 0) {
+    rectWidth *= 2.2;
   }
 
-  return [
-    <Rect
-      key={`bg-${key}`}
-      x={rectX}
-      y={rectY}
-      width={rectWidth}
-      height={rectHeight}
-      fill="white"
-      scaleX={scaleFactor}
-      scaleY={scaleFactor}
-      offsetX={rectOffsetX}
-      offsetY={rectOffsetY}
-    />,
-    <Text
-      key={key}
-      x={xPos}
-      y={yPos}
-      text={text}
-      fontSize={renderFontSize} // Usa o tamanho renderizável
-      fill={fill}
-      offsetX={offsetX}
-      offsetY={offsetY}
-      fontFamily="monospace"
-      fontStyle="bold"
-      scaleX={scaleFactor} // Aplica a escala
-      scaleY={scaleFactor}
-    />,
-  ];
+  return (
+    <Group key={`group-${key}`}>
+      <Rect
+        key={`bg-${key}`}
+        x={rectX}
+        y={rectY}
+        width={rectWidth}
+        height={rectHeight}
+        fill="white"
+        scaleX={scaleFactor}
+        scaleY={scaleFactor}
+        offsetX={rectOffsetX}
+        offsetY={rectOffsetY}
+      />
+      <Text
+        key={key}
+        x={xPos}
+        y={yPos}
+        text={!isHorizontal ? String(Number(text) * -1) : text}
+        fontSize={renderFontSize}
+        fill={fill}
+        offsetX={offsetX}
+        offsetY={offsetY}
+        fontFamily="monospace"
+        fontStyle="bold"
+        scaleX={scaleFactor}
+        scaleY={scaleFactor}
+      />
+    </Group>
+  );
 }
 
 export function generateGrid({
-  isVertical,
+  isHorizontal,
   min,
   max,
   fixed1,
@@ -160,12 +165,16 @@ export function generateGrid({
   const mainElements: React.ReactNode[] = [];
   const detailElements: React.ReactNode[] = [];
 
+  // Função para obter a posição correta no eixo, invertendo o Y para que
+  // valores positivos fiquem para baixo e negativos para cima.
+  const getPosition = (val: number) => (isHorizontal ? val : val);
+
   // Calcula os limites visíveis do grid com base na posição e zoom do "stage"
   const margin = 0; // Margem de segurança para renderização
-  const visibleMin = isVertical
+  const visibleMin = isHorizontal
     ? -stagePosition.x / zoomLevel - margin
     : -stagePosition.y / zoomLevel - margin;
-  const visibleMax = isVertical
+  const visibleMax = isHorizontal
     ? (stageWidth - stagePosition.x) / zoomLevel + margin
     : (stageHeight - stagePosition.y) / zoomLevel + margin;
 
@@ -186,7 +195,11 @@ export function generateGrid({
     mainElements.push(
       <Line
         key={`${mainKey}-${v}`}
-        points={isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]}
+        points={
+          isHorizontal
+            ? [v, fixed1, v, fixed2]
+            : [fixed1, getPosition(v), fixed2, getPosition(v)]
+        }
         stroke={strokeColor}
         strokeWidth={strokeWidth}
       />,
@@ -195,11 +208,11 @@ export function generateGrid({
     // Renderiza textos principais apenas em níveis de zoom mais baixos
     if (zoomLevel < 512) {
       mainElements.push(
-        ...createGridText(
+        createGridText(
           `${labelKey}-main-${v}`,
-          v,
+          getPosition(v),
           `${Math.round(v)}`,
-          isVertical,
+          isHorizontal,
           getFontSize(),
           'black',
           zoomLevel,
@@ -223,9 +236,9 @@ export function generateGrid({
           <Line
             key={`${subKey}-sub-${subV}`}
             points={
-              isVertical
+              isHorizontal
                 ? [subV, fixed1, subV, fixed2]
-                : [fixed1, subV, fixed2, subV]
+                : [fixed1, getPosition(subV), fixed2, getPosition(subV)]
             }
             stroke={SUB_LINE_COLOR}
             strokeWidth={strokeWidth / 8}
@@ -237,7 +250,7 @@ export function generateGrid({
 
   // 2.2. Sub-textos (aparecem com mais zoom)
   if (
-    zoomLevel > 256 &&
+    zoomLevel >= 256 &&
     zoomLevel < 2048 &&
     detailElements.length < MAX_DETAIL_ELEMENTS
   ) {
@@ -253,11 +266,11 @@ export function generateGrid({
       ) {
         const subText = subV === 0 ? '0' : subV.toFixed(1);
         detailElements.push(
-          ...createGridText(
+          createGridText(
             `${labelKey}-sub-${subV}`,
-            subV,
+            getPosition(subV),
             subText,
-            isVertical,
+            isHorizontal,
             getFontSize(),
             'black',
             zoomLevel,
@@ -268,7 +281,7 @@ export function generateGrid({
   }
 
   // 2.3. Sub-sublinhas (ainda mais zoom)
-  if (zoomLevel > 512 && detailElements.length < MAX_DETAIL_ELEMENTS) {
+  if (zoomLevel >= 512 && detailElements.length < MAX_DETAIL_ELEMENTS) {
     const subStep = intermediateStepSize / 100; // Mais finas
     const subSubStart = Math.floor(visibleMin / subStep) * subStep;
     const subSubEnd = Math.ceil(visibleMax / subStep) * subStep;
@@ -284,9 +297,9 @@ export function generateGrid({
           <Line
             key={`${subKey}-subsub-${subSubV.toFixed(2)}`}
             points={
-              isVertical
+              isHorizontal
                 ? [subSubV, fixed1, subSubV, fixed2]
-                : [fixed1, subSubV, fixed2, subSubV]
+                : [fixed1, getPosition(subSubV), fixed2, getPosition(subSubV)]
             }
             stroke={SUB_SUB_LINE_COLOR}
             strokeWidth={strokeWidth / 4}
@@ -322,7 +335,9 @@ export function generateGrid({
               <Line
                 key={`${subKey}-micro-${v.toFixed(3)}`}
                 points={
-                  isVertical ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]
+                  isHorizontal
+                    ? [v, fixed1, v, fixed2]
+                    : [fixed1, getPosition(v), fixed2, getPosition(v)]
                 }
                 stroke={
                   isHighlighted
@@ -343,11 +358,11 @@ export function generateGrid({
           ) {
             const microText = roundedV === 0 ? '0' : roundedV.toFixed(2);
             microTexts.push(
-              ...createGridText(
+              createGridText(
                 `micro-${labelKey}-${roundedV.toFixed(2)}`,
-                roundedV,
+                getPosition(roundedV),
                 microText,
-                isVertical,
+                isHorizontal,
                 getFontSize(),
                 '#006600',
                 zoomLevel,
@@ -386,7 +401,10 @@ export function generateGrid({
 
   // Separa os elementos em 'linhas' e 'textos/fundos'
   [...mainElements, ...detailElements].forEach((element: any) => {
-    if (element && (element.type === Text || element.type === Rect)) {
+    if (
+      element &&
+      (element.type === Text || element.type === Rect || element.type === Group)
+    ) {
       textsAndRects.push(element);
       return;
     }
@@ -394,7 +412,8 @@ export function generateGrid({
     if (element && element.type === Line) {
       const key = element.key?.toString() || '';
       // Tratamento especial para a linha do eixo X (y=0) para que fique no fundo
-      const isHorizontalAxisLine = !isVertical && key.includes(`${mainKey}-0`);
+      const isHorizontalAxisLine =
+        !isHorizontal && key.includes(`${mainKey}-0`);
 
       if (isHorizontalAxisLine) {
         lines.unshift(element); // Renderiza primeiro (no fundo)

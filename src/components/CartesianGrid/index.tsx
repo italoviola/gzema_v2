@@ -45,7 +45,7 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
 
       return [
         ...generateGrid({
-          isVertical: true,
+          isHorizontal: true,
           min: minX,
           max: maxX,
           fixed1: top,
@@ -63,7 +63,7 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
           stageHeight,
         }),
         ...generateGrid({
-          isVertical: false,
+          isHorizontal: false,
           min: minY,
           max: maxY,
           fixed1: left,
