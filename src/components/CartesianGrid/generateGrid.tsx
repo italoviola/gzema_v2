@@ -1,7 +1,7 @@
 import React from 'react';
 import { Line, Rect, Text, Group } from 'react-konva';
 
-import { getTextOffset } from './utils';
+import { getTextOffset, measureTextWidth } from './utils';
 
 const MAIN_LINE_COLOR = '#000000';
 const SECONDARY_LINE_COLOR = '#7a7979';
@@ -51,6 +51,8 @@ function createGridText(
   zoomLevel: number,
   isMicroText?: boolean, // Flag para lidar com o caso dos micro-textos
 ): React.ReactNode {
+  const modifiedText = !isHorizontal ? String(Number(text) * -1) : text;
+
   const MIN_RENDERABLE_FONT_SIZE = 0.01;
   let scaleFactor = 1;
   let renderFontSize = fontSize;
@@ -66,29 +68,36 @@ function createGridText(
     scaleFactor /= 1.5;
   }
 
-  // Usa o renderFontSize (tamanho renderizável) para todos os cálculos de layout
-  const padding = renderFontSize * 0.1;
-  const textWidth = renderFontSize * text.length * 0.6; // Aproximação da largura do texto
+  const textWidth = measureTextWidth(
+    modifiedText,
+    renderFontSize,
+    'monospace',
+    'bold',
+  );
+
   const textHeight = renderFontSize;
+  // Chama getTextOffset com os novos parâmetros
   const { offsetX, offsetY } = getTextOffset(
     value,
     isHorizontal,
     renderFontSize,
+    textWidth,
+    textHeight,
   );
 
   // --- Valores Padrão ---
   const xPos = isHorizontal ? value : 0;
   let yPos = isHorizontal ? 0 : value;
-  const rectX = xPos - offsetX - padding / 2;
-  let rectY = yPos - offsetY - padding / 2;
-  let rectWidth = isHorizontal ? textWidth + padding : textWidth * 0.75;
-  const rectHeight = textHeight + padding;
+  const rectX = xPos - offsetX;
+  let rectY = yPos - offsetY;
+  const rectWidth = textWidth;
+  const rectHeight = textHeight;
 
   let rectOffsetX = 0;
   let rectOffsetY = 0;
 
   const rectBaseY = isHorizontal ? 0 : value;
-  rectY = rectBaseY - offsetY - padding / 4;
+  rectY = rectBaseY - offsetY;
 
   // --- Sobrescreve os valores se for um micro-texto ---
   if (isMicroText) {
@@ -96,20 +105,18 @@ function createGridText(
 
     // Lógica de posicionamento Y específica para o texto
     if (isZero) {
-      yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
+      yPos = 0 - offsetY * (zoomLevel >= 2048 ? 2 : 4);
       rectOffsetX = offsetX * -0.5;
-      rectOffsetY = offsetY * -1;
+      rectOffsetY = offsetY * -0.5;
     } else if (isHorizontal) {
-      yPos = 0 - offsetY + padding * (zoomLevel >= 2048 ? 4 : 8);
+      yPos = 0 - offsetY * (zoomLevel >= 2048 ? 2 : 4);
     } else {
       if (zoomLevel >= 2048) {
         rectOffsetX = offsetX * -0.5;
         rectOffsetY = offsetY * -0.5;
       }
-      yPos = value - offsetY + padding * (zoomLevel >= 2048 ? 12 : 20);
+      yPos = value - offsetY * (zoomLevel >= 2048 ? 2 : 4);
     }
-  } else if (!isHorizontal && value > 0) {
-    rectWidth *= 2.2;
   }
 
   return (
@@ -130,7 +137,7 @@ function createGridText(
         key={key}
         x={xPos}
         y={yPos}
-        text={!isHorizontal ? String(Number(text) * -1) : text}
+        text={modifiedText}
         fontSize={renderFontSize}
         fill={fill}
         offsetX={offsetX}
