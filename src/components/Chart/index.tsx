@@ -16,10 +16,11 @@ const Chart: React.FC = () => {
   useEffect(() => {
     if (zoomLevel >= 4096) setStrokeWidth(0.0005);
     else if (zoomLevel >= 2048) setStrokeWidth(0.001);
-    else if (zoomLevel >= 1024) setStrokeWidth(0.003);
-    else if (zoomLevel >= 512) setStrokeWidth(0.005);
-    else if (zoomLevel >= 256) setStrokeWidth(0.02);
-    else if (zoomLevel >= 128) setStrokeWidth(0.02);
+    else if (zoomLevel >= 1024) setStrokeWidth(0.002);
+    else if (zoomLevel >= 512) setStrokeWidth(0.0035);
+    else if (zoomLevel >= 256) setStrokeWidth(0.009);
+    else if (zoomLevel >= 128) setStrokeWidth(0.015);
+    else if (zoomLevel >= 64) setStrokeWidth(0.03);
     else if (zoomLevel >= 16) setStrokeWidth(0.05);
     else if (zoomLevel >= 8) setStrokeWidth(0.1);
     else if (zoomLevel >= 4) setStrokeWidth(0.3);
@@ -148,9 +149,9 @@ const Chart: React.FC = () => {
   ];
 
   const points = [
-    { x: 100, y: 100, radius: 4, fill: colors.orangeDark, id: 'point1' },
-    { x: 150, y: 150, radius: 4, fill: colors.orangeDark, id: 'point2' },
-    { x: 200, y: 200, radius: 4, fill: colors.orangeDark, id: 'point3' },
+    { x: 100, y: 100, radius: 12, fill: colors.orangeDark, id: 'point1' },
+    { x: 150, y: 150, radius: 12, fill: colors.orangeDark, id: 'point2' },
+    { x: 200, y: 200, radius: 12, fill: colors.orangeDark, id: 'point3' },
   ];
 
   const handleShapeClick = (id: string) => {
@@ -158,6 +159,29 @@ const Chart: React.FC = () => {
   };
 
   const ZOOM_FACTOR = 2; // Fator de zoom exponencial
+
+  // Função para manter o centro da tela fixo ao dar zoom
+  const handleZoom = (zoomIn: boolean) => {
+    const prevZoom = zoomLevel;
+    const newZoom = zoomIn
+      ? zoomLevel * ZOOM_FACTOR
+      : Math.max(1, zoomLevel / ZOOM_FACTOR);
+
+    // Centro atual da tela em coordenadas do stage
+    const centerScreen = {
+      x: (870 / 2 - stagePosition.x) / prevZoom,
+      y: (450 / 2 - stagePosition.y) / prevZoom,
+    };
+
+    // Novo stagePosition para manter o centro fixo
+    const newStagePosition = {
+      x: 870 / 2 - centerScreen.x * newZoom,
+      y: 450 / 2 - centerScreen.y * newZoom,
+    };
+
+    setZoomLevel(newZoom);
+    setStagePosition(newStagePosition);
+  };
 
   const cartesianGrid = useMemo(
     () => (
@@ -180,18 +204,10 @@ const Chart: React.FC = () => {
     <Container>
       {/* <CartesianPlane /> */}
       <div>
-        <button
-          type="button"
-          onClick={() => setZoomLevel((prev) => prev * ZOOM_FACTOR)}
-        >
+        <button type="button" onClick={() => handleZoom(true)}>
           Zoom In
         </button>
-        <button
-          type="button"
-          onClick={() =>
-            setZoomLevel((prev) => Math.max(1, prev / ZOOM_FACTOR))
-          }
-        >
+        <button type="button" onClick={() => handleZoom(false)}>
           Zoom Out
         </button>
         <div>Zoom Level: {zoomLevel}</div>
@@ -295,7 +311,9 @@ const Chart: React.FC = () => {
               key={point.id}
               x={point.x}
               y={point.y}
-              radius={point.radius}
+              radius={
+                zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel
+              } // Ajuste dinâmico do raio
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
               strokeWidth={
