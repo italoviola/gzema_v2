@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import { generateGrid } from './generateGrid';
+import { generateGrid } from './functions/generateGrid';
 import { Container } from './styles';
 
 // Defina as constantes de cor no topo do arquivo

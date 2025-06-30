@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
-// import CartesianPlane from 'components/CartesianPlane';
 
 import { colors } from 'styles/global.styles';
 import { Container } from './styles';
+import { shapes, points } from './shapesAndPoints';
 
 const Chart: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -72,88 +72,6 @@ const Chart: React.FC = () => {
     });
   };
 
-  // Defina as figuras geométricas e pontos
-  const shapes = [
-    {
-      type: 'polygon',
-      points: [0, 0, 50, 50, 50, -50],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon1',
-    },
-    {
-      type: 'rect',
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect1',
-    },
-    // {
-    //   type: 'rect',
-    //   x: -200,
-    //   y: -50,
-    //   width: 100,
-    //   height: 800,
-    //   fill: colors.silver,
-    //  opacity: 0.9,
-    //   id: 'rect1',
-    // },
-    {
-      type: 'rect',
-      x: 150,
-      y: 35,
-      width: 150,
-      height: 70,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect2',
-    },
-    {
-      type: 'rect',
-      x: 300,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect3',
-    },
-    {
-      type: 'polygon',
-      points: [400, 50, 440, 30, 440, -30, 400, -100],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon2',
-    },
-    {
-      type: 'concaveRoundedRect',
-      x: 440,
-      y: -30,
-      width: 10,
-      height: 60,
-      fill: colors.silver,
-      opacity: 0.9,
-      cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
-      id: 'concaveRoundedRect1',
-    },
-    {
-      type: 'polygon',
-      points: [450, 20, 450, -20, 500, 0],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon3',
-    },
-  ];
-
-  const points = [
-    { x: 100, y: 100, radius: 12, fill: colors.orangeDark, id: 'point1' },
-    { x: 150, y: 150, radius: 12, fill: colors.orangeDark, id: 'point2' },
-    { x: 200, y: 200, radius: 12, fill: colors.orangeDark, id: 'point3' },
-  ];
-
   const handleShapeClick = (id: string) => {
     setSelectedShape(id);
   };
@@ -202,7 +120,6 @@ const Chart: React.FC = () => {
 
   return (
     <Container>
-      {/* <CartesianPlane /> */}
       <div>
         <button type="button" onClick={() => handleZoom(true)}>
           Zoom In

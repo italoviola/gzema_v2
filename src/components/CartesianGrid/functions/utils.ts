@@ -1,10 +1,4 @@
-export function getTextOffset(
-  v: number,
-  isHorizontal: boolean,
-  fontSize: number,
-  textWidth: number,
-  textHeight: number,
-) {
+export function getTextOffset(textWidth: number, textHeight: number) {
   return {
     offsetX: textWidth / 2,
     offsetY: -(textHeight / 2) * 0.75,
