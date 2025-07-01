@@ -31,7 +31,8 @@ export const colors = {
 
 export const measures = {
   gutter: '15px',
-  contentToHeader: '255px',
+  contentToHeader: '273px',
+  contentBelowSliderToHeader: '180px',
   contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',

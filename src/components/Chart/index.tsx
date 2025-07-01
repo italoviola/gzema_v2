@@ -1,17 +1,34 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
+import CustomSlider from 'components/CustomSlider';
 
 import { colors } from 'styles/global.styles';
 import { Container } from './styles';
 import { shapes, points } from './shapesAndPoints';
 
 const Chart: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [stageSize] = useState({ width: 902, height: 484 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
+
+  // useEffect(() => {
+  //   function updateSize() {
+  //     if (containerRef.current) {
+  //       setStageSize({
+  //         width: containerRef.current.offsetWidth,
+  //         height: containerRef.current.offsetHeight,
+  //       });
+  //     }
+  //   }
+  //   updateSize();
+  //   window.addEventListener('resize', updateSize);
+  //   return () => window.removeEventListener('resize', updateSize);
+  // }, []);
 
   useEffect(() => {
     if (zoomLevel >= 4096) setStrokeWidth(0.0005);
@@ -76,25 +93,22 @@ const Chart: React.FC = () => {
     setSelectedShape(id);
   };
 
-  const ZOOM_FACTOR = 2; // Fator de zoom exponencial
+  const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
-  // Função para manter o centro da tela fixo ao dar zoom
-  const handleZoom = (zoomIn: boolean) => {
+  const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
+
+  const handleZoomSlider = (idx: number) => {
     const prevZoom = zoomLevel;
-    const newZoom = zoomIn
-      ? zoomLevel * ZOOM_FACTOR
-      : Math.max(1, zoomLevel / ZOOM_FACTOR);
+    const newZoom = ZOOM_STEPS[idx];
 
-    // Centro atual da tela em coordenadas do stage
     const centerScreen = {
-      x: (870 / 2 - stagePosition.x) / prevZoom,
-      y: (450 / 2 - stagePosition.y) / prevZoom,
+      x: (stageSize.width / 2 - stagePosition.x) / prevZoom,
+      y: (stageSize.height / 2 - stagePosition.y) / prevZoom,
     };
 
-    // Novo stagePosition para manter o centro fixo
     const newStagePosition = {
-      x: 870 / 2 - centerScreen.x * newZoom,
-      y: 450 / 2 - centerScreen.y * newZoom,
+      x: stageSize.width / 2 - centerScreen.x * newZoom,
+      y: stageSize.height / 2 - centerScreen.y * newZoom,
     };
 
     setZoomLevel(newZoom);
@@ -109,29 +123,20 @@ const Chart: React.FC = () => {
         key={`grid-${zoomLevel < 512 ? 'low' : 'high'}`}
         zoomLevel={zoomLevel}
         stagePosition={stagePosition}
-        stageWidth={870}
-        stageHeight={450}
+        stageWidth={stageSize.width}
+        stageHeight={stageSize.height}
         strokeWidth={strokeWidth}
         getFontSize={getFontSize}
       />
     ),
-    [zoomLevel, stagePosition, strokeWidth, getFontSize],
+    [zoomLevel, stagePosition, strokeWidth, getFontSize, stageSize],
   );
 
   return (
-    <Container>
-      <div>
-        <button type="button" onClick={() => handleZoom(true)}>
-          Zoom In
-        </button>
-        <button type="button" onClick={() => handleZoom(false)}>
-          Zoom Out
-        </button>
-        <div>Zoom Level: {zoomLevel}</div>
-      </div>
+    <Container ref={containerRef}>
       <Stage
-        width={870}
-        height={450}
+        width={stageSize.width}
+        height={stageSize.height - 40} // Ajuste para não estourar o container
         draggable
         scaleX={zoomLevel}
         scaleY={zoomLevel}
@@ -241,6 +246,16 @@ const Chart: React.FC = () => {
           ))}
         </Layer>
       </Stage>
+      <CustomSlider
+        value={getZoomIndex(zoomLevel)}
+        min={0}
+        max={ZOOM_STEPS.length - 1}
+        step={1}
+        label="Zoom"
+        height={40}
+        onChange={handleZoomSlider}
+        valueFormatter={(idx) => `Zoom Level: ${ZOOM_STEPS[idx]}`}
+      />
     </Container>
   );
 };

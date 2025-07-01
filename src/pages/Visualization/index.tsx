@@ -23,8 +23,8 @@ const Visualization: React.FC = () => {
   return (
     <Container className={loaded ? 'loaded' : ''}>
       <Breadcrumbs items={breadcrumbsItems} />
-      <Title>Visualização</Title>
       <Content>
+        <Title>Visualização</Title>
         <Chart />
       </Content>
     </Container>

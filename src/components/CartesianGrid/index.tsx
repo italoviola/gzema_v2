@@ -20,7 +20,7 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
     stagePosition,
     strokeWidth,
     getFontSize,
-    stageWidth = 870,
+    stageWidth = 885,
     stageHeight = 450,
   }) => {
     const baseGridSize = 1000;
@@ -108,7 +108,7 @@ CartesianGrid.propTypes = {
 };
 
 CartesianGrid.defaultProps = {
-  stageWidth: 870,
+  stageWidth: 885,
   stageHeight: 450,
 };
 
