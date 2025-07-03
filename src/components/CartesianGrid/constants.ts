@@ -12,7 +12,7 @@ export const gridColors = {
   secondaryLine: '#7a7979',
   intermediateLine: '#7a7979',
   subLine: '#a8a8a8',
-  subSubLine: '#91df91eb',
+  subSubLine: '#79cc79',
   microLine: '#c7f8c7',
   highlightedMicroLine: '#a8a8a8',
 };

@@ -2,17 +2,8 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 import { generateGrid } from './functions/generateGrid';
+import { CartesianGridProps } from './interface';
 import { Container } from './styles';
-
-// Defina as constantes de cor no topo do arquivo
-interface CartesianGridProps {
-  zoomLevel: number;
-  stagePosition: { x: number; y: number };
-  strokeWidth: number;
-  getFontSize: () => number;
-  stageWidth?: number;
-  stageHeight?: number;
-}
 
 const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
   ({

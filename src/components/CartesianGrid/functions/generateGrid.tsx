@@ -1,26 +1,10 @@
 import React from 'react';
 import { Line, Rect, Text, Group } from 'react-konva';
-import { gridLimits, gridColors } from '../constants';
+
 import { createGridText } from './createGridText';
 
-export interface GenerateGridParams {
-  isHorizontal: boolean;
-  min: number;
-  max: number;
-  fixed1: number;
-  fixed2: number;
-  mainKey: string;
-  labelKey: string;
-  subKey: string;
-  intermediateStepSize: number;
-  baseGridSize: number;
-  zoomLevel: number;
-  strokeWidth: number;
-  getFontSize: () => number;
-  stagePosition: { x: number; y: number };
-  stageWidth: number;
-  stageHeight: number;
-}
+import { gridLimits, gridColors } from '../constants';
+import { GenerateGridParams } from '../interface';
 
 export function generateGrid({
   isHorizontal,
@@ -119,7 +103,7 @@ export function generateGrid({
                 : [fixed1, getPosition(subV), fixed2, getPosition(subV)]
             }
             stroke={gridColors.subLine}
-            strokeWidth={strokeWidth / 8}
+            strokeWidth={strokeWidth / 2}
           />,
         );
       }
@@ -183,7 +167,7 @@ export function generateGrid({
                 : [fixed1, getPosition(subSubV), fixed2, getPosition(subSubV)]
             }
             stroke={gridColors.subSubLine}
-            strokeWidth={strokeWidth / 4}
+            strokeWidth={strokeWidth / 2}
           />,
         );
       }
@@ -225,7 +209,7 @@ export function generateGrid({
                     ? gridColors.highlightedMicroLine
                     : gridColors.microLine
                 }
-                strokeWidth={isHighlighted ? strokeWidth / 2 : strokeWidth / 4}
+                strokeWidth={strokeWidth / 2}
               />,
             );
             elementAdded = true;
