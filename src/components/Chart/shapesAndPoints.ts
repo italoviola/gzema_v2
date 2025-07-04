@@ -53,7 +53,7 @@ export const shapes = [
     height: 60,
     fill: colors.silver,
     opacity: 0.9,
-    cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
+    cornerRadius: [0, 10, 10, 0],
     id: 'concaveRoundedRect1',
   },
   {

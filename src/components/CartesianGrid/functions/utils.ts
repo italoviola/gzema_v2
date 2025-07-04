@@ -11,7 +11,6 @@ export function measureTextWidth(
   fontFamily = 'monospace',
   fontStyle = 'bold',
 ): number {
-  // Cria um canvas temporário
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   if (!context) return 0;

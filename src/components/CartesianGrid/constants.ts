@@ -1,10 +1,9 @@
-// Constantes de Limite para Elementos Renderizados
 export const gridLimits = {
-  MAX_LINES: 3000, // Limite total para linhas
-  MAX_TEXTS: 2000, // Limite total para textos e seus fundos
-  MAX_MICRO_LINES: 100, // Limite específico para microlinhas
-  MAX_MICRO_TEXTS: Math.floor(100 * 0.0833), // Limite para microtextos (aprox. 8.33% das microlinhas)
-  MAX_DETAIL_ELEMENTS: 100 + Math.floor(100 * 0.0833) * 2, // Limite combinado para todos os elementos de detalhe
+  MAX_LINES: 3000,
+  MAX_TEXTS: 2000,
+  MAX_MICRO_LINES: 100,
+  MAX_MICRO_TEXTS: Math.floor(100 * 0.0833), // Limits for microtexts (aprox. 8.33% microlines)
+  MAX_DETAIL_ELEMENTS: 100 + Math.floor(100 * 0.0833) * 2, // Combined limit for detail elements (lines + texts)
 };
 
 export const gridColors = {

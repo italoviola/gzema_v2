@@ -3,19 +3,15 @@ import { Group, Rect, Text } from 'react-konva';
 
 import { getTextOffset, measureTextWidth } from './utils';
 
-/**
- * Cria um par de componentes Rect e Text para exibir um rótulo no grid.
- * Abstrai a lógica de criação de texto com fundo branco para reutilização.
- */
 export function createGridText(
   key: string,
   value: number,
   text: string,
   isHorizontal: boolean,
-  fontSize: number, // Tamanho da fonte desejado (pode ser < 0.01)
+  fontSize: number,
   fill: string,
   zoomLevel: number,
-  isMicroText?: boolean, // Flag para lidar com o caso dos micro-textos
+  isMicroText?: boolean,
 ): React.ReactNode {
   const modifiedText = !isHorizontal ? String(Number(text) * -1) : text;
 
@@ -23,13 +19,13 @@ export function createGridText(
   let scaleFactor = 1;
   let renderFontSize = fontSize;
 
-  // Se o tamanho desejado for menor que o mínimo, calcula a escala
+  // If the desired font size is less than the minimum, calculate the scale
   if (fontSize < MIN_RENDERABLE_FONT_SIZE) {
     scaleFactor = fontSize / MIN_RENDERABLE_FONT_SIZE;
     renderFontSize = MIN_RENDERABLE_FONT_SIZE;
   }
 
-  // Divide o scaleFactor por 2 quando o zoom for muito alto
+  // If the zoom level is high, adjust the scale factor
   if (zoomLevel >= 2048) {
     scaleFactor /= 1.5;
   }
@@ -42,10 +38,8 @@ export function createGridText(
   );
 
   const textHeight = renderFontSize;
-  // Chama getTextOffset com os novos parâmetros
   const { offsetX, offsetY } = getTextOffset(textWidth, textHeight);
 
-  // --- Valores Padrão ---
   const xPos = isHorizontal ? value : 0;
   let yPos = isHorizontal ? 0 : value;
   const rectX = xPos - offsetX;
@@ -59,11 +53,10 @@ export function createGridText(
   const rectBaseY = isHorizontal ? 0 : value;
   rectY = rectBaseY - offsetY;
 
-  // --- Sobrescreve os valores se for um micro-texto ---
   if (isMicroText) {
     const isZero = value === 0;
 
-    // Lógica de posicionamento Y específica para o texto
+    // Adjusts the position for specific cases
     if (isZero) {
       yPos = 0 - offsetY * (zoomLevel >= 2048 ? 2 : 4);
       rectOffsetX = offsetX * -0.5;
