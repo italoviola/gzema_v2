@@ -18,16 +18,6 @@ export const shapes = [
     opacity: 0.9,
     id: 'rect1',
   },
-  // {
-  //   type: 'rect',
-  //   x: -200,
-  //   y: -50,
-  //   width: 100,
-  //   height: 800,
-  //   fill:  colors.silver,
-  //   opacity: 0.9,
-  //   id: 'rect1',
-  // },
   {
     type: 'rect',
     x: 150,

@@ -9,10 +9,10 @@ export const gridLimits = {
 
 export const gridColors = {
   mainLine: '#000000',
-  secondaryLine: '#7a7979',
-  intermediateLine: '#7a7979',
-  subLine: '#a8a8a8',
-  subSubLine: '#79cc79',
-  microLine: '#c7f8c7',
-  highlightedMicroLine: '#a8a8a8',
+  secondaryLine: '#7A7979',
+  intermediateLine: '#7A7979',
+  subLine: '#A8A8A8',
+  subSubLine: '#79CC79',
+  microLine: '#C7F8C7',
+  highlightedMicroLine: '#A8A8A8',
 };

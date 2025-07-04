@@ -27,23 +27,18 @@ export function generateGrid({
   const mainElements: React.ReactNode[] = [];
   const detailElements: React.ReactNode[] = [];
 
-  // Função para obter a posição correta no eixo, invertendo o Y para que
-  // valores positivos fiquem para baixo e negativos para cima.
-  const getPosition = (val: number) => (isHorizontal ? val : val);
-
-  // Calcula os limites visíveis do grid com base na posição e zoom do "stage"
-  const margin = 0; // Margem de segurança para renderização
+  // Set visible gridlimits based on stage position and zoom level
   const visibleMin = isHorizontal
-    ? -stagePosition.x / zoomLevel - margin
-    : -stagePosition.y / zoomLevel - margin;
+    ? -stagePosition.x / zoomLevel
+    : -stagePosition.y / zoomLevel;
   const visibleMax = isHorizontal
-    ? (stageWidth - stagePosition.x) / zoomLevel + margin
-    : (stageHeight - stagePosition.y) / zoomLevel + margin;
+    ? (stageWidth - stagePosition.x) / zoomLevel
+    : (stageHeight - stagePosition.y) / zoomLevel;
 
   const effectiveMin = Math.max(min, visibleMin);
   const effectiveMax = Math.min(max, visibleMax);
 
-  // ETAPA 1: Renderizar as linhas principais e seus textos
+  // First, render the main grid lines and texts
   const startValue =
     Math.floor(effectiveMin / intermediateStepSize) * intermediateStepSize;
   for (let v = startValue; v <= effectiveMax; v += intermediateStepSize) {
@@ -57,22 +52,17 @@ export function generateGrid({
     mainElements.push(
       <Line
         key={`${mainKey}-${v}`}
-        points={
-          isHorizontal
-            ? [v, fixed1, v, fixed2]
-            : [fixed1, getPosition(v), fixed2, getPosition(v)]
-        }
+        points={isHorizontal ? [v, fixed1, v, fixed2] : [fixed1, v, fixed2, v]}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
       />,
     );
 
-    // Renderiza textos principais apenas em níveis de zoom mais baixos
     if (zoomLevel < 512) {
       mainElements.push(
         createGridText(
           `${labelKey}-main-${v}`,
-          getPosition(v),
+          v,
           `${Math.round(v)}`,
           isHorizontal,
           getFontSize(),
@@ -83,10 +73,9 @@ export function generateGrid({
     }
   }
 
-  // ETAPA 2: Renderizar detalhes (sublinhas, sub-textos, etc.) com base no zoom
-  // A renderização é feita em blocos `if` independentes para clareza e performance.
+  // Second, render details (sublines, sub-texts, etc.) based on zoomLevel
 
-  // 2.1. Sublinhas (aparecem com um pouco de zoom)
+  // Sublines
   if (zoomLevel > 8 && detailElements.length < gridLimits.MAX_DETAIL_ELEMENTS) {
     const subStep = intermediateStepSize / 10;
     const subStart = Math.floor(visibleMin / subStep) * subStep;
@@ -100,7 +89,7 @@ export function generateGrid({
             points={
               isHorizontal
                 ? [subV, fixed1, subV, fixed2]
-                : [fixed1, getPosition(subV), fixed2, getPosition(subV)]
+                : [fixed1, subV, fixed2, subV]
             }
             stroke={gridColors.subLine}
             strokeWidth={strokeWidth / 2}
@@ -110,7 +99,7 @@ export function generateGrid({
     }
   }
 
-  // 2.2. Sub-textos (aparecem com mais zoom)
+  // Sub-texts
   if (
     zoomLevel >= 256 &&
     zoomLevel < 2048 &&
@@ -130,7 +119,7 @@ export function generateGrid({
         detailElements.push(
           createGridText(
             `${labelKey}-sub-${subV}`,
-            getPosition(subV),
+            subV,
             subText,
             isHorizontal,
             getFontSize(),
@@ -142,12 +131,12 @@ export function generateGrid({
     }
   }
 
-  // 2.3. Sub-sublinhas (ainda mais zoom)
+  // Sub sub-lines
   if (
     zoomLevel >= 512 &&
     detailElements.length < gridLimits.MAX_DETAIL_ELEMENTS
   ) {
-    const subStep = intermediateStepSize / 100; // Mais finas
+    const subStep = intermediateStepSize / 100;
     const subSubStart = Math.floor(visibleMin / subStep) * subStep;
     const subSubEnd = Math.ceil(visibleMax / subStep) * subStep;
 
@@ -164,7 +153,7 @@ export function generateGrid({
             points={
               isHorizontal
                 ? [subSubV, fixed1, subSubV, fixed2]
-                : [fixed1, getPosition(subSubV), fixed2, getPosition(subSubV)]
+                : [fixed1, subSubV, fixed2, subSubV]
             }
             stroke={gridColors.subSubLine}
             strokeWidth={strokeWidth / 2}
@@ -174,35 +163,36 @@ export function generateGrid({
     }
   }
 
-  // 2.4. Microlinhas e Microtextos (zoom máximo)
+  // Microlines and microtexts
   if (zoomLevel >= 2048) {
-    const microStep = intermediateStepSize / 1000;
+    const microStep = intermediateStepSize / 1000; // Divide the intermediate step size into 1000 parts for microlines
     const microLines: React.ReactNode[] = [];
     const microTexts: React.ReactNode[] = [];
 
-    // Otimização: Renderiza do centro (0) para fora, priorizando elementos na área de foco do usuário.
+    // Loop start to render microlines e microtexts from center to edges
     for (let i = 0; ; i += 1) {
-      const centerOffset = i * microStep;
+      const centerOffset = i * microStep; // Apply micro step division to for
       let addedInIteration = false;
 
-      // Processa ambos os lados (positivo e negativo) para expandir a partir do centro.
-      const valuesToProcess = i === 0 ? [0] : [centerOffset, -centerOffset];
+      // Process both sides (positive and negative) to expand from the center
+      const microStepIntervalsToProcess =
+        i === 0 ? [0] : [centerOffset, -centerOffset];
 
-      valuesToProcess.forEach((v) => {
-        if (v >= visibleMin && v <= visibleMax) {
+      microStepIntervalsToProcess.forEach((item) => {
+        if (item >= visibleMin && item <= visibleMax) {
           let elementAdded = false;
 
-          // Adiciona microlinhas até o limite, pulando a linha 0
-          if (v !== 0 && microLines.length < gridLimits.MAX_MICRO_LINES) {
-            const isHighlighted = Math.round(v * 100) % 10 === 0;
+          // Adds microlines until the limit, skipping line 0
+          if (item !== 0 && microLines.length < gridLimits.MAX_MICRO_LINES) {
+            const isHighlighted = Math.round(item * 100) % 10 === 0;
 
             microLines.push(
               <Line
-                key={`${subKey}-micro-${v.toFixed(3)}`}
+                key={`${subKey}-micro-${item.toFixed(3)}`}
                 points={
                   isHorizontal
-                    ? [v, fixed1, v, fixed2]
-                    : [fixed1, getPosition(v), fixed2, getPosition(v)]
+                    ? [item, fixed1, item, fixed2]
+                    : [fixed1, item, fixed2, item]
                 }
                 stroke={
                   isHighlighted
@@ -215,23 +205,23 @@ export function generateGrid({
             elementAdded = true;
           }
 
-          // Adiciona microtextos em intervalos específicos e até o limite
-          const roundedV = Math.round(v * 100) / 100;
+          // Adds microtexts at specific intervals and until the limit
+          const roundedV = Math.round(item * 100) / 100;
           if (
             Math.round(roundedV * 100) % 10 === 0 &&
-            microTexts.length < gridLimits.MAX_MICRO_TEXTS * 2 // *2 pois cada texto tem um Rect
+            microTexts.length < gridLimits.MAX_MICRO_TEXTS * 2 // *2 because we render both Text and Rect elements
           ) {
             const microText = roundedV === 0 ? '0' : roundedV.toFixed(2);
             microTexts.push(
               createGridText(
                 `micro-${labelKey}-${roundedV.toFixed(2)}`,
-                getPosition(roundedV),
+                roundedV,
                 microText,
                 isHorizontal,
                 getFontSize(),
                 '#006600',
                 zoomLevel,
-                true, // Passa a flag para indicar que é um micro-texto
+                true,
               ),
             );
             elementAdded = true;
@@ -243,8 +233,7 @@ export function generateGrid({
         }
       });
 
-      // Condição de parada: sai do loop se não há mais elementos visíveis para adicionar
-      // ou se os limites de renderização foram atingidos.
+      // Check if the center offset is out of bounds or if limits are reached
       const outOfBounds =
         centerOffset > Math.max(Math.abs(visibleMin), Math.abs(visibleMax));
       const limitsReached =
@@ -258,13 +247,10 @@ export function generateGrid({
     detailElements.push(...microLines, ...microTexts);
   }
 
-  // ETAPA 3: Reorganizar todos os elementos para garantir a ordem de renderização correta.
-  // Textos e seus fundos devem sempre aparecer por cima das linhas.
-
+  // Order elements, lines first, then texts and rects
   const lines: React.ReactNode[] = [];
   const textsAndRects: React.ReactNode[] = [];
 
-  // Separa os elementos em 'linhas' e 'textos/fundos'
   [...mainElements, ...detailElements].forEach((element: any) => {
     if (
       element &&
@@ -276,19 +262,19 @@ export function generateGrid({
 
     if (element && element.type === Line) {
       const key = element.key?.toString() || '';
-      // Tratamento especial para a linha do eixo X (y=0) para que fique no fundo
+      // Force x-axis line to be rendered first
       const isHorizontalAxisLine =
         !isHorizontal && key.includes(`${mainKey}-0`);
 
       if (isHorizontalAxisLine) {
-        lines.unshift(element); // Renderiza primeiro (no fundo)
+        lines.unshift(element);
       } else {
-        lines.push(element); // Ordem normal
+        lines.push(element);
       }
     }
   });
 
-  // Aplica os limites de renderização individuais antes de combinar
+  // Apply rendering limits to lines and texts before combine them
   const linesToRender = lines.slice(0, gridLimits.MAX_LINES);
   const textsToRender = textsAndRects.slice(0, gridLimits.MAX_TEXTS);
 

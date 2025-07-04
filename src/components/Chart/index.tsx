@@ -136,7 +136,7 @@ const Chart: React.FC = () => {
     <Container ref={containerRef}>
       <Stage
         width={stageSize.width}
-        height={stageSize.height - 40} // Ajuste para não estourar o container
+        height={stageSize.height - 40} // consiedering the slider height
         draggable
         scaleX={zoomLevel}
         scaleY={zoomLevel}
@@ -235,7 +235,7 @@ const Chart: React.FC = () => {
               y={point.y}
               radius={
                 zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel
-              } // Ajuste dinâmico do raio
+              }
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
               strokeWidth={

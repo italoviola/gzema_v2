@@ -19,7 +19,7 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
     const intermediateStepSize = baseGridSize / intermediateSteps;
 
     const lines = useMemo(() => {
-      // Calcula os limites visíveis no Stage
+      // Set visible grid limits based on stage position and zoom level
       const left = -stagePosition.x / zoomLevel;
       const right = (stageWidth - stagePosition.x) / zoomLevel;
       const top = -stagePosition.y / zoomLevel;
