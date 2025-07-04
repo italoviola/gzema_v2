@@ -1,0 +1,90 @@
+import { colors } from 'styles/global.styles';
+
+export const shapes = [
+  {
+    type: 'polygon',
+    points: [0, 0, 50, 50, 50, -50],
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'polygon1',
+  },
+  {
+    type: 'rect',
+    x: 50,
+    y: 50,
+    width: 100,
+    height: 100,
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'rect1',
+  },
+  {
+    type: 'rect',
+    x: 150,
+    y: 35,
+    width: 150,
+    height: 70,
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'rect2',
+  },
+  {
+    type: 'rect',
+    x: 300,
+    y: 50,
+    width: 100,
+    height: 100,
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'rect3',
+  },
+  {
+    type: 'polygon',
+    points: [400, 50, 440, 30, 440, -30, 400, -100],
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'polygon2',
+  },
+  {
+    type: 'concaveRoundedRect',
+    x: 440,
+    y: -30,
+    width: 10,
+    height: 60,
+    fill: colors.silver,
+    opacity: 0.9,
+    cornerRadius: [0, 10, 10, 0],
+    id: 'concaveRoundedRect1',
+  },
+  {
+    type: 'polygon',
+    points: [450, 20, 450, -20, 500, 0],
+    fill: colors.silver,
+    opacity: 0.9,
+    id: 'polygon3',
+  },
+];
+
+export const points = [
+  {
+    x: 100,
+    y: 100,
+    radius: 12,
+    fill: colors.orangeDark,
+    id: 'point1',
+  },
+  {
+    x: 150,
+    y: 150,
+    radius: 12,
+    fill: colors.orangeDark,
+    id: 'point2',
+  },
+  {
+    x: 200,
+    y: 200,
+    radius: 12,
+    fill: colors.orangeDark,
+    id: 'point3',
+  },
+];

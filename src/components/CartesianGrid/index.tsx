@@ -1,36 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-import { generateGrid } from './generateGrid';
+import { generateGrid } from './functions/generateGrid';
+import { CartesianGridProps } from './interface';
 import { Container } from './styles';
 
-// Defina as constantes de cor no topo do arquivo
-interface CartesianGridProps {
-  zoomLevel: number;
-  stagePosition: { x: number; y: number };
-  stageWidth?: number;
-  stageHeight?: number;
-}
-
 const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
-  ({ zoomLevel, stagePosition, stageWidth = 870, stageHeight = 450 }) => {
+  ({
+    zoomLevel,
+    stagePosition,
+    strokeWidth,
+    getFontSize,
+    stageWidth = 885,
+    stageHeight = 450,
+  }) => {
     const baseGridSize = 1000;
-    const intermediateSteps = zoomLevel > 10 ? 100 : 10;
+    const intermediateSteps = zoomLevel > 4 ? 100 : 10;
     const intermediateStepSize = baseGridSize / intermediateSteps;
 
-    const [strokeWidth, setStrokeWidth] = useState(1);
-
-    useEffect(() => {
-      setStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
-    }, [zoomLevel]);
-
-    const getFontSize = React.useCallback(
-      () => Math.max(strokeWidth, 0.5),
-      [strokeWidth],
-    );
-
     const lines = useMemo(() => {
-      // Calcula os limites visíveis no Stage
+      // Set visible grid limits based on stage position and zoom level
       const left = -stagePosition.x / zoomLevel;
       const right = (stageWidth - stagePosition.x) / zoomLevel;
       const top = -stagePosition.y / zoomLevel;
@@ -47,7 +36,7 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
 
       return [
         ...generateGrid({
-          isVertical: true,
+          isHorizontal: true,
           min: minX,
           max: maxX,
           fixed1: top,
@@ -60,9 +49,12 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
           zoomLevel,
           strokeWidth,
           getFontSize,
+          stagePosition,
+          stageWidth,
+          stageHeight,
         }),
         ...generateGrid({
-          isVertical: false,
+          isHorizontal: false,
           min: minY,
           max: maxY,
           fixed1: left,
@@ -75,17 +67,18 @@ const CartesianGrid: React.FC<CartesianGridProps> = React.memo(
           zoomLevel,
           strokeWidth,
           getFontSize,
+          stagePosition,
+          stageWidth,
+          stageHeight,
         }),
       ];
     }, [
-      stagePosition.x,
-      stagePosition.y,
+      stagePosition,
       zoomLevel,
       stageWidth,
       stageHeight,
       intermediateStepSize,
       strokeWidth,
-      baseGridSize,
       getFontSize,
     ]);
 
@@ -99,12 +92,14 @@ CartesianGrid.propTypes = {
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
   }).isRequired,
+  strokeWidth: PropTypes.number.isRequired,
+  getFontSize: PropTypes.func.isRequired,
   stageWidth: PropTypes.number,
   stageHeight: PropTypes.number,
 };
 
 CartesianGrid.defaultProps = {
-  stageWidth: 870,
+  stageWidth: 885,
   stageHeight: 450,
 };
 

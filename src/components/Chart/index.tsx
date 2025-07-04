@@ -1,20 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
-// import CartesianPlane from 'components/CartesianPlane';
+import CustomSlider from 'components/CustomSlider';
 
 import { colors } from 'styles/global.styles';
 import { Container } from './styles';
+import { shapes, points } from './shapesAndPoints';
 
 const Chart: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [stageSize] = useState({ width: 902, height: 484 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
-  const [shapeStrokeWidth, setShapeStrokeWidth] = useState(1);
+  const [strokeWidth, setStrokeWidth] = useState(1);
+
+  // useEffect(() => {
+  //   function updateSize() {
+  //     if (containerRef.current) {
+  //       setStageSize({
+  //         width: containerRef.current.offsetWidth,
+  //         height: containerRef.current.offsetHeight,
+  //       });
+  //     }
+  //   }
+  //   updateSize();
+  //   window.addEventListener('resize', updateSize);
+  //   return () => window.removeEventListener('resize', updateSize);
+  // }, []);
 
   useEffect(() => {
-    setShapeStrokeWidth(zoomLevel > 10 ? 0.1 : 0.5);
+    if (zoomLevel >= 4096) setStrokeWidth(0.0005);
+    else if (zoomLevel >= 2048) setStrokeWidth(0.001);
+    else if (zoomLevel >= 1024) setStrokeWidth(0.002);
+    else if (zoomLevel >= 512) setStrokeWidth(0.0035);
+    else if (zoomLevel >= 256) setStrokeWidth(0.009);
+    else if (zoomLevel >= 128) setStrokeWidth(0.015);
+    else if (zoomLevel >= 64) setStrokeWidth(0.03);
+    else if (zoomLevel >= 16) setStrokeWidth(0.05);
+    else if (zoomLevel >= 8) setStrokeWidth(0.1);
+    else if (zoomLevel >= 4) setStrokeWidth(0.3);
+    else if (zoomLevel >= 2) setStrokeWidth(0.3);
+    else setStrokeWidth(0.5);
+  }, [zoomLevel]);
+
+  const getFontSize = React.useCallback(() => {
+    if (zoomLevel >= 2048) return 0.01;
+    if (zoomLevel >= 1024) return 0.05;
+    if (zoomLevel >= 512) return 0.07;
+    if (zoomLevel >= 256) return 0.15;
+    if (zoomLevel >= 128) return 0.5;
+    if (zoomLevel >= 32) return 0.7;
+    if (zoomLevel >= 16) return 1;
+    if (zoomLevel >= 8) return 2;
+    if (zoomLevel >= 4) return 8;
+    if (zoomLevel >= 2) return 8;
+    return 14;
   }, [zoomLevel]);
 
   const handleDragMove = (e: any) => {
@@ -47,109 +89,54 @@ const Chart: React.FC = () => {
     });
   };
 
-  // Defina as figuras geométricas e pontos
-  const shapes = [
-    {
-      type: 'polygon',
-      points: [0, 0, 50, 50, 50, -50],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon1',
-    },
-    {
-      type: 'rect',
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect1',
-    },
-    // {
-    //   type: 'rect',
-    //   x: -200,
-    //   y: -50,
-    //   width: 100,
-    //   height: 800,
-    //   fill: colors.silver,
-    //  opacity: 0.9,
-    //   id: 'rect1',
-    // },
-    {
-      type: 'rect',
-      x: 150,
-      y: 35,
-      width: 150,
-      height: 70,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect2',
-    },
-    {
-      type: 'rect',
-      x: 300,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'rect3',
-    },
-    {
-      type: 'polygon',
-      points: [400, 50, 440, 30, 440, -30, 400, -50],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon2',
-    },
-    {
-      type: 'concaveRoundedRect',
-      x: 440,
-      y: -30,
-      width: 10,
-      height: 60,
-      fill: colors.silver,
-      opacity: 0.9,
-      cornerRadius: [0, 10, 10, 0], // Define o raio dos cantos
-      id: 'concaveRoundedRect1',
-    },
-    {
-      type: 'polygon',
-      points: [450, 20, 450, -20, 500, 0],
-      fill: colors.silver,
-      opacity: 0.9,
-      id: 'polygon3',
-    },
-  ];
-
-  const points = [
-    { x: 100, y: 100, radius: 4, fill: colors.orangeDark, id: 'point1' },
-    { x: 150, y: 150, radius: 4, fill: colors.orangeDark, id: 'point2' },
-    { x: 200, y: 200, radius: 4, fill: colors.orangeDark, id: 'point3' },
-  ];
-
   const handleShapeClick = (id: string) => {
     setSelectedShape(id);
   };
 
+  const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+
+  const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
+
+  const handleZoomSlider = (idx: number) => {
+    const prevZoom = zoomLevel;
+    const newZoom = ZOOM_STEPS[idx];
+
+    const centerScreen = {
+      x: (stageSize.width / 2 - stagePosition.x) / prevZoom,
+      y: (stageSize.height / 2 - stagePosition.y) / prevZoom,
+    };
+
+    const newStagePosition = {
+      x: stageSize.width / 2 - centerScreen.x * newZoom,
+      y: stageSize.height / 2 - centerScreen.y * newZoom,
+    };
+
+    setZoomLevel(newZoom);
+    setStagePosition(newStagePosition);
+  };
+
+  const cartesianGrid = useMemo(
+    () => (
+      <CartesianGrid
+        // due to a problem with konva not removing Text elements when zooming out,
+        // it was used conditional to zoomLevel to force useMemo to re-render when needed
+        key={`grid-${zoomLevel < 512 ? 'low' : 'high'}`}
+        zoomLevel={zoomLevel}
+        stagePosition={stagePosition}
+        stageWidth={stageSize.width}
+        stageHeight={stageSize.height}
+        strokeWidth={strokeWidth}
+        getFontSize={getFontSize}
+      />
+    ),
+    [zoomLevel, stagePosition, strokeWidth, getFontSize, stageSize],
+  );
+
   return (
-    <Container>
-      {/* <CartesianPlane /> */}
-      <div>
-        <button type="button" onClick={() => setZoomLevel(zoomLevel + 1)}>
-          Zoom In
-        </button>
-        <button
-          type="button"
-          onClick={() => setZoomLevel(Math.max(1, zoomLevel - 1))}
-        >
-          Zoom Out
-        </button>
-      </div>
+    <Container ref={containerRef}>
       <Stage
-        width={870}
-        height={450}
+        width={stageSize.width}
+        height={stageSize.height - 40} // consiedering the slider height
         draggable
         scaleX={zoomLevel}
         scaleY={zoomLevel}
@@ -160,14 +147,7 @@ const Chart: React.FC = () => {
         onDragMove={handleDragMove}
         style={{ border: '1px solid black' }}
       >
-        <Layer>
-          <CartesianGrid
-            zoomLevel={zoomLevel}
-            stagePosition={stagePosition}
-            stageWidth={870}
-            stageHeight={450}
-          />
-        </Layer>
+        <Layer>{cartesianGrid}</Layer>
         <Layer>
           {shapes.map((shape) => {
             if (shape.type === 'rect') {
@@ -181,7 +161,7 @@ const Chart: React.FC = () => {
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
@@ -198,7 +178,7 @@ const Chart: React.FC = () => {
                   fill={shape.fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   closed
                   opacity={shape.opacity}
@@ -239,7 +219,7 @@ const Chart: React.FC = () => {
                   fill={fill}
                   stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
                   strokeWidth={
-                    selectedShape === shape.id ? 2 : shapeStrokeWidth
+                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
                   }
                   opacity={shape.opacity}
                   onClick={() => handleShapeClick(shape.id)}
@@ -252,16 +232,30 @@ const Chart: React.FC = () => {
             <Circle
               key={point.id}
               x={point.x}
-              y={-point.y}
-              radius={point.radius}
+              y={point.y}
+              radius={
+                zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel
+              }
               fill={point.fill}
               stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
-              strokeWidth={selectedShape === point.id ? 2 : shapeStrokeWidth}
+              strokeWidth={
+                selectedShape === point.id ? strokeWidth * 2 : strokeWidth
+              }
               onClick={() => handleShapeClick(point.id)}
             />
           ))}
         </Layer>
       </Stage>
+      <CustomSlider
+        value={getZoomIndex(zoomLevel)}
+        min={0}
+        max={ZOOM_STEPS.length - 1}
+        step={1}
+        label="Zoom"
+        height={40}
+        onChange={handleZoomSlider}
+        valueFormatter={(idx) => `Zoom Level: ${ZOOM_STEPS[idx]}`}
+      />
     </Container>
   );
 };
