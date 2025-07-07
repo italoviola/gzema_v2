@@ -29,6 +29,16 @@ export const colors = {
   yellow: '#FCEB00',
 };
 
+export const rulerColors = {
+  mainTick: '#333',
+  secondaryTick: '#666',
+  subTick: '#999',
+  subSubTick: '#ccc',
+  microTick: '#ddd',
+  text: '#333',
+  background: '#F0F0F0',
+};
+
 export const measures = {
   gutter: '15px',
   contentToHeader: '273px',
