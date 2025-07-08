@@ -87,7 +87,7 @@ const Ruler: React.FC<RulerProps> = ({
         ? rulerColors.mainTick
         : rulerColors.secondaryTick;
       let label;
-      if (zoomLevel < 512 || v === 0) {
+      if (zoomLevel < 2048 || v === 0) {
         label = `${Math.round(v)}`;
       }
       createTick(v, tickColor, label);

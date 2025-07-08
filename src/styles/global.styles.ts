@@ -33,10 +33,20 @@ export const rulerColors = {
   mainTick: '#333',
   secondaryTick: '#666',
   subTick: '#999',
-  subSubTick: '#ccc',
-  microTick: '#ddd',
+  subSubTick: '#CCC',
+  microTick: '#DDD',
   text: '#333',
   background: '#F0F0F0',
+};
+
+export const gridColors = {
+  mainLine: '#000000',
+  secondaryLine: '#7A7979',
+  intermediateLine: '#7A7979',
+  subLine: '#A8A8A8',
+  subSubLine: '#79CC79',
+  microLine: '#C7F8C7',
+  highlightedMicroLine: '#A8A8A8',
 };
 
 export const measures = {
