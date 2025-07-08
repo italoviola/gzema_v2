@@ -4,6 +4,9 @@ import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
 import Ruler from 'components/Ruler';
+import Explosion from 'components/Explosion';
+
+import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -12,8 +15,13 @@ import {
   RulerContainer,
   StageContainer,
   SliderContainer,
+  Crosshair,
 } from './styles';
 import { shapes, points } from './shapesAndPoints';
+
+const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+
+const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,6 +30,10 @@ const Chart: React.FC = () => {
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
+
+  const { showExplosion, handleContextMenu } = useExplosionEasterEgg({
+    isEnabled: false, // toogle easter egg, we can define later the condition to enable it
+  });
 
   const RULER_SIZE = 30;
 
@@ -102,10 +114,6 @@ const Chart: React.FC = () => {
     setSelectedShape(id);
   };
 
-  const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
-
-  const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
-
   const handleZoomSlider = (idx: number) => {
     const prevZoom = zoomLevel;
     const newZoom = ZOOM_STEPS[idx];
@@ -174,6 +182,7 @@ const Chart: React.FC = () => {
           offsetX={0}
           offsetY={0}
           onDragMove={handleDragMove}
+          onContextMenu={handleContextMenu}
           style={{
             border: `1px solid ${colors.greyMedium}`,
             background: 'white',
@@ -284,6 +293,7 @@ const Chart: React.FC = () => {
             ))}
           </Layer>
         </Stage>
+        {showExplosion ? <Explosion /> : <Crosshair />}
       </StageContainer>
       <SliderContainer>
         <CustomSlider

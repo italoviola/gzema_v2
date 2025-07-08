@@ -34,6 +34,47 @@ export const StageContainer = styled.div`
   position: relative;
 `;
 
+export const CrosshairContainer = styled.div`
+  position: relative;
+`;
+
+export const Crosshair = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* make sure it doesn't interfere with chart interactions */
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background-color: ${colors.blue};
+  }
+
+  /* Vertical line */
+  &::before {
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    transform: translateX(-50%);
+    opacity: 0.2;
+  }
+
+  /* Horizontal line */
+  &::after {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: translateY(-50%);
+    opacity: 0.2;
+  }
+`;
+
 export const SliderContainer = styled.div`
   grid-column: 1 / 3;
   grid-row: 3;

@@ -55,20 +55,21 @@ export function createGridText(
 
   if (isMicroText) {
     const isZero = value === 0;
+    const yMultiplier = zoomLevel >= 2048 ? 2 : 4;
 
     // Adjusts the position for specific cases
     if (isZero) {
-      yPos = 0 - offsetY * (zoomLevel >= 2048 ? 2 : 4);
+      yPos = 0 - offsetY * yMultiplier;
       rectOffsetX = offsetX * -0.5;
       rectOffsetY = offsetY * -0.5;
     } else if (isHorizontal) {
-      yPos = 0 - offsetY * (zoomLevel >= 2048 ? 2 : 4);
+      yPos = 0 - offsetY * yMultiplier;
     } else {
       if (zoomLevel >= 2048) {
         rectOffsetX = offsetX * -0.5;
         rectOffsetY = offsetY * -0.5;
       }
-      yPos = value - offsetY * (zoomLevel >= 2048 ? 2 : 4);
+      yPos = value - offsetY * yMultiplier;
     }
   }
 
