@@ -16,6 +16,8 @@ import {
   StageContainer,
   SliderContainer,
   Crosshair,
+  ControlsContainer,
+  SButton,
 } from './styles';
 import { shapes, points } from './shapesAndPoints';
 
@@ -32,7 +34,7 @@ const Chart: React.FC = () => {
   const [strokeWidth, setStrokeWidth] = useState(1);
 
   const { showExplosion, handleContextMenu } = useExplosionEasterEgg({
-    isEnabled: false, // toogle easter egg, we can define later the condition to enable it
+    isEnabled: true, // toogle easter egg, we can define later the condition to enable it
   });
 
   const RULER_SIZE = 30;
@@ -130,6 +132,22 @@ const Chart: React.FC = () => {
 
     setZoomLevel(newZoom);
     setStagePosition(newStagePosition);
+  };
+
+  const handleZoomIn = () => {
+    const currentIndex = getZoomIndex(zoomLevel);
+    const newIndex = Math.min(currentIndex + 1, ZOOM_STEPS.length - 1);
+    if (newIndex !== currentIndex) {
+      handleZoomSlider(newIndex);
+    }
+  };
+
+  const handleZoomOut = () => {
+    const currentIndex = getZoomIndex(zoomLevel);
+    const newIndex = Math.max(currentIndex - 1, 0);
+    if (newIndex !== currentIndex) {
+      handleZoomSlider(newIndex);
+    }
   };
 
   const cartesianGrid = useMemo(
@@ -294,6 +312,24 @@ const Chart: React.FC = () => {
           </Layer>
         </Stage>
         {showExplosion ? <Explosion /> : <Crosshair />}
+        <ControlsContainer>
+          <SButton
+            onClick={handleZoomOut}
+            color={colors.white}
+            bgColor={colors.blueLight}
+            borderColor={colors.blue}
+          >
+            -
+          </SButton>
+          <SButton
+            onClick={handleZoomIn}
+            color={colors.white}
+            bgColor={colors.blueLight}
+            borderColor={colors.blue}
+          >
+            +
+          </SButton>
+        </ControlsContainer>
       </StageContainer>
       <SliderContainer>
         <CustomSlider
@@ -301,10 +337,10 @@ const Chart: React.FC = () => {
           min={0}
           max={ZOOM_STEPS.length - 1}
           step={1}
-          label="Zoom"
+          label=""
           height={40}
           onChange={handleZoomSlider}
-          valueFormatter={(idx) => `Zoom Level: ${ZOOM_STEPS[idx]}`}
+          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
         />
       </SliderContainer>
     </ChartContainer>

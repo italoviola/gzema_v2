@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import Button from 'components/Button';
 import { colors, rulerColors } from 'styles/global.styles';
 
 export const Container = styled.div`
@@ -78,4 +79,22 @@ export const Crosshair = styled.div`
 export const SliderContainer = styled.div`
   grid-column: 1 / 3;
   grid-row: 3;
+`;
+
+export const ControlsContainer = styled.div`
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+`;
+
+export const SButton = styled(Button)`
+  width: 50px;
+  height: 35px;
+  opacity: 0.5;
+  padding: 0;
+  font-size: 22px;
 `;

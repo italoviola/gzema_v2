@@ -6,7 +6,7 @@ import { ButtonProps } from './interface';
 export const StyledButton = styled.button<ButtonProps>`
   background-color: ${(props) => props.bgColor};
   color: ${(props) => props.color};
-  padding: 12px;
+  padding: ${(props) => props.padding};
   text-align: center;
   text-decoration: none;
   display: inline-block;

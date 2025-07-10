@@ -16,7 +16,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
   min,
   max,
   step = 1,
-  label,
+  label = '',
   height = 40,
   onChange,
   valueFormatter,
@@ -33,7 +33,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ flex: 1, height }}
       />
-      <span style={{ marginLeft: 18, minWidth: 80 }}>
+      <span style={{ marginLeft: 18 }}>
         {valueFormatter ? valueFormatter(value) : value}
       </span>
     </div>
