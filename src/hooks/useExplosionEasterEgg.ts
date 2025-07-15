@@ -29,7 +29,7 @@ export const useExplosionEasterEgg = ({
 
     if (now - lastRightClickTime.current < DOUBLE_CLICK_THRESHOLD) {
       setShowExplosion(true);
-      lastRightClickTime.current = 0; // reset to prevent thrid click
+      lastRightClickTime.current = 0; // reset to prevent third click
     } else {
       lastRightClickTime.current = now;
     }
