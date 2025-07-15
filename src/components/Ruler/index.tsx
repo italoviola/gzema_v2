@@ -95,7 +95,7 @@ const Ruler: React.FC<RulerProps> = ({
 
     // Sub-lines Ticks
     const generateSubTicks = (
-      labelCallback: (subV: number) => string | undefined
+      labelCallback: (subV: number) => string | undefined,
     ) => {
       const subStep = intermediateStepSize / 10;
       const subStart = Math.floor(visibleMin / subStep) * subStep;
@@ -111,7 +111,7 @@ const Ruler: React.FC<RulerProps> = ({
 
     if (zoomLevel === 8) {
       generateSubTicks((subV) =>
-        isHorizontal ? `${Math.round(subV)}` : `${-Math.round(subV)}`
+        isHorizontal ? `${Math.round(subV)}` : `${-Math.round(subV)}`,
       );
     } else if (zoomLevel > 8) {
       generateSubTicks((subV) => {
