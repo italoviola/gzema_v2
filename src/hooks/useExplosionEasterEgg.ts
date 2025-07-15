@@ -20,7 +20,7 @@ export const useExplosionEasterEgg = ({
     return () => clearTimeout(timer);
   }, [showExplosion]);
 
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = (e: KonvaEventObject<MouseEvent>) => {
     if (!isEnabled) return;
 
     e.evt.preventDefault();
