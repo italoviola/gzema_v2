@@ -88,7 +88,7 @@ const Ruler: React.FC<RulerProps> = ({
         : rulerColors.secondaryTick;
       let label;
       if (zoomLevel < 2048 || v === 0) {
-        label = `${Math.round(v)}`;
+        label = isHorizontal ? `${Math.round(v)}` : `${-Math.round(v)}`;
       }
       createTick(v, tickColor, label);
     }
@@ -101,7 +101,9 @@ const Ruler: React.FC<RulerProps> = ({
 
       for (let subV = subStart; subV <= subEnd; subV += subStep) {
         if (subV % intermediateStepSize !== 0) {
-          const label = `${Math.round(subV)}`;
+          const label = isHorizontal
+            ? `${Math.round(subV)}`
+            : `${-Math.round(subV)}`;
           createTick(subV, rulerColors.subTick, label);
         }
       }
@@ -114,7 +116,7 @@ const Ruler: React.FC<RulerProps> = ({
         if (subV % intermediateStepSize !== 0) {
           let label;
           if (zoomLevel >= 256 && zoomLevel < 2048) {
-            label = subV.toFixed(1);
+            label = isHorizontal ? subV.toFixed(1) : (-subV).toFixed(1);
           }
           createTick(subV, rulerColors.subTick, label);
         }
@@ -148,7 +150,7 @@ const Ruler: React.FC<RulerProps> = ({
           const isHighlighted = Math.round(microV * 100) % 10 === 0;
           let label;
           if (isHighlighted) {
-            label = microV.toFixed(2);
+            label = isHorizontal ? microV.toFixed(2) : (-microV).toFixed(2);
           }
           createTick(microV, rulerColors.microTick, label);
         }

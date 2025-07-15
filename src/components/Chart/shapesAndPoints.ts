@@ -40,7 +40,7 @@ export const shapes = [
   },
   {
     type: 'polygon',
-    points: [400, 50, 440, 30, 440, -30, 400, -100],
+    points: [400, 50, 440, 30, 440, -30, 400, -50],
     fill: colors.silver,
     opacity: 0.9,
     id: 'polygon2',
@@ -67,22 +67,22 @@ export const shapes = [
 
 export const points = [
   {
-    x: 100,
-    y: 100,
+    x: 45,
+    y: 45,
     radius: 12,
     fill: colors.orangeDark,
     id: 'point1',
   },
   {
-    x: 150,
-    y: 150,
+    x: 50,
+    y: 47.5,
     radius: 12,
     fill: colors.orangeDark,
     id: 'point2',
   },
   {
-    x: 200,
-    y: 200,
+    x: 52,
+    y: 50,
     radius: 12,
     fill: colors.orangeDark,
     id: 'point3',

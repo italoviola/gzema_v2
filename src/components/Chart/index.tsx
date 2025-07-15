@@ -293,6 +293,11 @@ const Chart: React.FC = () => {
               }
               return null;
             })}
+            <Line
+              points={points.flatMap((p) => [p.x, -p.y])}
+              stroke={colors.orangeDark}
+              strokeWidth={strokeWidth}
+            />
             {points.map((point) => (
               <Circle
                 key={point.id}
