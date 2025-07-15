@@ -94,33 +94,32 @@ const Ruler: React.FC<RulerProps> = ({
     }
 
     // Sub-lines Ticks
+    const generateSubTicks = (
+      labelCallback: (subV: number) => string | undefined
+    ) => {
+      const subStep = intermediateStepSize / 10;
+      const subStart = Math.floor(visibleMin / subStep) * subStep;
+      const subEnd = Math.ceil(visibleMax / subStep) * subStep;
+
+      for (let subV = subStart; subV <= subEnd; subV += subStep) {
+        if (subV % intermediateStepSize !== 0) {
+          const label = labelCallback(subV);
+          createTick(subV, rulerColors.subTick, label);
+        }
+      }
+    };
+
     if (zoomLevel === 8) {
-      const subStep = intermediateStepSize / 10;
-      const subStart = Math.floor(visibleMin / subStep) * subStep;
-      const subEnd = Math.ceil(visibleMax / subStep) * subStep;
-
-      for (let subV = subStart; subV <= subEnd; subV += subStep) {
-        if (subV % intermediateStepSize !== 0) {
-          const label = isHorizontal
-            ? `${Math.round(subV)}`
-            : `${-Math.round(subV)}`;
-          createTick(subV, rulerColors.subTick, label);
-        }
-      }
+      generateSubTicks((subV) =>
+        isHorizontal ? `${Math.round(subV)}` : `${-Math.round(subV)}`
+      );
     } else if (zoomLevel > 8) {
-      const subStep = intermediateStepSize / 10;
-      const subStart = Math.floor(visibleMin / subStep) * subStep;
-      const subEnd = Math.ceil(visibleMax / subStep) * subStep;
-
-      for (let subV = subStart; subV <= subEnd; subV += subStep) {
-        if (subV % intermediateStepSize !== 0) {
-          let label;
-          if (zoomLevel >= 256 && zoomLevel < 2048) {
-            label = isHorizontal ? subV.toFixed(1) : (-subV).toFixed(1);
-          }
-          createTick(subV, rulerColors.subTick, label);
+      generateSubTicks((subV) => {
+        if (zoomLevel >= 256 && zoomLevel < 2048) {
+          return isHorizontal ? subV.toFixed(1) : (-subV).toFixed(1);
         }
-      }
+        return undefined;
+      });
     }
     // Sub-sub-lines Ticks
     if (zoomLevel >= 512) {
