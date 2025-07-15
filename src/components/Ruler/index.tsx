@@ -1,14 +1,8 @@
 import React, { useMemo } from 'react';
 import { Stage, Layer, Line, Text } from 'react-konva';
-import { rulerColors } from 'styles/global.styles';
 
-interface RulerProps {
-  orientation: 'horizontal' | 'vertical';
-  zoomLevel: number;
-  stagePosition: { x: number; y: number };
-  width: number;
-  height: number;
-}
+import { rulerColors } from 'styles/global.styles';
+import { RulerProps } from './interface';
 
 const Ruler: React.FC<RulerProps> = ({
   orientation,
