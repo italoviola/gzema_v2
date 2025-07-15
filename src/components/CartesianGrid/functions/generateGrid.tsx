@@ -1,9 +1,10 @@
 import React from 'react';
 import { Line, Rect, Text, Group } from 'react-konva';
 
-import { createGridText } from './createGridText';
+import { gridColors } from 'styles/global.styles';
 
-import { gridLimits, gridColors } from '../constants';
+import { createGridText } from './createGridText';
+import { gridLimits } from '../constants';
 import { GenerateGridParams } from '../interface';
 
 export function generateGrid({

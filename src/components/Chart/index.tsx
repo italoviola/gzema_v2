@@ -1,20 +1,44 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Stage, Layer, Line, Rect, Circle, Path } from 'react-konva';
+import { Stage, Layer } from 'react-konva';
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
+import Ruler from 'components/Ruler';
+import Explosion from 'components/Explosion';
+import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
+
+import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
 
 import { colors } from 'styles/global.styles';
-import { Container } from './styles';
+import {
+  ChartContainer,
+  CornerBox,
+  RulerContainer,
+  StageContainer,
+  SliderContainer,
+  Crosshair,
+  ControlsContainer,
+  SButton,
+} from './styles';
 import { shapes, points } from './shapesAndPoints';
+
+const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+
+const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [stageSize] = useState({ width: 902, height: 484 });
+  const [stageSize] = useState({ width: 872, height: 414 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
+
+  const { showExplosion, handleContextMenu } = useExplosionEasterEgg({
+    isEnabled: true, // toogle easter egg, we can define later the condition to enable it
+  });
+
+  const RULER_SIZE = 30;
 
   // useEffect(() => {
   //   function updateSize() {
@@ -93,10 +117,6 @@ const Chart: React.FC = () => {
     setSelectedShape(id);
   };
 
-  const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
-
-  const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
-
   const handleZoomSlider = (idx: number) => {
     const prevZoom = zoomLevel;
     const newZoom = ZOOM_STEPS[idx];
@@ -113,6 +133,22 @@ const Chart: React.FC = () => {
 
     setZoomLevel(newZoom);
     setStagePosition(newStagePosition);
+  };
+
+  const handleZoomIn = () => {
+    const currentIndex = getZoomIndex(zoomLevel);
+    const newIndex = Math.min(currentIndex + 1, ZOOM_STEPS.length - 1);
+    if (newIndex !== currentIndex) {
+      handleZoomSlider(newIndex);
+    }
+  };
+
+  const handleZoomOut = () => {
+    const currentIndex = getZoomIndex(zoomLevel);
+    const newIndex = Math.max(currentIndex - 1, 0);
+    if (newIndex !== currentIndex) {
+      handleZoomSlider(newIndex);
+    }
   };
 
   const cartesianGrid = useMemo(
@@ -133,130 +169,90 @@ const Chart: React.FC = () => {
   );
 
   return (
-    <Container ref={containerRef}>
-      <Stage
-        width={stageSize.width}
-        height={stageSize.height - 40} // consiedering the slider height
-        draggable
-        scaleX={zoomLevel}
-        scaleY={zoomLevel}
-        x={stagePosition.x}
-        y={stagePosition.y}
-        offsetX={0}
-        offsetY={0}
-        onDragMove={handleDragMove}
-        style={{ border: '1px solid black' }}
-      >
-        <Layer>{cartesianGrid}</Layer>
-        <Layer>
-          {shapes.map((shape) => {
-            if (shape.type === 'rect') {
-              return (
-                <Rect
-                  key={shape.id}
-                  x={shape.x}
-                  y={-(shape.y ?? 0)}
-                  width={shape.width}
-                  height={shape.height}
-                  fill={shape.fill}
-                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={
-                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
-                  }
-                  opacity={shape.opacity}
-                  onClick={() => handleShapeClick(shape.id)}
-                />
-              );
-            }
-            if (shape.type === 'polygon') {
-              return (
-                <Line
-                  key={shape.id}
-                  points={shape.points?.map((point, i) =>
-                    i % 2 === 0 ? point : -point,
-                  )}
-                  fill={shape.fill}
-                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={
-                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
-                  }
-                  closed
-                  opacity={shape.opacity}
-                  onClick={() => handleShapeClick(shape.id)}
-                />
-              );
-            }
-            if (shape.type === 'concaveRoundedRect') {
-              const {
-                x = 0,
-                y = 0,
-                width = 0,
-                height = 0,
-                fill,
-                cornerRadius = [0, 0, 0, 0],
-              } = shape;
-              const [tl, tr, br, bl] = cornerRadius ?? [0, 0, 0, 0];
-
-              const pathData = `
-                M ${x + tl}, ${y}
-                L ${x + width - tr}, ${y}
-                Q ${x + width - tr}, ${y + tr} ${x + width}, ${y + tr}
-                L ${x + width}, ${y + height - br}
-                Q ${x + width - br}, ${y + height - br} ${x + width - br}, ${
-                  y + height
-                }
-                L ${x + bl}, ${y + height}
-                Q ${x + bl}, ${y + height - bl} ${x}, ${y + height - bl}
-                L ${x}, ${y + tl}
-                Q ${x + tl}, ${y + tl} ${x + tl}, ${y}
-                Z
-              `;
-
-              return (
-                <Path
-                  key={shape.id}
-                  data={pathData}
-                  fill={fill}
-                  stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-                  strokeWidth={
-                    selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
-                  }
-                  opacity={shape.opacity}
-                  onClick={() => handleShapeClick(shape.id)}
-                />
-              );
-            }
-            return null;
-          })}
-          {points.map((point) => (
-            <Circle
-              key={point.id}
-              x={point.x}
-              y={point.y}
-              radius={
-                zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel
-              }
-              fill={point.fill}
-              stroke={selectedShape === point.id ? 'blue' : colors.greyFont}
-              strokeWidth={
-                selectedShape === point.id ? strokeWidth * 2 : strokeWidth
-              }
-              onClick={() => handleShapeClick(point.id)}
-            />
-          ))}
-        </Layer>
-      </Stage>
-      <CustomSlider
-        value={getZoomIndex(zoomLevel)}
-        min={0}
-        max={ZOOM_STEPS.length - 1}
-        step={1}
-        label="Zoom"
-        height={40}
-        onChange={handleZoomSlider}
-        valueFormatter={(idx) => `Zoom Level: ${ZOOM_STEPS[idx]}`}
-      />
-    </Container>
+    <ChartContainer ref={containerRef}>
+      <CornerBox />
+      <RulerContainer style={{ gridColumn: 2, gridRow: 1 }}>
+        <Ruler
+          orientation="horizontal"
+          width={stageSize.width}
+          height={RULER_SIZE}
+          zoomLevel={zoomLevel}
+          stagePosition={stagePosition}
+        />
+      </RulerContainer>
+      <RulerContainer style={{ gridColumn: 1, gridRow: 2 }}>
+        <Ruler
+          orientation="vertical"
+          width={RULER_SIZE}
+          height={stageSize.height}
+          zoomLevel={zoomLevel}
+          stagePosition={stagePosition}
+        />
+      </RulerContainer>
+      <StageContainer>
+        <Stage
+          width={stageSize.width}
+          height={stageSize.height}
+          draggable
+          scaleX={zoomLevel}
+          scaleY={zoomLevel}
+          x={stagePosition.x}
+          y={stagePosition.y}
+          offsetX={0}
+          offsetY={0}
+          onDragMove={handleDragMove}
+          onContextMenu={handleContextMenu}
+          style={{
+            border: `1px solid ${colors.greyMedium}`,
+            background: 'white',
+          }}
+        >
+          <Layer>{cartesianGrid}</Layer>
+          <Layer>
+            {renderShapesAndPoints({
+              shapes,
+              points,
+              selectedShape,
+              strokeWidth,
+              colors,
+              handleShapeClick,
+              zoomLevel,
+            })}
+          </Layer>
+        </Stage>
+        {showExplosion ? <Explosion /> : <Crosshair />}
+        <ControlsContainer>
+          <SButton
+            onClick={handleZoomOut}
+            color={colors.white}
+            bgColor={colors.blueLight}
+            borderColor={colors.blue}
+          >
+            -
+          </SButton>
+          <SButton
+            onClick={handleZoomIn}
+            color={colors.white}
+            bgColor={colors.blueLight}
+            borderColor={colors.blue}
+          >
+            +
+          </SButton>
+        </ControlsContainer>
+      </StageContainer>
+      <SliderContainer>
+        <CustomSlider
+          value={getZoomIndex(zoomLevel)}
+          min={0}
+          max={ZOOM_STEPS.length - 1}
+          step={1}
+          label=""
+          height={40}
+          onChange={handleZoomSlider}
+          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
+        />
+      </SliderContainer>
+    </ChartContainer>
   );
 };
 

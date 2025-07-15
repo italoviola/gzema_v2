@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
 import { ButtonProps } from './interface';
@@ -10,6 +11,8 @@ const Button: React.FC<ButtonProps> = ({
   color,
   bgColor,
   borderColor = 'transparent',
+  padding = '12px',
+  ...rest
 }) => (
   <StyledButton
     type={type}
@@ -17,6 +20,8 @@ const Button: React.FC<ButtonProps> = ({
     bgColor={bgColor}
     borderColor={borderColor}
     onClick={onClick}
+    padding={padding}
+    {...rest}
   >
     {children}
   </StyledButton>

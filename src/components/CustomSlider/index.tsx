@@ -16,7 +16,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
   min,
   max,
   step = 1,
-  label,
+  label = '',
   height = 40,
   onChange,
   valueFormatter,

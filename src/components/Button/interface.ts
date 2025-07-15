@@ -7,4 +7,5 @@ export interface ButtonProps {
   borderColor?: string;
   onClick?: () => void;
   children: React.ReactNode;
+  padding?: string;
 }
