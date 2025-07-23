@@ -63,6 +63,17 @@ export const shapes = [
     opacity: 0.9,
     id: 'polygon3',
   },
+  {
+    type: 'concaveRoundedRect',
+    x: 600,
+    y: -30,
+    width: 10,
+    height: 60,
+    fill: colors.silver,
+    opacity: 0.9,
+    cornerRadius: [0, 5, 10, 0],
+    id: 'concaveRoundedRect1',
+  },
 ];
 
 export const points = [

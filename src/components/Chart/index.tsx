@@ -28,7 +28,7 @@ const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [stageSize] = useState({ width: 872, height: 414 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
+  const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
