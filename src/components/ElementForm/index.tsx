@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { ElementItem } from 'types/element';
+
 import {
   addElement,
   editElement,
   removeElement,
 } from 'state/elements/elementsSlice';
+
+import Icon from 'components/Icon';
+
+import { ElementItem } from 'types/element';
+
+import { colors } from 'styles/global.styles';
+
+import { ElementFormProps } from './interface';
 import {
-  FormContainer,
-  FormHeader,
-  FormTitle,
-  FormActions,
+  Container,
+  Header,
+  Title,
+  HeaderActions,
   FormBody,
-  FormGroup,
-  FormInput,
-  FormLabel,
+  SInput,
   EditableTitleWrapper,
   EditableTitleInput,
+  Edit,
+  DeleteBtn,
+  SaveBtn,
+  Check,
 } from './style';
-
-interface ElementFormProps {
-  element?: ElementItem | null;
-  onClose?: () => void;
-  isNew?: boolean;
-}
 
 const ElementForm: React.FC<ElementFormProps> = ({
   element,
@@ -40,7 +44,6 @@ const ElementForm: React.FC<ElementFormProps> = ({
     leftDiameter: 0,
     rightDiameter: 0,
   });
-
   const [editingLabel, setEditingLabel] = useState(isNew);
 
   useEffect(() => {
@@ -86,7 +89,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleLabelSave = () => {
     setEditingLabel(false);
 
-    // Se estiver editando um elemento existente, salvar as alterações
+    // if editing existing element, save changes
     if (!isNew && element) {
       dispatch(
         editElement({
@@ -98,8 +101,8 @@ const ElementForm: React.FC<ElementFormProps> = ({
   };
 
   return (
-    <FormContainer>
-      <FormHeader>
+    <Container>
+      <Header>
         <EditableTitleWrapper>
           {editingLabel ? (
             <>
@@ -111,111 +114,94 @@ const ElementForm: React.FC<ElementFormProps> = ({
                 autoFocus
                 placeholder="Nome do elemento"
               />
-              <button
-                type="button"
-                onClick={handleLabelSave}
-                className="save-btn"
-              >
-                ✓
-              </button>
+              <Check type="button" onClick={handleLabelSave}>
+                <Icon
+                  className="icon-check_circle"
+                  color={colors.greyDark}
+                  fontSize="24px"
+                />
+              </Check>
             </>
           ) : (
-            <FormTitle>
+            <Title>
               {isNew ? 'Novo Elemento' : formData.label || element?.id}
-            </FormTitle>
+            </Title>
           )}
         </EditableTitleWrapper>
-
-        <FormActions>
+        <HeaderActions>
           {!isNew && !editingLabel && (
-            <button
+            <Edit
               type="button"
               onClick={handleLabelEdit}
               className="edit-label-btn"
             >
-              ✎
-            </button>
+              <Icon
+                className="icon-create"
+                color={colors.greyDark}
+                fontSize="24px"
+              />
+            </Edit>
           )}
-          <button type="button" onClick={handleSave}>
-            💾
-          </button>
+          <SaveBtn
+            type="button"
+            className="icon-floppy-disk"
+            onClick={handleSave}
+          />
           {!isNew && (
-            <button type="button" onClick={handleDelete} className="delete-btn">
-              🗑️
-            </button>
+            <DeleteBtn
+              type="button"
+              className="icon-delete"
+              onClick={handleDelete}
+            />
           )}
-        </FormActions>
-      </FormHeader>
-
+        </HeaderActions>
+      </Header>
       <FormBody>
-        <FormGroup>
-          <FormLabel>Eixo x:</FormLabel>
-          <FormInput
-            type="number"
-            name="xaxis"
-            value={formData.xaxis}
-            onChange={handleChange}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <FormLabel>Eixo z:</FormLabel>
-          <FormInput
-            type="number"
-            name="zaxis"
-            value={formData.zaxis}
-            onChange={handleChange}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <FormLabel>Altura:</FormLabel>
-          <FormInput
-            type="number"
-            name="height"
-            value={formData.height}
-            onChange={handleChange}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <FormLabel>Largura:</FormLabel>
-          <FormInput
-            type="number"
-            name="width"
-            value={formData.width}
-            onChange={handleChange}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <FormLabel>D. Esquerdo:</FormLabel>
-          <FormInput
-            type="number"
-            name="leftDiameter"
-            value={formData.leftDiameter}
-            onChange={handleChange}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <FormLabel>D. Direito:</FormLabel>
-          <FormInput
-            type="number"
-            name="rightDiameter"
-            value={formData.rightDiameter}
-            onChange={handleChange}
-          />
-        </FormGroup>
+        <SInput
+          label="Eixo x:"
+          type="number"
+          name="xaxis"
+          value={formData.xaxis}
+          onChange={handleChange}
+        />
+        <SInput
+          label="Eixo z:"
+          type="number"
+          name="zaxis"
+          value={formData.zaxis}
+          onChange={handleChange}
+        />
+        <SInput
+          label="Altura:"
+          type="number"
+          name="height"
+          value={formData.height}
+          onChange={handleChange}
+        />
+        <SInput
+          label="Largura:"
+          type="number"
+          name="width"
+          value={formData.width}
+          onChange={handleChange}
+        />
+        <SInput
+          label="D. Esquerdo:"
+          type="number"
+          name="leftDiameter"
+          value={formData.leftDiameter}
+          onChange={handleChange}
+        />
+        <SInput
+          label="D. Direito:"
+          type="number"
+          name="rightDiameter"
+          value={formData.rightDiameter}
+          onChange={handleChange}
+        />
       </FormBody>
-    </FormContainer>
+    </Container>
   );
-};
-
-ElementForm.defaultProps = {
-  element: null,
-  onClose: undefined,
-  isNew: false,
 };
 
 export default ElementForm;

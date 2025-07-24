@@ -31,7 +31,6 @@ const ElementRegistration: React.FC = () => {
   const handleSelectItem = (item: Item) => {
     setSelectedItem(item);
     setIsAddingNew(false);
-    console.log(`Item selecionado: ${item.label}`);
   };
 
   const handleAddClick = () => {

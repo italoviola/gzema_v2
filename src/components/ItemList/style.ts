@@ -9,7 +9,6 @@ export const Container = styled.div`
   width: 100%;
   border-radius: 4px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
 export const ListItem = styled.div<ListItemProps>`
@@ -21,12 +20,6 @@ export const ListItem = styled.div<ListItemProps>`
   color: ${(props) => (props.isSelected ? colors.white : colors.blue)};
   border-bottom: 1px solid #ddd;
   cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.isSelected ? colors.blue : colors.blueLight};
-  }
 
   .item-number {
     margin-right: 12px;

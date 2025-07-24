@@ -54,3 +54,33 @@ export const ContentBlock = styled.div`
   box-shadow: ${shadows.std};
   border-radius: ${measures.borderRadius};
 `;
+
+export const BaseButton = styled.button`
+  flex-shrink: 0;
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 100%;
+`;
+
+export const ActionButton = styled(BaseButton)<{
+  bgColor?: string;
+  color?: string;
+}>`
+  background-color: ${({ bgColor }) => bgColor || 'inherit'};
+  color: ${({ color }) => color || 'white'};
+  border: 0;
+  font-size: 24px;
+  line-height: 24px;
+  width: 40px;
+  height: 40px;
+  padding: 5px 0;
+  vertical-align: middle;
+  border-radius: ${measures.borderRadius};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;

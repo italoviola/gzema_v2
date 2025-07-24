@@ -1,74 +1,60 @@
+import Input from 'components/Input';
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { ActionButton } from 'styles/Components';
+
+import { colors, shadows } from 'styles/global.styles';
+
+export const Container = styled.div`
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: ${colors.grey};
+  box-shadow: ${shadows.std};
+`;
+
+export const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: ${colors.blue};
+  background-color: ${colors.greyPreMedium};
+  padding: 10px 15px;
+`;
 
 export const EditableTitleWrapper = styled.div`
   display: flex;
   align-items: center;
   flex: 1;
-
-  .save-btn {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0 5px;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-  }
+  height: 25px;
 `;
 
 export const EditableTitleInput = styled.input`
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: ${colors.blueLighter};
+  border: 1px solid ${colors.blueLight};
   border-radius: 4px;
-  color: white;
+  color: ${colors.blackLight};
   font-size: 18px;
-  font-weight: 500;
-  padding: 4px 8px;
-  margin-right: 8px;
-  flex: 1;
+  width: 100%;
+  padding: 1px 2px;
 
   &:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.3);
+    background-color: ${colors.blueLighter};
+    opacity: 0.7;
+    border-color: ${colors.blue};
+    color: ${colors.blackLight};
   }
-
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-  }
 `;
 
-export const FormContainer = styled.div`
-  border-radius: 5px;
-  overflow: hidden;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-export const FormHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: ${colors.blueLight};
-  color: white;
-  padding: 10px 15px;
-`;
-
-export const FormTitle = styled.h3`
-  margin: 0;
+export const Title = styled.h3`
   font-size: 18px;
-  font-weight: 500;
+  display: block;
 `;
 
-export const FormActions = styled.div`
+export const HeaderActions = styled.div`
   display: flex;
   gap: 10px;
 
   button {
-    background: none;
     border: none;
     color: white;
     cursor: pointer;
@@ -80,19 +66,33 @@ export const FormActions = styled.div`
     height: 30px;
     border-radius: 4px;
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-
     &.delete-btn {
-      color: #fff;
+      color: ${colors.white};
       background-color: ${colors.red};
     }
-
-    &.edit-label-btn {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
   }
+`;
+
+export const DeleteBtn = styled(ActionButton).attrs(() => ({
+  bgColor: colors.red,
+  color: colors.white,
+}))``;
+
+export const SaveBtn = styled(ActionButton).attrs(() => ({
+  bgColor: colors.blue,
+  color: colors.white,
+}))``;
+
+export const Edit = styled(ActionButton)`
+  background-color: inherit;
+  width: 56px;
+  font-size: 16px;
+`;
+
+export const Check = styled(ActionButton)`
+  background-color: inherit;
+  width: 56px;
+  font-size: 16px;
 `;
 
 export const FormBody = styled.div`
@@ -100,34 +100,22 @@ export const FormBody = styled.div`
   flex-flow: row wrap;
   gap: 15px;
   padding: 15px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  max-height: 189px;
+  overflow-y: auto;
 `;
 
-export const FormGroup = styled.div`
+export const SInput = styled(Input)`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
-`;
-
-export const FormLabel = styled.label`
-  font-size: 14px;
-  margin-bottom: 5px;
-  color: #333;
-  font-weight: 500;
-`;
-
-export const FormInput = styled.input`
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px 10px;
+  flex: 1 1 45%;
+  box-sizing: border-box;
   font-size: 14px;
 
-  &:focus {
-    border-color: ${colors.blue};
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  label {
+    font-size: 16px;
+  }
+  input {
+    font-size: 16px;
   }
 `;
