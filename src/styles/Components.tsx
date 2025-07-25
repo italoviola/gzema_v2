@@ -33,6 +33,21 @@ export const PageTitle = styled.h1`
   line-height: 40px;
 `;
 
+export const TitleEdit = styled.input`
+  color: ${colors.greyFont};
+  background-color: ${colors.grey};
+  border-radius: ${measures.borderRadius};
+  border: 0;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    background-color: ${colors.blueLighter};
+    border: 1px solid ${colors.blue};
+    color: ${colors.greyFont};
+  }
+`;
+
 export const SubTitle = styled.h2`
   font-size: 22px;
   font-weight: bold;

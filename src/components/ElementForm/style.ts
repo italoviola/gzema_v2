@@ -1,11 +1,11 @@
 import Input from 'components/Input';
 import styled from 'styled-components';
-import { ActionButton } from 'styles/Components';
+import { ActionButton, TitleEdit } from 'styles/Components';
 
-import { colors, shadows } from 'styles/global.styles';
+import { colors, measures, shadows } from 'styles/global.styles';
 
 export const Container = styled.div`
-  border-radius: 5px;
+  border-radius: ${measures.borderRadius};
   overflow: hidden;
   background-color: ${colors.grey};
   box-shadow: ${shadows.std};
@@ -27,22 +27,9 @@ export const EditableTitleWrapper = styled.div`
   height: 25px;
 `;
 
-export const EditableTitleInput = styled.input`
-  background-color: ${colors.blueLighter};
-  border: 1px solid ${colors.blueLight};
-  border-radius: 4px;
-  color: ${colors.blackLight};
+export const STitleEdit = styled(TitleEdit)`
   font-size: 18px;
   width: 100%;
-  padding: 1px 2px;
-
-  &:focus {
-    outline: none;
-    background-color: ${colors.blueLighter};
-    opacity: 0.7;
-    border-color: ${colors.blue};
-    color: ${colors.blackLight};
-  }
 `;
 
 export const Title = styled.h3`
@@ -64,7 +51,7 @@ export const HeaderActions = styled.div`
     justify-content: center;
     width: 30px;
     height: 30px;
-    border-radius: 4px;
+    border-radius: ${measures.borderRadius};
 
     &.delete-btn {
       color: ${colors.white};

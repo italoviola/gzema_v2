@@ -31,7 +31,7 @@ import {
   Container,
   TitleContainer,
   Title,
-  TitleEdit,
+  STitleEdit,
   Block,
   TableWrapper,
   Table,
@@ -466,7 +466,7 @@ const Contour: React.FC = () => {
               <PageHead>
                 <TitleContainer>
                   {isEditingName ? (
-                    <TitleEdit
+                    <STitleEdit
                       ref={nameInputRef}
                       type="text"
                       name="name"

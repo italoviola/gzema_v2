@@ -22,7 +22,7 @@ import {
   FormBody,
   SInput,
   EditableTitleWrapper,
-  EditableTitleInput,
+  STitleEdit,
   Edit,
   DeleteBtn,
   SaveBtn,
@@ -106,7 +106,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
         <EditableTitleWrapper>
           {editingLabel ? (
             <>
-              <EditableTitleInput
+              <STitleEdit
                 type="text"
                 name="label"
                 value={formData.label}
@@ -117,7 +117,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
               <Check type="button" onClick={handleLabelSave}>
                 <Icon
                   className="icon-check_circle"
-                  color={colors.greyDark}
+                  color={colors.blue}
                   fontSize="24px"
                 />
               </Check>
@@ -142,17 +142,21 @@ const ElementForm: React.FC<ElementFormProps> = ({
               />
             </Edit>
           )}
-          <SaveBtn
-            type="button"
-            className="icon-floppy-disk"
-            onClick={handleSave}
-          />
-          {!isNew && (
-            <DeleteBtn
-              type="button"
-              className="icon-delete"
-              onClick={handleDelete}
+          <SaveBtn type="button" onClick={handleSave}>
+            <Icon
+              className="icon-floppy-disk"
+              color={colors.white}
+              fontSize="16px"
             />
+          </SaveBtn>
+          {!isNew && (
+            <DeleteBtn type="button" onClick={handleDelete}>
+              <Icon
+                className="icon-delete"
+                color={colors.white}
+                fontSize="21px"
+              />
+            </DeleteBtn>
           )}
         </HeaderActions>
       </Header>
