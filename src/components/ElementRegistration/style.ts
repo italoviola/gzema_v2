@@ -17,14 +17,24 @@ export const ContentLeft = styled.div`
 export const SButton = styled(Button)`
   margin-bottom: 15px;
   box-shadow: ${shadows.std};
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 `;
 
 export const ItemListContainer = styled.div`
-  max-height: 210px;
+  max-height: 202px;
   overflow-y: auto;
   box-shadow: ${shadows.std};
 `;
 
 export const ContentRight = styled.div`
   flex: 2;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  height: 267px;
 `;

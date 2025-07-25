@@ -8,10 +8,13 @@ import {
 } from 'state/elements/elementsSlice';
 
 import Icon from 'components/Icon';
+import Modal from 'components/Modal';
+import ConfirmAction from 'components/ConfirmAction';
 
 import { ElementItem } from 'types/element';
 
 import { colors } from 'styles/global.styles';
+import { ActionButton } from 'styles/Components';
 
 import { ElementFormProps } from './interface';
 import {
@@ -45,6 +48,8 @@ const ElementForm: React.FC<ElementFormProps> = ({
     rightDiameter: 0,
   });
   const [editingLabel, setEditingLabel] = useState(isNew);
+  const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
+    useState(false);
 
   useEffect(() => {
     if (element) {
@@ -89,12 +94,22 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleLabelSave = () => {
     setEditingLabel(false);
 
-    // if editing existing element, save changes
+    // Garante que o label nunca seja vazio
+    const safeLabel =
+      formData.label?.trim() === '' ? 'Novo Elemento' : formData.label.trim();
+
+    setFormData({
+      ...formData,
+      label: safeLabel,
+    });
+
+    // Se estiver editando um elemento existente, salva a alteração
     if (!isNew && element) {
       dispatch(
         editElement({
           id: element.id,
           ...formData,
+          label: safeLabel,
         }),
       );
     }
@@ -123,9 +138,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
               </Check>
             </>
           ) : (
-            <Title>
-              {isNew ? 'Novo Elemento' : formData.label || element?.id}
-            </Title>
+            <Title>{isNew ? 'Novo Elemento' : formData.label}</Title>
           )}
         </EditableTitleWrapper>
         <HeaderActions>
@@ -150,7 +163,10 @@ const ElementForm: React.FC<ElementFormProps> = ({
             />
           </SaveBtn>
           {!isNew && (
-            <DeleteBtn type="button" onClick={handleDelete}>
+            <DeleteBtn
+              type="button"
+              onClick={() => setIsModalCofirmDeleteOpOpen(true)}
+            >
               <Icon
                 className="icon-delete"
                 color={colors.white}
@@ -158,6 +174,9 @@ const ElementForm: React.FC<ElementFormProps> = ({
               />
             </DeleteBtn>
           )}
+          <ActionButton type="button" onClick={onClose}>
+            <Icon className="icon-x" color={colors.greyFont} fontSize="24px" />
+          </ActionButton>
         </HeaderActions>
       </Header>
       <FormBody>
@@ -204,6 +223,20 @@ const ElementForm: React.FC<ElementFormProps> = ({
           onChange={handleChange}
         />
       </FormBody>
+      <Modal
+        title="Deseja excluir Elemento?"
+        isOpen={isModalCofirmDeleteOpOpen}
+        onClose={() => setIsModalCofirmDeleteOpOpen(false)}
+        variation="danger"
+      >
+        <ConfirmAction
+          onConfirm={() => {
+            handleDelete();
+            setIsModalCofirmDeleteOpOpen(false);
+          }}
+          onCancel={() => setIsModalCofirmDeleteOpOpen(false)}
+        />
+      </Modal>
     </Container>
   );
 };

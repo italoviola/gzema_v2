@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import ItemList, { Item } from 'components/ItemList';
+import ItemList from 'components/ItemList';
 import ElementForm from 'components/ElementForm';
+import Icon from 'components/Icon';
+import DescriptionText from 'components/DescriptionText';
 
+import { Item } from 'components/ItemList/interface';
 import { Elements } from 'types/element';
 
 import { colors } from 'styles/global.styles';
@@ -23,14 +26,20 @@ const ElementRegistration: React.FC = () => {
   const [isAddingNew, setIsAddingNew] = useState(false);
 
   // Converter elementos para o formato de Item para o ItemList
+  // tipar element
   const menuItems: Item[] = elements.map((element) => ({
     id: element.id,
     label: element.label,
   }));
 
   const handleSelectItem = (item: Item) => {
-    setSelectedItem(item);
-    setIsAddingNew(false);
+    if (selectedItem?.id === item.id) {
+      setSelectedItem(null);
+      setIsAddingNew(false);
+    } else {
+      setSelectedItem(item);
+      setIsAddingNew(false);
+    }
   };
 
   const handleAddClick = () => {
@@ -56,6 +65,7 @@ const ElementRegistration: React.FC = () => {
           bgColor={colors.green}
           onClick={handleAddClick}
         >
+          <Icon className="icon-add" color={colors.white} fontSize="24px" />
           Adicionar
         </SButton>
         <ItemListContainer>
@@ -72,10 +82,10 @@ const ElementRegistration: React.FC = () => {
           <ElementForm element={selectedElement} onClose={handleCloseForm} />
         )}
         {!isAddingNew && !selectedElement && (
-          <div>
+          <DescriptionText>
             Selecione um item para editar ou clique em &quot;Adicionar&quot;
             para criar um novo
-          </div>
+          </DescriptionText>
         )}
       </ContentRight>
     </Container>

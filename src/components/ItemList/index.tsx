@@ -1,29 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Container, ListItem } from './style';
-
-export interface Item {
-  id: string | number;
-  label: string;
-}
-
-interface ItemListProps {
-  items: Item[];
-  onSelectItem?: (item: Item) => void;
-  selectedItemId?: string | number;
-}
+import { Item, ItemListProps } from './interface';
 
 const ItemList: React.FC<ItemListProps> = ({
   items,
   onSelectItem,
   selectedItemId,
 }) => {
-  const [selectedId, setSelectedId] = useState<string | number | undefined>(
-    selectedItemId,
-  );
-
   const handleSelectItem = (item: Item) => {
-    setSelectedId(item.id);
     if (onSelectItem) {
       onSelectItem(item);
     }
@@ -34,7 +19,7 @@ const ItemList: React.FC<ItemListProps> = ({
       {items.map((item, index) => (
         <ListItem
           key={item.id}
-          isSelected={selectedId === item.id}
+          isSelected={selectedItemId === item.id}
           onClick={() => handleSelectItem(item)}
         >
           <span className="item-number">{index + 1}</span>
@@ -43,11 +28,6 @@ const ItemList: React.FC<ItemListProps> = ({
       ))}
     </Container>
   );
-};
-
-ItemList.defaultProps = {
-  selectedItemId: undefined,
-  onSelectItem: undefined,
 };
 
 export default ItemList;
