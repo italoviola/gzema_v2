@@ -46,6 +46,11 @@ export const TitleEdit = styled.input`
     border: 1px solid ${colors.blue};
     color: ${colors.greyFont};
   }
+
+  &::placeholder {
+    color: ${colors.greyDark};
+    font-style: italic;
+  }
 `;
 
 export const SubTitle = styled.h2`
@@ -89,8 +94,8 @@ export const ActionButton = styled(BaseButton)<{
   border: 0;
   font-size: 24px;
   line-height: 24px;
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   padding: 5px 0;
   vertical-align: middle;
   border-radius: ${measures.borderRadius};

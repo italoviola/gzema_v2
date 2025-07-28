@@ -19,7 +19,7 @@ export const Content = styled(PageContent)`
 `;
 
 export const OpWrapper = styled.div`
-  max-height: calc(100vh - ${measures.contentBellowBtnToHeader});
+  height: calc(100vh - ${measures.contentBellowBtnToHeader});
   overflow-y: auto;
 `;
 

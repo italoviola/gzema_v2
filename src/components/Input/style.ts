@@ -38,4 +38,9 @@ export const SInput = styled.input<{
     border-color: ${colors.greyMedium};
     cursor: not-allowed;
   }
+
+  &::placeholder {
+    color: ${colors.greyDark};
+    font-style: italic;
+  }
 `;

@@ -14,7 +14,6 @@ import ConfirmAction from 'components/ConfirmAction';
 import { ElementItem } from 'types/element';
 
 import { colors } from 'styles/global.styles';
-import { ActionButton } from 'styles/Components';
 
 import { ElementFormProps } from './interface';
 import {
@@ -26,10 +25,7 @@ import {
   SInput,
   EditableTitleWrapper,
   STitleEdit,
-  Edit,
-  DeleteBtn,
-  SaveBtn,
-  Check,
+  SActionButton,
 } from './style';
 
 const ElementForm: React.FC<ElementFormProps> = ({
@@ -47,7 +43,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
     leftDiameter: 0,
     rightDiameter: 0,
   });
-  const [editingLabel, setEditingLabel] = useState(isNew);
+  const [editingLabel, setEditingLabel] = useState<boolean>(isNew);
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
     useState(false);
 
@@ -120,63 +116,75 @@ const ElementForm: React.FC<ElementFormProps> = ({
       <Header>
         <EditableTitleWrapper>
           {editingLabel ? (
-            <>
-              <STitleEdit
-                type="text"
-                name="label"
-                value={formData.label}
-                onChange={handleChange}
-                autoFocus
-                placeholder="Nome do elemento"
-              />
-              <Check type="button" onClick={handleLabelSave}>
-                <Icon
-                  className="icon-check_circle"
-                  color={colors.blue}
-                  fontSize="24px"
-                />
-              </Check>
-            </>
+            <STitleEdit
+              type="text"
+              name="label"
+              value={formData.label}
+              onChange={handleChange}
+              autoFocus
+              placeholder="Nome do elemento"
+            />
           ) : (
             <Title>{isNew ? 'Novo Elemento' : formData.label}</Title>
           )}
         </EditableTitleWrapper>
         <HeaderActions>
-          {!isNew && !editingLabel && (
-            <Edit
+          {!editingLabel ? (
+            <SActionButton
               type="button"
               onClick={handleLabelEdit}
-              className="edit-label-btn"
+              bgColor={colors.green}
             >
               <Icon
                 className="icon-create"
-                color={colors.greyDark}
+                color={colors.white}
                 fontSize="24px"
               />
-            </Edit>
+            </SActionButton>
+          ) : (
+            <SActionButton
+              type="button"
+              onClick={handleLabelSave}
+              bgColor={colors.blue}
+            >
+              <Icon
+                className="icon-check_circle"
+                color={colors.white}
+                fontSize="24px"
+              />
+            </SActionButton>
           )}
-          <SaveBtn type="button" onClick={handleSave}>
+          <SActionButton
+            type="button"
+            onClick={handleSave}
+            bgColor={colors.blue}
+          >
             <Icon
               className="icon-floppy-disk"
               color={colors.white}
-              fontSize="16px"
+              fontSize="18px"
             />
-          </SaveBtn>
+          </SActionButton>
           {!isNew && (
-            <DeleteBtn
+            <SActionButton
               type="button"
               onClick={() => setIsModalCofirmDeleteOpOpen(true)}
+              bgColor={colors.red}
             >
               <Icon
                 className="icon-delete"
                 color={colors.white}
-                fontSize="21px"
+                fontSize="24px"
               />
-            </DeleteBtn>
+            </SActionButton>
           )}
-          <ActionButton type="button" onClick={onClose}>
-            <Icon className="icon-x" color={colors.greyFont} fontSize="24px" />
-          </ActionButton>
+          <SActionButton
+            type="button"
+            onClick={onClose}
+            bgColor={colors.greyDark}
+          >
+            <Icon className="icon-x" color={colors.white} fontSize="24px" />
+          </SActionButton>
         </HeaderActions>
       </Header>
       <FormBody>

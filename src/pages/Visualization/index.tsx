@@ -15,7 +15,7 @@ const breadcrumbsItems = [
 ];
 
 const Visualization: React.FC = () => {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     setLoaded(true);

@@ -1,9 +1,8 @@
 import styled from 'styled-components';
-import { colors, measures } from 'styles/global.styles';
+import { colors } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
-  border-radius: ${measures.borderRadius};
   overflow: hidden;
 `;
 
@@ -15,6 +14,8 @@ export const ListItem = styled.div<{ isSelected: boolean }>`
     props.isSelected ? colors.blueLighter : colors.grey};
   border-bottom: 1px solid ${colors.greyMedium};
   cursor: pointer;
+  height: 50px;
+  box-sizing: border-box;
 
   .item-number {
     margin-right: 12px;

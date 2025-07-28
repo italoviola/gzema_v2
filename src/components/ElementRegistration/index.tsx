@@ -7,7 +7,7 @@ import Icon from 'components/Icon';
 import DescriptionText from 'components/DescriptionText';
 
 import { Item } from 'components/ItemList/interface';
-import { Elements } from 'types/element';
+import { ElementItem, Elements } from 'types/element';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -25,9 +25,8 @@ const ElementRegistration: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  // Converter elementos para o formato de Item para o ItemList
-  // tipar element
-  const menuItems: Item[] = elements.map((element) => ({
+  // convert Item to ItemList format
+  const menuItems: Item[] = elements.map((element: ElementItem) => ({
     id: element.id,
     label: element.label,
   }));
@@ -52,9 +51,8 @@ const ElementRegistration: React.FC = () => {
     setSelectedItem(null);
   };
 
-  // Encontrar o elemento selecionado
   const selectedElement = selectedItem
-    ? elements.find((element) => element.id === selectedItem.id) || null
+    ? elements.find((element: ElementItem) => element.id === selectedItem.id)
     : null;
 
   return (

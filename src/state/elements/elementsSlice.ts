@@ -12,7 +12,7 @@ const elementsSlice = createSlice({
       state.push({
         ...action.payload,
         id: uuidv4(),
-        label: action.payload.label || `Elemento ${state.length + 1}`,
+        label: action.payload.label || `Novo Elemento`,
       });
     },
     editElement: (state, action: PayloadAction<ElementItem>) => {

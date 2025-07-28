@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import Button from 'components/Button';
-import { shadows } from 'styles/global.styles';
+import { measures, shadows } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
@@ -28,13 +28,13 @@ export const ItemListContainer = styled.div`
   max-height: 202px;
   overflow-y: auto;
   box-shadow: ${shadows.std};
+  border-radius: ${measures.borderRadius};
 `;
 
 export const ContentRight = styled.div`
   flex: 2;
   display: flex;
   flex-flow: column nowrap;
-  justify-content: center;
   align-items: center;
   height: 267px;
 `;
