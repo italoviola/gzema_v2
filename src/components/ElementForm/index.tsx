@@ -90,7 +90,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleLabelSave = () => {
     setEditingLabel(false);
 
-    // Garante que o label nunca seja vazio
+    // ensure that does not save an empty label
     const safeLabel =
       formData.label?.trim() === '' ? 'Novo Elemento' : formData.label.trim();
 
@@ -99,7 +99,6 @@ const ElementForm: React.FC<ElementFormProps> = ({
       label: safeLabel,
     });
 
-    // Se estiver editando um elemento existente, salva a alteração
     if (!isNew && element) {
       dispatch(
         editElement({

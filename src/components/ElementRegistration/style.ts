@@ -25,7 +25,7 @@ export const SButton = styled(Button)`
 `;
 
 export const ItemListContainer = styled.div`
-  max-height: 202px;
+  max-height: ${measures.itemListHeight};
   overflow-y: auto;
   box-shadow: ${shadows.std};
   border-radius: ${measures.borderRadius};
