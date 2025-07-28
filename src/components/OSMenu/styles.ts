@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 export const Container = styled.div`
   background-color: ${colors.black};
@@ -59,7 +59,7 @@ export const SubButton = styled(Button)`
 
 export const SubButtonLabel = styled.span`
   position: absolute;
-  right: 15px;
+  right: ${measures.gutter};
   transform: translateY(-50%);
   top: 50%;
   font-size: 12px;

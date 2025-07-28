@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, shadows } from 'styles/global.styles';
+import { colors, measures, shadows } from 'styles/global.styles';
 
 export const Menu = styled.button`
   flex-shrink: 0;
@@ -38,7 +38,7 @@ export const Button = styled.button`
   border: none;
   background-color: ${colors.greyPreMedium};
   color: ${colors.greyFont};
-  padding: 15px 12px;
+  padding: ${measures.gutter} 12px;
   cursor: pointer;
   border-bottom: 1px solid ${colors.greyMedium};
 

@@ -115,7 +115,7 @@ export const Block = styled(ContentBlock)`
   background-color: ${colors.grey};
   width: 100%;
   height: 100%;
-  padding: 15px 10px;
+  padding: ${measures.gutter} 10px;
   box-sizing: border-box;
 `;
 

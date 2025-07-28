@@ -28,8 +28,8 @@ export const OpItemHeader = styled.div`
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
+  padding-bottom: ${measures.gutter};
+  margin-bottom: ${measures.gutter};
   border-bottom: 1px solid ${colors.greyMedium};
 `;
 
@@ -46,7 +46,7 @@ export const OpItemHeaderSubTitle = styled.div`
 
 export const OpItemHeaderContent = styled.div`
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const WheelText = styled.p`
@@ -72,7 +72,7 @@ export const CContentBlock = styled(ContentBlock)`
 `;
 
 export const SContentBlock = styled(ContentBlock)`
-  margin-bottom: 15px;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const BtnsWrapper = styled.div`
@@ -84,7 +84,7 @@ export const BtnsWrapper = styled.div`
 export const AddBtn = styled.div`
   height: 48px;
   font-size: 16px;
-  margin-bottom: 15px;
+  margin-bottom: ${measures.gutter};
   width: 100%;
 `;
 

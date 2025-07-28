@@ -91,7 +91,7 @@ export const ItemBtn = styled.button`
   color: ${colors.white};
   cursor: pointer;
   line-height: 100%;
-  padding: 15px;
+  padding: ${measures.gutter};
   width: 100%;
   background-color: ${colors.blue};
   border: none;

@@ -86,7 +86,7 @@ export const Button = styled.button`
   background-color: ${colors.blue};
   border: none;
   color: ${colors.white};
-  padding: 15px;
+  padding: ${measures.gutter};
   text-align: center;
   font-size: 18px;
   cursor: pointer;

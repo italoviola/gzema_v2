@@ -7,7 +7,7 @@ export const Container = styled.div`
   height: 100%;
   display: flex;
   flex-flow: row nowrap;
-  gap: 15px;
+  gap: ${measures.gutter};
 `;
 
 export const ContentLeft = styled.div`
@@ -15,7 +15,7 @@ export const ContentLeft = styled.div`
 `;
 
 export const SButton = styled(Button)`
-  margin-bottom: 15px;
+  margin-bottom: ${measures.gutter};
   box-shadow: ${shadows.std};
   display: flex;
   flex-direction: row;

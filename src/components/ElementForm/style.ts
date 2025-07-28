@@ -60,8 +60,8 @@ export const HeaderActions = styled.div`
 export const FormBody = styled.div`
   display: flex;
   flex-flow: row wrap;
-  gap: 15px;
-  padding: 15px;
+  gap: ${measures.gutter};
+  padding: ${measures.gutter};
   max-height: ${measures.registrationFormHeight};
   overflow-y: auto;
 `;

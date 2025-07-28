@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
@@ -16,7 +16,7 @@ export const SSelect = styled.select`
   background-color: ${colors.white};
   border: 1px solid ${colors.greyMedium};
   box-sizing: border-box;
-  padding: 15px;
+  padding: ${measures.gutter};
   width: 100%;
   font-size: 18px;
 

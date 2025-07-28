@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
@@ -9,7 +9,7 @@ export const Container = styled.div`
 export const ListItem = styled.div<{ isSelected: boolean }>`
   display: flex;
   align-items: center;
-  padding: 15px;
+  padding: ${measures.gutter};
   background-color: ${(props) =>
     props.isSelected ? colors.blueLighter : colors.grey};
   border-bottom: 1px solid ${colors.greyMedium};
