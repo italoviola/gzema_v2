@@ -38,7 +38,7 @@ export const Side = styled.div`
 `;
 
 export const ContentText = styled.div<{ color: string }>`
-  padding: 15px;
+  padding: ${measures.gutter};
   font-size: 18px;
   box-sizing: border-box;
   min-width: 150px;
@@ -52,7 +52,7 @@ export const ContentText = styled.div<{ color: string }>`
 export const SButton = styled(Button)`
   width: auto;
   /* align-self: flex-start; */
-  margin-bottom: 15px;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const SSubTitle = styled(SubTitle)`

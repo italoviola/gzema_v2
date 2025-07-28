@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 interface Direction {
   direction: 'row' | 'column';
@@ -28,7 +28,7 @@ export const SInput = styled.input<{
   background-color: ${colors.white};
   border: 1px solid ${({ error }) => (error ? colors.red : colors.greyMedium)};
   box-sizing: border-box;
-  padding: 15px;
+  padding: ${measures.gutter};
   width: ${({ direction }) => (direction === 'row' ? 'auto' : '100%')};
   font-size: 18px;
   flex-grow: 2;
@@ -37,5 +37,10 @@ export const SInput = styled.input<{
     background-color: ${colors.greyMedium};
     border-color: ${colors.greyMedium};
     cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: ${colors.greyDark};
+    font-style: italic;
   }
 `;

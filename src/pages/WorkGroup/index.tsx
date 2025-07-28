@@ -10,6 +10,7 @@ import Button from 'components/Button';
 import AddOperationForm from 'components/OperationForm';
 import ConfirmAction from 'components/ConfirmAction';
 import GrindingData from 'components/GrindingData';
+import DescriptionText from 'components/DescriptionText';
 
 import { B_AXIS_NO_SPIN } from 'utils/constants';
 import { loadCncData } from 'utils/loadCncData';
@@ -243,80 +244,88 @@ const WorkGroup: React.FC = () => {
             </AddBtn>
           </BtnsWrapper>
           <OpWrapper>
-            {operations.map((operation: OperationItem) => {
-              const matchedTool = formattedTools.find(
-                (tool: ToolOptionItem) => tool.id === operation.toolId,
-              );
-              return (
-                <SContentBlock key={operation.id}>
-                  <OpItemHeader>
-                    <OpItemHeaderTitle>{operation.name}</OpItemHeaderTitle>
-                    <div>
-                      <SButton
-                        onClick={() => {
-                          setOpIdAux(operation.id);
-                          setIsModalEditOperationOpen(true);
-                        }}
-                      >
-                        <Icon
-                          className="icon-create"
-                          color={colors.greyFont}
-                          fontSize="28px"
-                        />
-                      </SButton>
-                      <SButton
-                        onClick={() => {
-                          setOpIdAux(operation.id);
-                          setIsModalCofirmDeleteOpOpen(true);
-                        }}
-                      >
-                        <Icon
-                          className="icon-delete"
-                          color={colors.greyFont}
-                          fontSize="28px"
-                        />
-                      </SButton>
-                    </div>
-                  </OpItemHeader>
-                  <OpItemHeaderContent>
-                    <OpItemHeaderSubTitle>
-                      <WheelText>{matchedTool && matchedTool.label}</WheelText>
-                      {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
-                        <BAxisAngleText>
-                          Ângulo Eixo B (Retificação): {operation.bAxisAngle}
-                        </BAxisAngleText>
-                      )}
-                    </OpItemHeaderSubTitle>
-                  </OpItemHeaderContent>
-                  <OpItemCards>
-                    {operation.contoursIds.map((contourId) => {
-                      const contour = contours.find(
-                        // eslint-disable-next-line @typescript-eslint/no-shadow
-                        (contour) => contour.id === contourId,
-                      );
-                      if (!contour) return null;
-                      return (
-                        <Card
-                          key={contourId}
-                          content={{ ...contour, operationId: operation.id }}
-                          variation="operation"
-                          removeFromOperation={() =>
-                            removeFromOperation(operation.id, contour.id)
-                          }
-                          onToggle={(isActive: boolean) => {
-                            handleToggleCard(
-                              isActive,
-                              operation.id,
-                              contour.id,
-                            );
+            {operations.length === 0 ? (
+              <DescriptionText>
+                Clique em &quot;Adicionar Operação&quot; para criar operações.
+              </DescriptionText>
+            ) : (
+              operations.map((operation: OperationItem) => {
+                const matchedTool = formattedTools.find(
+                  (tool: ToolOptionItem) => tool.id === operation.toolId,
+                );
+                return (
+                  <SContentBlock key={operation.id}>
+                    <OpItemHeader>
+                      <OpItemHeaderTitle>{operation.name}</OpItemHeaderTitle>
+                      <div>
+                        <SButton
+                          onClick={() => {
+                            setOpIdAux(operation.id);
+                            setIsModalEditOperationOpen(true);
                           }}
-                        />
-                      );
-                    })}
-                  </OpItemCards>
-                </SContentBlock>
-              );
-            })}
+                        >
+                          <Icon
+                            className="icon-create"
+                            color={colors.greyFont}
+                            fontSize="28px"
+                          />
+                        </SButton>
+                        <SButton
+                          onClick={() => {
+                            setOpIdAux(operation.id);
+                            setIsModalCofirmDeleteOpOpen(true);
+                          }}
+                        >
+                          <Icon
+                            className="icon-delete"
+                            color={colors.greyFont}
+                            fontSize="28px"
+                          />
+                        </SButton>
+                      </div>
+                    </OpItemHeader>
+                    <OpItemHeaderContent>
+                      <OpItemHeaderSubTitle>
+                        <WheelText>
+                          {matchedTool && matchedTool.label}
+                        </WheelText>
+                        {cncData.hasBAxis !== B_AXIS_NO_SPIN && (
+                          <BAxisAngleText>
+                            Ângulo Eixo B (Retificação): {operation.bAxisAngle}
+                          </BAxisAngleText>
+                        )}
+                      </OpItemHeaderSubTitle>
+                    </OpItemHeaderContent>
+                    <OpItemCards>
+                      {operation.contoursIds.map((contourId) => {
+                        const contour = contours.find(
+                          // eslint-disable-next-line @typescript-eslint/no-shadow
+                          (contour) => contour.id === contourId,
+                        );
+                        if (!contour) return null;
+                        return (
+                          <Card
+                            key={contourId}
+                            content={{ ...contour, operationId: operation.id }}
+                            variation="operation"
+                            removeFromOperation={() =>
+                              removeFromOperation(operation.id, contour.id)
+                            }
+                            onToggle={(isActive: boolean) => {
+                              handleToggleCard(
+                                isActive,
+                                operation.id,
+                                contour.id,
+                              );
+                            }}
+                          />
+                        );
+                      })}
+                    </OpItemCards>
+                  </SContentBlock>
+                );
+              })
+            )}
           </OpWrapper>
         </Block>
       </Content>

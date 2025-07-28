@@ -33,6 +33,26 @@ export const PageTitle = styled.h1`
   line-height: 40px;
 `;
 
+export const TitleEdit = styled.input`
+  color: ${colors.greyFont};
+  background-color: ${colors.grey};
+  border-radius: ${measures.borderRadius};
+  border: 0;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    background-color: ${colors.blueLighter};
+    border: 1px solid ${colors.blue};
+    color: ${colors.greyFont};
+  }
+
+  &::placeholder {
+    color: ${colors.greyDark};
+    font-style: italic;
+  }
+`;
+
 export const SubTitle = styled.h2`
   font-size: 22px;
   font-weight: bold;
@@ -41,7 +61,7 @@ export const SubTitle = styled.h2`
 `;
 
 export const PageContent = styled.div`
-  padding: 15px 24px;
+  padding: ${measures.gutter} 24px;
 `;
 
 export const ContentBlock = styled.div`
@@ -49,8 +69,38 @@ export const ContentBlock = styled.div`
   background-color: ${colors.grey};
   width: 100%;
   max-height: calc(100vh - ${measures.contentToHeader});
-  padding: 15px 10px;
+  padding: ${measures.gutter} 10px;
   box-sizing: border-box;
   box-shadow: ${shadows.std};
   border-radius: ${measures.borderRadius};
+`;
+
+export const BaseButton = styled.button`
+  flex-shrink: 0;
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 100%;
+`;
+
+export const ActionButton = styled(BaseButton)<{
+  bgColor?: string;
+  color?: string;
+}>`
+  background-color: ${({ bgColor }) => bgColor || 'inherit'};
+  color: ${({ color }) => color || 'white'};
+  border: 0;
+  font-size: 24px;
+  line-height: 24px;
+  width: 56px;
+  height: 56px;
+  padding: 5px 0;
+  vertical-align: middle;
+  border-radius: ${measures.borderRadius};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

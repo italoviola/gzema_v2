@@ -43,7 +43,7 @@ export const SSelect = styled(SelectComponent)``;
 
 export const SButton = styled(Button)`
   width: auto;
-  margin-top: 15px;
+  margin-top: ${measures.gutter};
 `;
 
 export const ContentText = styled.div<{ color: string }>`

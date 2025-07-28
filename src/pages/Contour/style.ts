@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { PageTitle, ContentBlock, Link } from 'styles/Components';
+import { PageTitle, ContentBlock, Link, TitleEdit } from 'styles/Components';
 import { colors, measures } from 'styles/global.styles';
 
 import LinkAction from 'components/LinkAction';
@@ -70,12 +70,9 @@ export const Title = styled(PageTitle)`
   margin: 0;
 `;
 
-export const TitleEdit = styled.input`
-  font-size: 34px;
+export const STitleEdit = styled(TitleEdit)`
+  font-size: 30px;
   font-weight: bold;
-  color: ${colors.greyFont};
-  background-color: ${colors.grey};
-  border: 0;
 `;
 
 export const TitleEditBtn = styled.button`
@@ -118,7 +115,7 @@ export const Block = styled(ContentBlock)`
   background-color: ${colors.grey};
   width: 100%;
   height: 100%;
-  padding: 15px 10px;
+  padding: ${measures.gutter} 10px;
   box-sizing: border-box;
 `;
 

@@ -56,6 +56,8 @@ export const measures = {
   contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',
+  registrationFormHeight: '175px',
+  itemListHeight: '202px',
 };
 
 export const fonts = {

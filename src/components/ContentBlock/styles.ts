@@ -7,7 +7,7 @@ export const Block = styled.div`
   width: 100%;
   height: 100%;
   max-height: calc(100vh - ${measures.contentToHeader});
-  padding: 15px 10px;
+  padding: ${measures.gutter} 10px;
   box-sizing: border-box;
   box-shadow: ${shadows.std};
   border-radius: ${measures.borderRadius};

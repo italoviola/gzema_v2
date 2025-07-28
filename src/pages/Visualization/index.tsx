@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Chart from 'components/Chart';
+import ElementRegistration from 'components/ElementRegistration';
 
-import { Container, Content, Title } from './style';
+import { Container, Content } from './style';
 
 const breadcrumbsItems = [
   {
@@ -14,7 +15,7 @@ const breadcrumbsItems = [
 ];
 
 const Visualization: React.FC = () => {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     setLoaded(true);
@@ -24,8 +25,8 @@ const Visualization: React.FC = () => {
     <Container className={loaded ? 'loaded' : ''}>
       <Breadcrumbs items={breadcrumbsItems} />
       <Content>
-        <Title>Visualização</Title>
         <Chart />
+        <ElementRegistration />
       </Content>
     </Container>
   );

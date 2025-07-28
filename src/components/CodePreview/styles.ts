@@ -7,7 +7,7 @@ export const CodeBlock = styled.pre`
   color: ${colors.blueCodeFont};
   width: 100%;
   max-height: calc(100vh - ${measures.contentToHeader});
-  padding: 15px 10px;
+  padding: ${measures.gutter} 10px;
   box-sizing: border-box;
   box-shadow: ${shadows.std};
   font-family: Consolas, monospace;
