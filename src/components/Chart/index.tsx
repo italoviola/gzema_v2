@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
+
+import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
@@ -7,8 +10,7 @@ import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
 
-import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
-
+import { Elements } from 'types/element';
 import { colors } from 'styles/global.styles';
 import {
   ChartContainer,
@@ -28,6 +30,9 @@ const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const elements = useSelector(
+    (state: { elements: Elements }) => state.elements,
+  );
   const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
@@ -212,6 +217,7 @@ const Chart: React.FC = () => {
             {renderShapesAndPoints({
               shapes,
               points,
+              elements,
               selectedShape,
               strokeWidth,
               colors,

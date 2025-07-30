@@ -246,7 +246,7 @@ const WorkGroup: React.FC = () => {
           <OpWrapper>
             {operations.length === 0 ? (
               <DescriptionText>
-                Clique em &quot;Adicionar Operação&quot; para criar operações.
+                Clique em &quot;Adicionar Operação&quot; para criar operações
               </DescriptionText>
             ) : (
               operations.map((operation: OperationItem) => {

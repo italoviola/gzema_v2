@@ -16,6 +16,7 @@ export const Header = styled.div`
   justify-content: space-between;
   color: ${colors.blue};
   background-color: ${colors.greyPreMedium};
+  border-radius: ${measures.borderRadius} ${measures.borderRadius} 0 0;
 `;
 
 export const EditableTitleWrapper = styled.div`
