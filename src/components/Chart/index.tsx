@@ -22,7 +22,7 @@ import {
   ControlsContainer,
   SButton,
 } from './styles';
-import { shapes, points } from './shapesAndPoints';
+import { points } from './shapesAndPoints';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
@@ -215,7 +215,6 @@ const Chart: React.FC = () => {
           <Layer>{cartesianGrid}</Layer>
           <Layer>
             {renderShapesAndPoints({
-              shapes,
               points,
               elements,
               selectedShape,

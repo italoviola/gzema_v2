@@ -9,8 +9,14 @@ const elementsSlice = createSlice({
   initialState,
   reducers: {
     addElement: (state, action: PayloadAction<Omit<ElementItem, 'id'>>) => {
+      // calc central point if not provided
+      const xaxis =
+        action.payload.xaxis ||
+        (action.payload.leftZAxis + action.payload.rightZAxis) / 2;
+
       state.push({
         ...action.payload,
+        xaxis,
         id: uuidv4(),
         label: action.payload.label || `Novo Elemento`,
       });

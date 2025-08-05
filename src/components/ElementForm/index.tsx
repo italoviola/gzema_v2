@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
   addElement,
@@ -28,18 +28,32 @@ import {
   SActionButton,
 } from './style';
 
+const DEFAULT_ELEMENT: Omit<ElementItem, 'id'> = {
+  label: 'Novo Elemento',
+  xaxis: 0, // Mantemos para referência
+  zaxis: 0,
+  leftZAxis: 0,
+  rightZAxis: 50,
+  leftDiameter: 100,
+  rightDiameter: 100,
+};
+
 const ElementForm: React.FC<ElementFormProps> = ({
   element,
   onClose,
   isNew = false,
 }) => {
   const dispatch = useDispatch();
+  const elements = useSelector(
+    (state: { elements: ElementItem[] }) => state.elements,
+  );
+
   const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>({
     label: '',
     xaxis: 0,
     zaxis: 0,
-    height: 0,
-    width: 0,
+    leftZAxis: 0,
+    rightZAxis: 0,
     leftDiameter: 0,
     rightDiameter: 0,
   });
@@ -47,11 +61,29 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
     useState(false);
 
+  // manage element new element default data
   useEffect(() => {
     if (element) {
       setFormData(element);
+    } else if (isNew) {
+      const defaultValues: Omit<ElementItem, 'id'> = {
+        ...DEFAULT_ELEMENT,
+      };
+
+      if (elements.length > 0) {
+        const lastElement = elements[elements.length - 1];
+
+        // O novo elemento começa onde o último termina
+        defaultValues.leftZAxis = lastElement.rightZAxis;
+        defaultValues.rightZAxis = lastElement.rightZAxis + 50; // 50 é a largura padrão
+        defaultValues.zaxis = lastElement.zaxis;
+        defaultValues.xaxis =
+          (defaultValues.leftZAxis + defaultValues.rightZAxis) / 2; // Calculamos o ponto central
+      }
+
+      setFormData(defaultValues);
     }
-  }, [element]);
+  }, [element, elements, isNew]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -188,42 +220,28 @@ const ElementForm: React.FC<ElementFormProps> = ({
       </Header>
       <FormBody>
         <SInput
-          label="Eixo x:"
+          label="Z Esquerdo:"
           type="number"
-          name="xaxis"
-          value={formData.xaxis}
+          name="leftZAxis"
+          value={formData.leftZAxis}
           onChange={handleChange}
         />
         <SInput
-          label="Eixo z:"
+          label="Z Direito:"
           type="number"
-          name="zaxis"
-          value={formData.zaxis}
+          name="rightZAxis"
+          value={formData.rightZAxis}
           onChange={handleChange}
         />
         <SInput
-          label="Altura:"
-          type="number"
-          name="height"
-          value={formData.height}
-          onChange={handleChange}
-        />
-        <SInput
-          label="Largura:"
-          type="number"
-          name="width"
-          value={formData.width}
-          onChange={handleChange}
-        />
-        <SInput
-          label="D. Esquerdo:"
+          label="Diâmetro Esq.:"
           type="number"
           name="leftDiameter"
           value={formData.leftDiameter}
           onChange={handleChange}
         />
         <SInput
-          label="D. Direito:"
+          label="Diâmetro Dir.:"
           type="number"
           name="rightDiameter"
           value={formData.rightDiameter}

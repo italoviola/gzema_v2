@@ -1,43 +1,31 @@
 import { Line, Rect, Circle, Path } from 'react-konva';
-import { ElementItem } from 'types/element';
+import { ElementItem, Elements } from 'types/element';
 
-/**
- * Converte elementos do state para o formato de polígonos renderizáveis
- * Considerando leftDiameter e rightDiameter como redução na altura dos lados
- */
 export function convertElementsToPolygons(
-  elements: ElementItem[],
+  elements: Elements,
   defaultColor: string,
   defaultOpacity: number = 0.9,
 ): any[] {
-  return elements.map((element) => {
-    // Calculando os pontos do polígono a partir do centro e dimensões
-    const halfWidth = element.width / 2;
+  return elements.map((element: ElementItem) => {
+    // Calculando as metades das alturas para posicionar acima/abaixo do zaxis
+    const leftHalfHeight = element.leftDiameter / 2;
+    const rightHalfHeight = element.rightDiameter / 2;
 
-    // Calculando as alturas ajustadas para os lados esquerdo e direito
-    // Se leftDiameter for 30, a altura do lado esquerdo será height - 30
-    const leftSideHeight = element.height - (element.leftDiameter || 0);
-    const rightSideHeight = element.height - (element.rightDiameter || 0);
-
-    // Metade das alturas ajustadas para posicionar corretamente os pontos
-    const leftHalfHeight = leftSideHeight / 2;
-    const rightHalfHeight = rightSideHeight / 2;
-
-    // Os 4 pontos do polígono, ajustados de acordo com os diâmetros
+    // Os 4 pontos do polígono usando as novas propriedades
     // [x1, y1, x2, y2, x3, y3, x4, y4] onde:
     // (x1,y1) é o canto superior esquerdo
     // (x2,y2) é o canto superior direito
     // (x3,y3) é o canto inferior direito
     // (x4,y4) é o canto inferior esquerdo
     const points = [
-      element.xaxis - halfWidth,
-      element.zaxis - leftHalfHeight, // superior esquerdo (com altura ajustada)
-      element.xaxis + halfWidth,
-      element.zaxis - rightHalfHeight, // superior direito (com altura ajustada)
-      element.xaxis + halfWidth,
-      element.zaxis + rightHalfHeight, // inferior direito (com altura ajustada)
-      element.xaxis - halfWidth,
-      element.zaxis + leftHalfHeight, // inferior esquerdo (com altura ajustada)
+      element.leftZAxis,
+      element.zaxis - leftHalfHeight, // superior esquerdo
+      element.rightZAxis,
+      element.zaxis - rightHalfHeight, // superior direito
+      element.rightZAxis,
+      element.zaxis + rightHalfHeight, // inferior direito
+      element.leftZAxis,
+      element.zaxis + leftHalfHeight, // inferior esquerdo
     ];
 
     return {
@@ -52,7 +40,6 @@ export function convertElementsToPolygons(
 }
 
 export function renderShapesAndPoints({
-  shapes,
   points,
   elements,
   selectedShape,
@@ -61,26 +48,21 @@ export function renderShapesAndPoints({
   handleShapeClick,
   zoomLevel,
 }: {
-  shapes: any[];
   points: any[];
-  elements?: ElementItem[]; // Parâmetro opcional para elementos do state
+  elements: ElementItem[];
   selectedShape: string | null;
   strokeWidth: number;
   colors: any;
   handleShapeClick: (id: string) => void;
   zoomLevel: number;
 }) {
-  // Converte elementos do state para shapes, se fornecidos
   const elementShapes = elements
     ? convertElementsToPolygons(elements, colors.silver)
     : [];
 
-  // Combina os shapes predefinidos com os shapes dos elementos
-  const allShapes = [...shapes, ...elementShapes];
-
   return (
     <>
-      {allShapes.map((shape) => {
+      {elementShapes.map((shape) => {
         if (shape.type === 'rect') {
           return (
             <Rect
