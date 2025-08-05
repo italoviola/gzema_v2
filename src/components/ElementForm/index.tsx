@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
 import {
   addElement,
   editElement,
   removeElement,
+  deselectElement,
 } from 'state/elements/elementsSlice';
 
 import Icon from 'components/Icon';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 
-import { ElementItem } from 'types/element';
+import { ElementItem, Elements } from 'types/element';
 
 import { colors } from 'styles/global.styles';
 
@@ -45,7 +45,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const elements = useSelector(
-    (state: { elements: ElementItem[] }) => state.elements,
+    (state: { elements: Elements }) => state.elements.items,
   );
 
   const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>({
@@ -73,12 +73,13 @@ const ElementForm: React.FC<ElementFormProps> = ({
       if (elements.length > 0) {
         const lastElement = elements[elements.length - 1];
 
-        // O novo elemento começa onde o último termina
+        // new element should start where the last one ends
         defaultValues.leftZAxis = lastElement.rightZAxis;
-        defaultValues.rightZAxis = lastElement.rightZAxis + 50; // 50 é a largura padrão
+        defaultValues.rightZAxis =
+          lastElement.rightZAxis + DEFAULT_ELEMENT.rightZAxis;
         defaultValues.zaxis = lastElement.zaxis;
         defaultValues.xaxis =
-          (defaultValues.leftZAxis + defaultValues.rightZAxis) / 2; // Calculamos o ponto central
+          (defaultValues.leftZAxis + defaultValues.rightZAxis) / 2;
       }
 
       setFormData(defaultValues);
@@ -96,6 +97,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleSave = () => {
     if (isNew) {
       dispatch(addElement(formData));
+      dispatch(deselectElement());
     } else if (element) {
       dispatch(
         editElement({
@@ -111,6 +113,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleDelete = () => {
     if (!isNew && element) {
       dispatch(removeElement(element.id));
+      // A limpeza da seleção já é feita no reducer
       if (onClose) onClose();
     }
   };

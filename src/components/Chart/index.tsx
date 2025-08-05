@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
 
 import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
+import { selectElement } from 'state/elements/elementsSlice'; // Importamos da localização correta
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
@@ -10,7 +11,6 @@ import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
 
-import { Elements } from 'types/element';
 import { colors } from 'styles/global.styles';
 import {
   ChartContainer,
@@ -29,13 +29,16 @@ const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
+  const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
-  const elements = useSelector(
-    (state: { elements: Elements }) => state.elements,
+
+  // Atualizamos o selector para usar a nova estrutura
+  const elements = useSelector((state: any) => state.elements.items);
+  const selectedElementId = useSelector(
+    (state: any) => state.elements.selectedElementId,
   );
   const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
 
@@ -119,7 +122,11 @@ const Chart: React.FC = () => {
   };
 
   const handleShapeClick = (id: string) => {
-    setSelectedShape(id);
+    // Verifica se o ID corresponde a um elemento (não um ponto ou outra forma)
+    const clickedElement = elements.find((element: any) => element.id === id);
+    if (clickedElement) {
+      dispatch(selectElement(id));
+    }
   };
 
   const handleZoomSlider = (idx: number) => {
@@ -217,7 +224,7 @@ const Chart: React.FC = () => {
             {renderShapesAndPoints({
               points,
               elements,
-              selectedShape,
+              selectedShape: selectedElementId, // Usar o ID do elemento selecionado
               strokeWidth,
               colors,
               handleShapeClick,

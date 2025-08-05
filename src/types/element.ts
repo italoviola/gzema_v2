@@ -9,4 +9,10 @@ export interface ElementItem {
   rightDiameter: number;
 }
 
-export interface Elements extends Array<ElementItem> {}
+export interface ElementItems extends Array<ElementItem> {}
+
+export interface Elements {
+  items: ElementItems;
+  selectedElementId: string | null;
+  isFormOpen: boolean;
+}
