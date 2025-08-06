@@ -30,8 +30,7 @@ import {
 
 const DEFAULT_ELEMENT: Omit<ElementItem, 'id'> = {
   label: 'Novo Elemento',
-  xaxis: 0, // Mantemos para referência
-  zaxis: 0,
+  xaxis: 0, // might change based on Machine settings
   leftZAxis: 0,
   rightZAxis: 50,
   leftDiameter: 100,
@@ -48,15 +47,9 @@ const ElementForm: React.FC<ElementFormProps> = ({
     (state: { elements: Elements }) => state.elements.items,
   );
 
-  const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>({
-    label: '',
-    xaxis: 0,
-    zaxis: 0,
-    leftZAxis: 0,
-    rightZAxis: 0,
-    leftDiameter: 0,
-    rightDiameter: 0,
-  });
+  const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>(
+    element || DEFAULT_ELEMENT,
+  );
   const [editingLabel, setEditingLabel] = useState<boolean>(isNew);
   const [isModalCofirmDeleteOpOpen, setIsModalCofirmDeleteOpOpen] =
     useState(false);
@@ -73,13 +66,13 @@ const ElementForm: React.FC<ElementFormProps> = ({
       if (elements.length > 0) {
         const lastElement = elements[elements.length - 1];
 
-        // new element should start where the last one ends
+        // next element starts where the last one ends
         defaultValues.leftZAxis = lastElement.rightZAxis;
         defaultValues.rightZAxis =
-          lastElement.rightZAxis + DEFAULT_ELEMENT.rightZAxis;
-        defaultValues.zaxis = lastElement.zaxis;
-        defaultValues.xaxis =
-          (defaultValues.leftZAxis + defaultValues.rightZAxis) / 2;
+          lastElement.rightZAxis +
+          (DEFAULT_ELEMENT.rightZAxis - DEFAULT_ELEMENT.leftZAxis);
+
+        defaultValues.xaxis = lastElement.xaxis;
       }
 
       setFormData(defaultValues);
@@ -223,17 +216,10 @@ const ElementForm: React.FC<ElementFormProps> = ({
       </Header>
       <FormBody>
         {/* <SInput
-          label="X:"
+          label="Eixo X:"
           type="number"
           name="xaxis"
           value={formData.xaxis}
-          onChange={handleChange}
-        />
-        <SInput
-          label="Z:"
-          type="number"
-          name="zaxis"
-          value={formData.zaxis}
           onChange={handleChange}
         /> */}
         <SInput

@@ -1,12 +1,12 @@
 import { Line, Rect, Circle, Path } from 'react-konva';
-import { ElementItem, Elements } from 'types/element';
+import { ElementItem, ElementItems } from 'types/element';
 
 export function convertElementsToPolygons(
-  elements: Elements,
+  elementItems: ElementItems,
   defaultColor: string,
   defaultOpacity: number = 0.9,
 ): any[] {
-  return elements.map((element: ElementItem) => {
+  return elementItems.map((element: ElementItem) => {
     // Calculando as metades das alturas para posicionar acima/abaixo do zaxis
     const leftHalfHeight = element.leftDiameter / 2;
     const rightHalfHeight = element.rightDiameter / 2;
@@ -19,13 +19,13 @@ export function convertElementsToPolygons(
     // (x4,y4) é o canto inferior esquerdo
     const points = [
       element.leftZAxis,
-      element.zaxis - leftHalfHeight, // superior esquerdo
+      element.xaxis - leftHalfHeight, // superior esquerdo
       element.rightZAxis,
-      element.zaxis - rightHalfHeight, // superior direito
+      element.xaxis - rightHalfHeight, // superior direito
       element.rightZAxis,
-      element.zaxis + rightHalfHeight, // inferior direito
+      element.xaxis + rightHalfHeight, // inferior direito
       element.leftZAxis,
-      element.zaxis + leftHalfHeight, // inferior esquerdo
+      element.xaxis + leftHalfHeight, // inferior esquerdo
     ];
 
     return {
@@ -41,7 +41,7 @@ export function convertElementsToPolygons(
 
 export function renderShapesAndPoints({
   points,
-  elements,
+  elementItems,
   selectedShape,
   strokeWidth,
   colors,
@@ -49,15 +49,15 @@ export function renderShapesAndPoints({
   zoomLevel,
 }: {
   points: any[];
-  elements: ElementItem[];
+  elementItems: ElementItem[];
   selectedShape: string | null;
   strokeWidth: number;
   colors: any;
   handleShapeClick: (id: string) => void;
   zoomLevel: number;
 }) {
-  const elementShapes = elements
-    ? convertElementsToPolygons(elements, colors.silver)
+  const elementShapes = elementItems
+    ? convertElementsToPolygons(elementItems, colors.silver)
     : [];
 
   return (

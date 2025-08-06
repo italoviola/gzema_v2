@@ -1,8 +1,7 @@
 export interface ElementItem {
   id: string;
   label: string;
-  xaxis: number; // Mantemos para referência e compatibilidade
-  zaxis: number; // Mantemos como ponto central vertical
+  xaxis: number;
   leftZAxis: number;
   rightZAxis: number;
   leftDiameter: number;

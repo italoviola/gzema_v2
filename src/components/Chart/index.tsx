@@ -229,8 +229,8 @@ const Chart: React.FC = () => {
           <Layer>
             {renderShapesAndPoints({
               points,
-              elements,
-              selectedShape: selectedElementId, // Usar o ID do elemento selecionado
+              elementItems: elements,
+              selectedShape: selectedElementId,
               strokeWidth,
               colors,
               handleShapeClick,
