@@ -9,7 +9,7 @@ import Icon from 'components/Icon';
 import DescriptionText from 'components/DescriptionText';
 
 import { Item } from 'components/ItemList/interface';
-import { ElementItem } from 'types/element';
+import { ElementItem, Elements } from 'types/element';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -23,21 +23,20 @@ import {
 const ElementRegistration: React.FC = () => {
   const dispatch = useDispatch();
 
-  // Atualizamos os selectors para usar a nova estrutura
-  const elements = useSelector((state: any) => state.elements.items);
+  const elements = useSelector(
+    (state: { elements: Elements }) => state.elements.items,
+  );
   const selectedElementId = useSelector(
     (state: any) => state.elements.selectedElementId,
   );
 
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  // converter elementos para o formato da lista
   const menuItems: Item[] = elements.map((element: ElementItem) => ({
     id: element.id,
     label: element.label,
   }));
 
-  // Elemento selecionado com base no ID
   const selectedElement = selectedElementId
     ? elements.find((element: ElementItem) => element.id === selectedElementId)
     : null;

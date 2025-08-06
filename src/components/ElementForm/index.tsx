@@ -222,6 +222,20 @@ const ElementForm: React.FC<ElementFormProps> = ({
         </HeaderActions>
       </Header>
       <FormBody>
+        {/* <SInput
+          label="X:"
+          type="number"
+          name="xaxis"
+          value={formData.xaxis}
+          onChange={handleChange}
+        />
+        <SInput
+          label="Z:"
+          type="number"
+          name="zaxis"
+          value={formData.zaxis}
+          onChange={handleChange}
+        /> */}
         <SInput
           label="Z Esquerdo:"
           type="number"

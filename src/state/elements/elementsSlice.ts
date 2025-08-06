@@ -12,7 +12,6 @@ const elementsSlice = createSlice({
   name: 'elements',
   initialState,
   reducers: {
-    // Ações existentes modificadas para trabalhar com a nova estrutura
     addElement: (state, action: PayloadAction<Omit<ElementItem, 'id'>>) => {
       // calc central point if not provided
       const xaxis =
@@ -39,14 +38,12 @@ const elementsSlice = createSlice({
         (element) => element.id !== action.payload,
       );
 
-      // Se o elemento removido estava selecionado, limpe a seleção
+      // if element was selected, clear selection
       if (state.selectedElementId === action.payload) {
         state.selectedElementId = null;
         state.isFormOpen = false;
       }
     },
-
-    // Novas ações para gerenciar a seleção
     selectElement: (state, action: PayloadAction<string>) => {
       state.selectedElementId = action.payload;
       state.isFormOpen = true;

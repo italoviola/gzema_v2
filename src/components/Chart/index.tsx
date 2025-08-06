@@ -3,13 +3,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
 
 import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
-import { selectElement } from 'state/elements/elementsSlice'; // Importamos da localização correta
+import { selectElement, deselectElement } from 'state/elements/elementsSlice';
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
 import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
+
+import { ElementItem, Elements } from 'types/element';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -32,8 +34,9 @@ const Chart: React.FC = () => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Atualizamos o selector para usar a nova estrutura
-  const elements = useSelector((state: any) => state.elements.items);
+  const elements = useSelector(
+    (state: { elements: Elements }) => state.elements.items,
+  );
   const selectedElementId = useSelector(
     (state: any) => state.elements.selectedElementId,
   );
@@ -122,10 +125,13 @@ const Chart: React.FC = () => {
   };
 
   const handleShapeClick = (id: string) => {
-    // Verifica se o ID corresponde a um elemento (não um ponto ou outra forma)
-    const clickedElement = elements.find((element: any) => element.id === id);
+    const clickedElement = elements.find(
+      (element: ElementItem) => element.id === id,
+    );
+
     if (clickedElement) {
-      dispatch(selectElement(id));
+      if (selectedElementId === id) dispatch(deselectElement());
+      else dispatch(selectElement(id));
     }
   };
 
