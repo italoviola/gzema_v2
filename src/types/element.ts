@@ -6,7 +6,18 @@ export interface ElementItem {
   rightZAxis: number;
   leftDiameter: number;
   rightDiameter: number;
+  corners: Corners;
 }
+
+export interface Corners {
+  left: CornerType;
+  right: CornerType;
+}
+
+export type CornerType =
+  | { type: 'rounded'; radius: number }
+  | { type: 'chamfer'; length: number; angle: number }
+  | { type: 'none' };
 
 export interface ElementItems extends Array<ElementItem> {}
 

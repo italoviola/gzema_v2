@@ -30,6 +30,7 @@ export const initialState: Part = {
   ],
   operations: [],
   grindingWheels: [],
+  elements: [],
 };
 
 const partSlice = createSlice({

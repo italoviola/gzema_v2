@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ElementItem, Elements } from 'types/element';
 import { v4 as uuidv4 } from 'uuid';
 
+// selectedElementId e isFormOpen não precisam estar no redux, podem ficar no state comum
 export const initialState: Elements = {
   items: [],
   selectedElementId: null,

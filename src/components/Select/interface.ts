@@ -3,7 +3,7 @@ import { ToolOptions } from 'types/tools';
 
 export interface SelectOptionsItem {
   label: string;
-  value: number;
+  value: number | string;
 }
 
 export interface SelectOptions extends Array<SelectOptionsItem> {}

@@ -4,6 +4,7 @@ import {
   MACHINING_GRINDING,
   MACHINING_DRESSING,
 } from 'utils/constants';
+import { ElementItems } from './element';
 
 // Types
 export type ContourType = typeof TYPE_EXTERNAL | typeof TYPE_INTERNAL;
@@ -70,4 +71,5 @@ export interface Part {
   contours: Contours;
   operations: Operations;
   grindingWheels: GrindingWheels;
+  elements: ElementItems;
 }

@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import {
+  removeElement,
   addElement,
   editElement,
-  removeElement,
   deselectElement,
 } from 'state/elements/elementsSlice';
 
 import Icon from 'components/Icon';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
+import SelectComponent from 'components/Select';
 
 import { ElementItem, Elements } from 'types/element';
 
@@ -28,6 +30,12 @@ import {
   SActionButton,
 } from './style';
 
+const CORNER_TYPE_OPTIONS = [
+  { value: 'none', label: 'Nenhum' },
+  { value: 'rounded', label: 'Arredondado' },
+  { value: 'chamfer', label: 'Chanfrado' },
+];
+
 const DEFAULT_ELEMENT: Omit<ElementItem, 'id'> = {
   label: 'Novo Elemento',
   xaxis: 0, // might change based on Machine settings
@@ -35,6 +43,10 @@ const DEFAULT_ELEMENT: Omit<ElementItem, 'id'> = {
   rightZAxis: 50,
   leftDiameter: 100,
   rightDiameter: 100,
+  corners: {
+    left: { type: 'none' },
+    right: { type: 'none' },
+  },
 };
 
 const ElementForm: React.FC<ElementFormProps> = ({
@@ -44,7 +56,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements.items,
+    (state: { part: { elements: Elements } }) => state.part.elements.items,
   );
 
   const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>(
@@ -57,7 +69,14 @@ const ElementForm: React.FC<ElementFormProps> = ({
   // manage element new element default data
   useEffect(() => {
     if (element) {
-      setFormData(element);
+      setFormData({
+        ...DEFAULT_ELEMENT,
+        ...element,
+        corners: {
+          ...DEFAULT_ELEMENT.corners,
+          ...(element.corners || {}),
+        },
+      });
     } else if (isNew) {
       const defaultValues: Omit<ElementItem, 'id'> = {
         ...DEFAULT_ELEMENT,
@@ -87,6 +106,39 @@ const ElementForm: React.FC<ElementFormProps> = ({
     });
   };
 
+  // AJUSTAR TIPAGEM
+  const handleCornerChange = (
+    side: 'left' | 'right',
+    field: string,
+    value: string | number,
+  ) => {
+    setFormData((prev) => {
+      const newFormData = {
+        ...prev,
+        corners: {
+          ...prev.corners,
+          [side]: { ...prev.corners[side] },
+        },
+      };
+
+      if (field === 'type') {
+        if (value === 'rounded') {
+          newFormData.corners[side] = { type: 'rounded', radius: 0 };
+        } else if (value === 'chamfer') {
+          newFormData.corners[side] = { type: 'chamfer', length: 0, angle: 45 };
+        } else {
+          newFormData.corners[side] = { type: 'none' };
+        }
+      } else {
+        // @ts-ignore
+        newFormData.corners[side][field] =
+          typeof value === 'string' ? parseFloat(value) || 0 : value;
+      }
+
+      return newFormData;
+    });
+  };
+
   const handleSave = () => {
     if (isNew) {
       dispatch(addElement(formData));
@@ -106,7 +158,6 @@ const ElementForm: React.FC<ElementFormProps> = ({
   const handleDelete = () => {
     if (!isNew && element) {
       dispatch(removeElement(element.id));
-      // A limpeza da seleção já é feita no reducer
       if (onClose) onClose();
     }
   };
@@ -136,6 +187,57 @@ const ElementForm: React.FC<ElementFormProps> = ({
         }),
       );
     }
+  };
+
+  const renderCornerFields = (side: 'left' | 'right') => {
+    const corner = formData.corners[side];
+    const sideLabel = side === 'left' ? 'Esq.' : 'Dir.';
+
+    return (
+      <>
+        <SelectComponent
+          label={`Tipo ${sideLabel}`}
+          name={`${side}CornerType`}
+          options={CORNER_TYPE_OPTIONS}
+          value={corner.type}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+            handleCornerChange(side, 'type', e.target.value)
+          }
+        />
+
+        {corner.type === 'rounded' && (
+          <SInput
+            label={`Raio ${sideLabel}`}
+            type="number"
+            name={`${side}Radius`}
+            value={(corner as { radius: number }).radius}
+            onChange={(e) => handleCornerChange(side, 'radius', e.target.value)}
+          />
+        )}
+        {corner.type === 'chamfer' && (
+          <>
+            <SInput
+              label={`Comprimento ${sideLabel}`}
+              type="number"
+              name={`${side}Length`}
+              value={(corner as { length: number }).length}
+              onChange={(e) =>
+                handleCornerChange(side, 'length', e.target.value)
+              }
+            />
+            <SInput
+              label={`Ângulo ${sideLabel}`}
+              type="number"
+              name={`${side}Angle`}
+              value={(corner as { angle: number }).angle}
+              onChange={(e) =>
+                handleCornerChange(side, 'angle', e.target.value)
+              }
+            />
+          </>
+        )}
+      </>
+    );
   };
 
   return (
@@ -250,6 +352,9 @@ const ElementForm: React.FC<ElementFormProps> = ({
           value={formData.rightDiameter}
           onChange={handleChange}
         />
+
+        {renderCornerFields('left')}
+        {renderCornerFields('right')}
       </FormBody>
       <Modal
         title="Deseja excluir Elemento?"
