@@ -7,16 +7,58 @@ export function convertElementsToPolygons(
   defaultOpacity: number = 0.9,
 ): any[] {
   return elementItems.map((element: ElementItem) => {
-    // Calculando as metades das alturas para posicionar acima/abaixo do zaxis
+    // Calculando as metades das alturas para posicionar acima/abaixo do xaxis
     const leftHalfHeight = element.leftDiameter / 2;
     const rightHalfHeight = element.rightDiameter / 2;
 
-    // Os 4 pontos do polígono usando as novas propriedades
-    // [x1, y1, x2, y2, x3, y3, x4, y4] onde:
-    // (x1,y1) é o canto superior esquerdo
-    // (x2,y2) é o canto superior direito
-    // (x3,y3) é o canto inferior direito
-    // (x4,y4) é o canto inferior esquerdo
+    // Verificar se tem cantos arredondados
+    const hasLeftRoundedCorner = element.corners?.left?.type === 'rounded';
+    const hasRightRoundedCorner = element.corners?.right?.type === 'rounded';
+
+    // Se tem pelo menos um canto arredondado, usar concaveRoundedRect
+    if (hasLeftRoundedCorner || hasRightRoundedCorner) {
+      // Determinar os raios dos cantos
+      // Para cada canto, se for arredondado, use o raio definido, caso contrário, use 0
+      const topLeftRadius = hasLeftRoundedCorner
+        ? (element.corners.left as { type: 'rounded'; radius: number }).radius
+        : 0;
+
+      const bottomLeftRadius = hasLeftRoundedCorner
+        ? (element.corners.left as { type: 'rounded'; radius: number }).radius
+        : 0;
+
+      const topRightRadius = hasRightRoundedCorner
+        ? (element.corners.right as { type: 'rounded'; radius: number }).radius
+        : 0;
+
+      const bottomRightRadius = hasRightRoundedCorner
+        ? (element.corners.right as { type: 'rounded'; radius: number }).radius
+        : 0;
+
+      // Calcular a largura e altura do elemento
+      const width = element.rightZAxis - element.leftZAxis;
+      const height = leftHalfHeight + rightHalfHeight; // aproximação para altura total
+
+      return {
+        type: 'concaveRoundedRect',
+        x: element.leftZAxis,
+        y: element.xaxis - leftHalfHeight, // posição y superior
+        width,
+        height,
+        cornerRadius: [
+          topLeftRadius, // top-left
+          topRightRadius, // top-right
+          bottomRightRadius, // bottom-right
+          bottomLeftRadius, // bottom-left
+        ],
+        fill: defaultColor,
+        opacity: defaultOpacity,
+        id: element.id,
+        label: element.label,
+      };
+    }
+
+    // Para elementos sem cantos arredondados, manter o comportamento original
     const points = [
       element.leftZAxis,
       element.xaxis - leftHalfHeight, // superior esquerdo
@@ -110,18 +152,22 @@ export function renderShapesAndPoints({
           } = shape;
           const [tl, tr, br, bl] = cornerRadius ?? [0, 0, 0, 0];
 
+          // Invertemos o y para lidar com o sistema de coordenadas do Konva
+          const invertedY = -y;
+
+          // PathData para cantos convexos (estilo border-radius)
           const pathData = `
-            M ${x + tl}, ${y}
-            L ${x + width - tr}, ${y}
-            Q ${x + width - tr}, ${y + tr} ${x + width}, ${y + tr}
-            L ${x + width}, ${y + height - br}
-            Q ${x + width - br}, ${y + height - br} ${x + width - br}, ${
-              y + height
+            M ${x + tl}, ${invertedY}
+            L ${x + width - tr}, ${invertedY}
+            Q ${x + width}, ${invertedY} ${x + width}, ${invertedY - tr}
+            L ${x + width}, ${invertedY - height + br}
+            Q ${x + width}, ${invertedY - height} ${x + width - br}, ${
+              invertedY - height
             }
-            L ${x + bl}, ${y + height}
-            Q ${x + bl}, ${y + height - bl} ${x}, ${y + height - bl}
-            L ${x}, ${y + tl}
-            Q ${x + tl}, ${y + tl} ${x + tl}, ${y}
+            L ${x + bl}, ${invertedY - height}
+            Q ${x}, ${invertedY - height} ${x}, ${invertedY - height + bl}
+            L ${x}, ${invertedY - tl}
+            Q ${x}, ${invertedY} ${x + tl}, ${invertedY}
             Z
           `;
 

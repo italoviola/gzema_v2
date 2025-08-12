@@ -106,13 +106,14 @@ const ElementForm: React.FC<ElementFormProps> = ({
     });
   };
 
-  // AJUSTAR TIPAGEM
   const handleCornerChange = (
     side: 'left' | 'right',
     field: string,
     value: string | number,
   ) => {
+    // AJUSTAR TIPAGEM
     setFormData((prev) => {
+      // tipagem
       const newFormData = {
         ...prev,
         corners: {
