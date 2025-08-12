@@ -56,7 +56,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const elements = useSelector(
-    (state: { part: { elements: Elements } }) => state.part.elements.items,
+    (state: { elements: Elements }) => state.elements.items || [],
   );
 
   const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>(

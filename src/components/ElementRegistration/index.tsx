@@ -24,7 +24,7 @@ const ElementRegistration: React.FC = () => {
   const dispatch = useDispatch();
 
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements.items,
+    (state: { elements: Elements }) => state.elements.items || [],
   );
   const selectedElementId = useSelector(
     (state: any) => state.elements.selectedElementId,
