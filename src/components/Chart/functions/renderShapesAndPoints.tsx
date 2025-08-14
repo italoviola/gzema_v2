@@ -142,46 +142,84 @@ export function renderShapesAndPoints({
           );
         }
         if (shape.type === 'concaveRoundedRect') {
-          const {
-            x = 0,
-            y = 0,
-            width = 0,
-            height = 0,
-            fill,
-            cornerRadius = [0, 0, 0, 0],
-          } = shape;
+          const originalElement = elementItems.find(
+            (elem) => elem.id === shape.id,
+          );
+
+          if (!originalElement) {
+            return null;
+          }
+
+          const leftHalfHeight = originalElement.leftDiameter / 2;
+          const rightHalfHeight = originalElement.rightDiameter / 2;
+
+          const { fill, cornerRadius = [0, 0, 0, 0], id } = shape;
           const [tl, tr, br, bl] = cornerRadius ?? [0, 0, 0, 0];
 
-          // Invertemos o y para lidar com o sistema de coordenadas do Konva
-          const invertedY = -y;
+          // Pontos do trapézio (coordenadas Y já invertidas para o gráfico)
+          const leftX = originalElement.leftZAxis;
+          const rightX = originalElement.rightZAxis;
+          const leftTopY = -(originalElement.xaxis - leftHalfHeight);
+          const rightTopY = -(originalElement.xaxis - rightHalfHeight);
+          const rightBottomY = -(originalElement.xaxis + rightHalfHeight);
+          const leftBottomY = -(originalElement.xaxis + leftHalfHeight);
 
-          // PathData para cantos convexos (estilo border-radius)
-          const pathData = `
-            M ${x + tl}, ${invertedY}
-            L ${x + width - tr}, ${invertedY}
-            Q ${x + width}, ${invertedY} ${x + width}, ${invertedY - tr}
-            L ${x + width}, ${invertedY - height + br}
-            Q ${x + width}, ${invertedY - height} ${x + width - br}, ${
-              invertedY - height
-            }
-            L ${x + bl}, ${invertedY - height}
-            Q ${x}, ${invertedY - height} ${x}, ${invertedY - height + bl}
-            L ${x}, ${invertedY - tl}
-            Q ${x}, ${invertedY} ${x + tl}, ${invertedY}
-            Z
-          `;
+          // Calcular o ângulo das linhas superior e inferior
+          const topAngle = Math.atan2(rightTopY - leftTopY, rightX - leftX);
+          const bottomAngle = Math.atan2(
+            rightBottomY - leftBottomY,
+            rightX - leftX,
+          );
+
+          // Calcular os deslocamentos para os pontos de tangência
+          const tlOffsetX = tl / Math.tan((Math.PI / 2 + topAngle) / 2);
+          const tlOffsetY = tlOffsetX * Math.tan(topAngle);
+          const trOffsetX = tr / Math.tan((Math.PI / 2 - topAngle) / 2);
+          const trOffsetY = trOffsetX * Math.tan(topAngle);
+
+          const blOffsetX = bl / Math.tan((Math.PI / 2 - bottomAngle) / 2);
+          const blOffsetY = blOffsetX * Math.tan(bottomAngle);
+          const brOffsetX = br / Math.tan((Math.PI / 2 + bottomAngle) / 2);
+          const brOffsetY = brOffsetX * Math.tan(bottomAngle);
+
+          // Pontos de tangência nas linhas inclinadas
+          const p1 = { x: leftX + tlOffsetX, y: leftTopY + tlOffsetY }; // Tangente superior esquerda
+          const p2 = { x: rightX - trOffsetX, y: rightTopY - trOffsetY }; // Tangente superior direita
+          const p5 = { x: rightX - brOffsetX, y: rightBottomY - brOffsetY }; // Tangente inferior direita
+          const p6 = { x: leftX + blOffsetX, y: leftBottomY + blOffsetY }; // Tangente inferior esquerda
+
+          // Pontos de tangência nas linhas verticais, calculados a partir do vértice e da distância de tangência 'd' (que é o offsetX)
+          const p3 = { x: rightX, y: rightTopY - trOffsetX }; // Tangente na linha vertical superior direita
+          const p4 = { x: rightX, y: rightBottomY + brOffsetX }; // Tangente na linha vertical inferior direita
+          const p7 = { x: leftX, y: leftBottomY + blOffsetX }; // Tangente na linha vertical inferior esquerda
+          const p8 = { x: leftX, y: leftTopY - tlOffsetX }; // Tangente na linha vertical superior esquerda
+
+          // Construir o caminho
+          let pathData = `M ${p1.x} ${p1.y} `; // Início na tangente superior esquerda
+          pathData += `L ${p2.x} ${p2.y} `; // 1. Linha superior
+
+          if (tr > 0) pathData += `A ${tr} ${tr} 0 0 0 ${p3.x} ${p3.y} `; // 2. Canto superior direito
+          pathData += `L ${p4.x} ${p4.y} `; // 3. Linha direita
+
+          if (br > 0) pathData += `A ${br} ${br} 0 0 0 ${p5.x} ${p5.y} `; // 4. Canto inferior direito
+          pathData += `L ${p6.x} ${p6.y} `; // 5. Linha inferior
+
+          if (bl > 0) pathData += `A ${bl} ${bl} 0 0 0 ${p7.x} ${p7.y} `; // 6. Canto inferior esquerdo
+          pathData += `L ${p8.x} ${p8.y} `; // 7. Linha esquerda
+
+          if (tl > 0) pathData += `A ${tl} ${tl} 0 0 0 ${p1.x} ${p1.y} `; // 8. Canto superior esquerdo
+
+          pathData += 'Z'; // Fechar o caminho
 
           return (
             <Path
-              key={shape.id}
+              key={id}
               data={pathData}
               fill={fill}
-              stroke={selectedShape === shape.id ? 'blue' : colors.greyFont}
-              strokeWidth={
-                selectedShape === shape.id ? strokeWidth * 2 : strokeWidth
-              }
+              stroke={selectedShape === id ? 'blue' : colors.greyFont}
+              strokeWidth={selectedShape === id ? strokeWidth * 2 : strokeWidth}
               opacity={shape.opacity}
-              onClick={() => handleShapeClick(shape.id)}
+              onClick={() => handleShapeClick(id)}
             />
           );
         }
