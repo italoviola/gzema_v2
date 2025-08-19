@@ -14,11 +14,6 @@ const normalize = (v: Point): Point => {
   const l = norm(v);
   return l < EPS ? { x: 0, y: 0 } : { x: v.x / l, y: v.y / l };
 };
-const rotate = (v: Point, rad: number): Point => {
-  const c = Math.cos(rad);
-  const s = Math.sin(rad);
-  return { x: v.x * c - v.y * s, y: v.x * s + v.y * c };
-};
 
 // Cálculo genérico de chanfro para um canto (reutilizado)
 function computeChamfer(
@@ -36,56 +31,38 @@ function computeChamfer(
 
   const u1 = normalize(v1);
   const u2 = normalize(v2);
+
+  // Cantos degenerados (arestas colineares)
   const det = cross(u1, u2);
   if (Math.abs(det) < EPS) return { pAlongPrev: curr, pAlongNext: curr };
 
-  // Referência: aresta mais "vertical"
-  const dx1 = Math.abs(prev.x - curr.x);
-  const dx2 = Math.abs(next.x - curr.x);
-  const uRef = dx2 < dx1 ? u2 : u1;
+  // Ângulo interno do canto
+  const cosPhi = clamp(dot(u1, u2), -1, 1);
+  const phi = Math.acos(cosPhi);
+  if (phi < 1e-6) return { pAlongPrev: curr, pAlongNext: curr };
 
-  const alpha = Math.max(0, Math.abs(angleDeg)) * (Math.PI / 180);
-  const candidates = [rotate(uRef, +alpha), rotate(uRef, -alpha)].map(
-    normalize,
-  );
+  // Padronização: medir angle sempre a partir da aresta mais "vertical"
+  const alpha = clamp(Math.abs(angleDeg) * (Math.PI / 180), EPS, phi - EPS);
 
-  const insideWedge = (w: Point) =>
-    cross(u1, w) * det >= -EPS && cross(w, u2) * det >= -EPS;
+  // Descobrir qual vetor é o "vertical"
+  const u1IsVert = Math.abs(u1.x) < Math.abs(u1.y);
 
-  let s1 = 0;
-  let s2 = 0;
-  let ok = false;
+  // Razão de avanço em cada aresta para obter a direção do chanfro com ângulo 'alpha' relativo a uVert
+  // sVert : sHorz = sin(phi - alpha) : sin(alpha)
+  const rVert = Math.sin(phi - alpha);
+  const rHorz = Math.sin(alpha);
 
-  candidates.some((wc) => {
-    const a = (length * cross(u2, wc)) / det;
-    const b = (length * cross(u1, wc)) / det;
-    if (a > EPS && b > EPS && insideWedge(wc)) {
-      s1 = a;
-      s2 = b;
-      ok = true;
-      return true;
-    }
-    // tentar flip
-    const wf = { x: -wc.x, y: -wc.y };
-    const af = (length * cross(u2, wf)) / det;
-    const bf = (length * cross(u1, wf)) / det;
-    if (af > EPS && bf > EPS && insideWedge(wf)) {
-      s1 = af;
-      s2 = bf;
-      ok = true;
-      return true;
-    }
-    return false;
-  });
+  // Escala k tal que o segmento do chanfro tenha comprimento "length"
+  // |sHorz*uH - sVert*uV|^2 = sHorz^2 + sVert^2 - 2*sHorz*sVert*cos(phi)
+  const denomSq = rHorz * rHorz + rVert * rVert - 2 * rHorz * rVert * cosPhi;
+  const k = denomSq > EPS ? length / Math.sqrt(denomSq) : 0;
 
-  // Fallback simétrico pela bissetriz
-  if (!ok || s1 <= EPS || s2 <= EPS) {
-    const phi = Math.acos(clamp(dot(u1, u2), -1, 1));
-    if (phi < 1e-6) return { pAlongPrev: curr, pAlongNext: curr };
-    const t = length / (2 * Math.sin(phi / 2));
-    s1 = t;
-    s2 = t;
-  }
+  const sVert = k * rVert;
+  const sHorz = k * rHorz;
+
+  // Mapear de volta para s1 (prev/u1) e s2 (next/u2)
+  let s1 = u1IsVert ? sVert : sHorz;
+  let s2 = u1IsVert ? sHorz : sVert;
 
   // Limites para não ultrapassar vértices adjacentes
   const max1 = lenV1 * 0.999;
