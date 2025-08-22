@@ -118,9 +118,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
     field: string,
     value: string | number,
   ) => {
-    // AJUSTAR TIPAGEM
     setFormData((prev) => {
-      // tipagem
       const newFormData = {
         ...prev,
         corners: {
@@ -129,33 +127,55 @@ const ElementForm: React.FC<ElementFormProps> = ({
         },
       };
 
+      // Caso especial: alteração do tipo de canto
       if (field === 'type') {
-        if (value === 'rounded') {
-          // inclui radiusType padrão 'convex'
-          newFormData.corners[side] = {
-            type: 'rounded',
-            radiusType: 'convex',
-            radius: 0,
-          };
-        } else if (value === 'chamfer') {
-          newFormData.corners[side] = { type: 'chamfer', length: 0, angle: 45 };
-        } else {
-          newFormData.corners[side] = { type: 'none' };
+        switch (value) {
+          case 'rounded':
+            newFormData.corners[side] = {
+              type: 'rounded',
+              radiusType: 'convex',
+              radius: 0,
+            };
+            break;
+          case 'chamfer':
+            newFormData.corners[side] = {
+              type: 'chamfer',
+              length: 0,
+              angle: 45,
+            };
+            break;
+          default:
+            newFormData.corners[side] = { type: 'none' };
         }
-      } else if (field === 'radiusType') {
-        if (newFormData.corners[side].type === 'rounded') {
-          (
-            newFormData.corners[side] as {
-              type: 'rounded';
-              radiusType: 'convex' | 'concave';
-              radius: number;
-            }
-          ).radiusType = value as 'convex' | 'concave';
+        return newFormData;
+      }
+
+      if (
+        field === 'radiusType' &&
+        newFormData.corners[side].type === 'rounded'
+      ) {
+        const corner = newFormData.corners[side] as {
+          type: 'rounded';
+          radiusType: 'convex' | 'concave';
+          radius: number;
+        };
+        corner.radiusType = value as 'convex' | 'concave';
+        return newFormData;
+      }
+
+      // Valores numéricos específicos para cada tipo de canto
+      const corner = newFormData.corners[side];
+      const numValue =
+        typeof value === 'string' ? parseFloat(value) || 0 : (value as number);
+
+      if (corner.type === 'rounded' && field === 'radius') {
+        (corner as { radius: number }).radius = numValue;
+      } else if (corner.type === 'chamfer') {
+        if (field === 'length') {
+          (corner as { length: number }).length = numValue;
+        } else if (field === 'angle') {
+          (corner as { angle: number }).angle = numValue;
         }
-      } else {
-        // Use type assertion to avoid TS error
-        (newFormData.corners[side] as any)[field] =
-          typeof value === 'string' ? parseFloat(value) || 0 : value;
       }
 
       return newFormData;
