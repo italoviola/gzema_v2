@@ -1,4 +1,5 @@
 import Input from 'components/Input';
+import SelectComponent from 'components/Select';
 import styled from 'styled-components';
 import { ActionButton, TitleEdit } from 'styles/Components';
 
@@ -68,6 +69,33 @@ export const FormBody = styled.div`
 `;
 
 export const SInput = styled(Input)`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 45%;
+  box-sizing: border-box;
+  font-size: 14px;
+
+  label {
+    font-size: 16px;
+  }
+  input {
+    font-size: 16px;
+  }
+`;
+
+export const SSelectCornerType = styled(SelectComponent)`
+  font-size: 14px;
+
+  label {
+    font-size: 16px;
+  }
+  input {
+    font-size: 16px;
+  }
+`;
+
+export const SSelectCornerTypeRadiusType = styled(SelectComponent)`
   width: 100%;
   display: flex;
   flex-direction: column;

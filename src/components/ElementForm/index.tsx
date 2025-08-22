@@ -11,7 +11,6 @@ import {
 import Icon from 'components/Icon';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
-import SelectComponent from 'components/Select';
 
 import { ElementItem, Elements } from 'types/element';
 
@@ -28,12 +27,20 @@ import {
   EditableTitleWrapper,
   STitleEdit,
   SActionButton,
+  SSelectCornerType,
+  SSelectCornerTypeRadiusType,
 } from './style';
 
 const CORNER_TYPE_OPTIONS = [
   { value: 'none', label: 'Nenhum' },
   { value: 'rounded', label: 'Arredondado' },
   { value: 'chamfer', label: 'Chanfrado' },
+];
+
+// NOVO: opções de tipo de raio
+const RADIUS_TYPE_OPTIONS = [
+  { value: 'convex', label: 'Convexo' },
+  { value: 'concave', label: 'Côncavo' },
 ];
 
 const DEFAULT_ELEMENT: Omit<ElementItem, 'id'> = {
@@ -124,15 +131,30 @@ const ElementForm: React.FC<ElementFormProps> = ({
 
       if (field === 'type') {
         if (value === 'rounded') {
-          newFormData.corners[side] = { type: 'rounded', radius: 0 };
+          // inclui radiusType padrão 'convex'
+          newFormData.corners[side] = {
+            type: 'rounded',
+            radiusType: 'convex',
+            radius: 0,
+          };
         } else if (value === 'chamfer') {
           newFormData.corners[side] = { type: 'chamfer', length: 0, angle: 45 };
         } else {
           newFormData.corners[side] = { type: 'none' };
         }
+      } else if (field === 'radiusType') {
+        if (newFormData.corners[side].type === 'rounded') {
+          (
+            newFormData.corners[side] as {
+              type: 'rounded';
+              radiusType: 'convex' | 'concave';
+              radius: number;
+            }
+          ).radiusType = value as 'convex' | 'concave';
+        }
       } else {
-        // @ts-ignore
-        newFormData.corners[side][field] =
+        // Use type assertion to avoid TS error
+        (newFormData.corners[side] as any)[field] =
           typeof value === 'string' ? parseFloat(value) || 0 : value;
       }
 
@@ -196,7 +218,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
 
     return (
       <>
-        <SelectComponent
+        <SSelectCornerType
           label={`Tipo ${sideLabel}`}
           name={`${side}CornerType`}
           options={CORNER_TYPE_OPTIONS}
@@ -207,13 +229,26 @@ const ElementForm: React.FC<ElementFormProps> = ({
         />
 
         {corner.type === 'rounded' && (
-          <SInput
-            label={`Raio ${sideLabel}`}
-            type="number"
-            name={`${side}Radius`}
-            value={(corner as { radius: number }).radius}
-            onChange={(e) => handleCornerChange(side, 'radius', e.target.value)}
-          />
+          <>
+            <SSelectCornerTypeRadiusType
+              label={`Tipo de Raio ${sideLabel}`}
+              name={`${side}RadiusType`}
+              options={RADIUS_TYPE_OPTIONS}
+              value={(corner as any).radiusType ?? 'convex'}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                handleCornerChange(side, 'radiusType', e.target.value)
+              }
+            />
+            <SInput
+              label={`Raio ${sideLabel}`}
+              type="number"
+              name={`${side}Radius`}
+              value={(corner as { radius: number }).radius}
+              onChange={(e) =>
+                handleCornerChange(side, 'radius', e.target.value)
+              }
+            />
+          </>
         )}
         {corner.type === 'chamfer' && (
           <>

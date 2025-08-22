@@ -15,4 +15,5 @@ export interface SelectComponentProps {
   onChange: (value: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string | number;
   disabled?: boolean;
+  className?: string;
 }

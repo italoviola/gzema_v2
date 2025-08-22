@@ -145,6 +145,17 @@ export function convertElementsToPolygons(
       const rightRadius =
         rightCorner.type === 'rounded' ? (rightCorner as any).radius : 0;
 
+      const leftRadiusType: 'convex' | 'concave' =
+        leftCorner.type === 'rounded' &&
+        (leftCorner as any).radiusType === 'concave'
+          ? 'concave'
+          : 'convex';
+      const rightRadiusType: 'convex' | 'concave' =
+        rightCorner.type === 'rounded' &&
+        (rightCorner as any).radiusType === 'concave'
+          ? 'concave'
+          : 'convex';
+
       const tl = leftRadius;
       const bl = leftRadius;
       const tr = rightRadius;
@@ -257,7 +268,9 @@ export function convertElementsToPolygons(
 
       // Canto superior direito
       if (rightCorner.type === 'rounded' && tr > 0)
-        d += `A ${tr} ${tr} 0 0 0 ${p3.x} ${p3.y} `;
+        d += `A ${tr} ${tr} 0 0 ${rightRadiusType === 'concave' ? 1 : 0} ${
+          p3.x
+        } ${p3.y} `;
       else if (rightCorner.type === 'chamfer' && trVert)
         d += `L ${trVert.x} ${trVert.y} `;
 
@@ -274,7 +287,9 @@ export function convertElementsToPolygons(
 
       // Canto inferior direito
       if (rightCorner.type === 'rounded' && br > 0)
-        d += `A ${br} ${br} 0 0 0 ${p5.x} ${p5.y} `;
+        d += `A ${br} ${br} 0 0 ${rightRadiusType === 'concave' ? 1 : 0} ${
+          p5.x
+        } ${p5.y} `;
       else if (rightCorner.type === 'chamfer' && brBottom)
         d += `L ${brBottom.x} ${brBottom.y} `;
 
@@ -296,7 +311,9 @@ export function convertElementsToPolygons(
 
       // Canto inferior esquerdo
       if (leftCorner.type === 'rounded' && bl > 0)
-        d += `A ${bl} ${bl} 0 0 0 ${p7.x} ${p7.y} `;
+        d += `A ${bl} ${bl} 0 0 ${leftRadiusType === 'concave' ? 1 : 0} ${
+          p7.x
+        } ${p7.y} `;
       else if (leftCorner.type === 'chamfer' && blVert)
         d += `L ${blVert.x} ${blVert.y} `;
 
@@ -313,7 +330,9 @@ export function convertElementsToPolygons(
 
       // Canto superior esquerdo e fechamento
       if (leftCorner.type === 'rounded' && tl > 0)
-        d += `A ${tl} ${tl} 0 0 0 ${p1.x} ${p1.y} `;
+        d += `A ${tl} ${tl} 0 0 ${leftRadiusType === 'concave' ? 1 : 0} ${
+          p1.x
+        } ${p1.y} `;
       else if (leftCorner.type === 'chamfer' && tlTop)
         d += `L ${tlTop.x} ${tlTop.y} `;
       d += 'Z';

@@ -15,7 +15,7 @@ export interface Corners {
 }
 
 export type CornerType =
-  | { type: 'rounded'; radius: number }
+  | { type: 'rounded'; radiusType: 'convex' | 'concave'; radius: number }
   | { type: 'chamfer'; length: number; angle: number }
   | { type: 'none' };
 
