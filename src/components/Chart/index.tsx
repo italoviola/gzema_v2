@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
 
 import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
-import { selectElement, deselectElement } from 'state/elements/elementsSlice';
+import { selectElement, deselectElement } from 'state/app/appSlice';
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
@@ -11,7 +11,8 @@ import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
 
-import { ElementItem, Elements } from 'types/element';
+import { App } from 'types/app';
+import { ElementItem, ElementItems } from 'types/part';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -35,11 +36,12 @@ const Chart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements.items,
+    (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
   const selectedElementId = useSelector(
-    (state: any) => state.elements.selectedElementId,
+    (state: { app: App }) => state.app.selectedElementId,
   );
+
   const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });

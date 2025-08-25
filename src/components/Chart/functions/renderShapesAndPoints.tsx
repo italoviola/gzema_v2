@@ -1,5 +1,5 @@
 import { Line, Rect, Circle, Path } from 'react-konva';
-import { ElementItem, ElementItems } from 'types/element';
+import { ElementItem, ElementItems } from 'types/part';
 
 export type Point = { x: number; y: number };
 
@@ -371,7 +371,7 @@ export function renderShapesAndPoints({
 }: {
   points: any[];
   elementItems: ElementItem[];
-  selectedShape: string | null;
+  selectedShape: string | undefined;
   strokeWidth: number;
   colors: any;
   handleShapeClick: (id: string) => void;

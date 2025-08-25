@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { selectElement, deselectElement } from 'state/elements/elementsSlice';
+import { selectElement, deselectElement } from 'state/app/appSlice';
 
 import ItemList from 'components/ItemList';
 import ElementForm from 'components/ElementForm';
@@ -9,7 +9,9 @@ import Icon from 'components/Icon';
 import DescriptionText from 'components/DescriptionText';
 
 import { Item } from 'components/ItemList/interface';
-import { ElementItem, Elements } from 'types/element';
+
+import { ElementItem, ElementItems } from 'types/part';
+import { App } from 'types/app';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -24,10 +26,11 @@ const ElementRegistration: React.FC = () => {
   const dispatch = useDispatch();
 
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements.items || [],
+    (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
+
   const selectedElementId = useSelector(
-    (state: any) => state.elements.selectedElementId,
+    (state: { app: App }) => state.app.selectedElementId,
   );
 
   const [isAddingNew, setIsAddingNew] = useState(false);

@@ -9,6 +9,7 @@ import {
   GrindingWheels,
   GrindingWheelsItem,
   GWDressingToolsDataItem,
+  ElementItem,
 } from 'types/part';
 
 const initialActivity: ActivitiyItem = {
@@ -239,6 +240,27 @@ const partSlice = createSlice({
         }
       }
     },
+    addElement: (state, action: PayloadAction<Omit<ElementItem, 'id'>>) => {
+      state.elements.push({
+        ...action.payload,
+        id: uuidv4(),
+        label: action.payload.label || `Novo Elemento`,
+      });
+    },
+    editElement: (state, action: PayloadAction<ElementItem>) => {
+      const index = state.elements.findIndex(
+        (element) => element.id === action.payload.id,
+      );
+      if (index !== -1) {
+        state.elements[index] = action.payload;
+      }
+    },
+    removeElement: (state, action: PayloadAction<string>) => {
+      state.elements = state.elements.filter(
+        (element) => element.id !== action.payload,
+      );
+    },
+    // Fim dos reducers migrados
   },
 });
 
@@ -256,6 +278,10 @@ export const {
   setGrindingWheelData,
   editGrindingWheelData,
   editGrindingWheelProperty,
+  // Exportando apenas as ações relacionadas a dados
+  addElement,
+  editElement,
+  removeElement,
 } = partSlice.actions;
 
 export default partSlice.reducer;

@@ -1,18 +1,15 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  removeElement,
-  addElement,
-  editElement,
-  deselectElement,
-} from 'state/elements/elementsSlice';
+import { removeElement, addElement, editElement } from 'state/part/partSlice';
+
+import { deselectElement } from 'state/app/appSlice';
 
 import Icon from 'components/Icon';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 
-import { ElementItem, Elements } from 'types/element';
+import { ElementItem, ElementItems } from 'types/part';
 
 import { colors } from 'styles/global.styles';
 
@@ -37,7 +34,6 @@ const CORNER_TYPE_OPTIONS = [
   { value: 'chamfer', label: 'Chanfrado' },
 ];
 
-// NOVO: opções de tipo de raio
 const RADIUS_TYPE_OPTIONS = [
   { value: 'convex', label: 'Convexo' },
   { value: 'concave', label: 'Côncavo' },
@@ -63,7 +59,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
 }) => {
   const dispatch = useDispatch();
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements.items || [],
+    (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
 
   const [formData, setFormData] = useState<Omit<ElementItem, 'id'>>(
@@ -310,7 +306,11 @@ const ElementForm: React.FC<ElementFormProps> = ({
               placeholder="Nome do elemento"
             />
           ) : (
-            <Title>{isNew ? 'Novo Elemento' : formData.label}</Title>
+            <Title>
+              {formData.label === '' || formData.label === undefined
+                ? 'Novo Elemento'
+                : formData.label}
+            </Title>
           )}
         </EditableTitleWrapper>
         <HeaderActions>

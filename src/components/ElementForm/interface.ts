@@ -1,4 +1,4 @@
-import { ElementItem } from 'types/element';
+import { ElementItem } from 'types/part';
 
 export interface ElementFormProps {
   element?: ElementItem | null;
