@@ -9,11 +9,11 @@ import Icon from 'components/Icon';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
 
-import { ElementItem, ElementItems } from 'types/part';
+import { CornerType, ElementItem, ElementItems } from 'types/part';
 
 import { colors } from 'styles/global.styles';
 
-import { ElementFormProps } from './interface';
+import { ElementFormProps, OptionItems } from './interface';
 import {
   Container,
   Header,
@@ -28,13 +28,13 @@ import {
   SSelectCornerTypeRadiusType,
 } from './style';
 
-const CORNER_TYPE_OPTIONS = [
+const CORNER_TYPE_OPTIONS: OptionItems = [
   { value: 'none', label: 'Nenhum' },
   { value: 'rounded', label: 'Arredondado' },
   { value: 'chamfer', label: 'Chanfrado' },
 ];
 
-const RADIUS_TYPE_OPTIONS = [
+const RADIUS_TYPE_OPTIONS: OptionItems = [
   { value: 'convex', label: 'Convexo' },
   { value: 'concave', label: 'Côncavo' },
 ];
@@ -114,7 +114,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
     field: string,
     value: string | number,
   ) => {
-    setFormData((prev) => {
+    setFormData((prev: Omit<ElementItem, 'id'>) => {
       const newFormData = {
         ...prev,
         corners: {
@@ -123,7 +123,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
         },
       };
 
-      // Caso especial: alteração do tipo de canto
+      // special case: corner type change
       if (field === 'type') {
         switch (value) {
           case 'rounded':
@@ -159,9 +159,9 @@ const ElementForm: React.FC<ElementFormProps> = ({
         return newFormData;
       }
 
-      // Valores numéricos específicos para cada tipo de canto
-      const corner = newFormData.corners[side];
-      const numValue =
+      // specific numeric values for each corner type
+      const corner: CornerType = newFormData.corners[side];
+      const numValue: number =
         typeof value === 'string' ? parseFloat(value) || 0 : (value as number);
 
       if (corner.type === 'rounded' && field === 'radius') {
@@ -209,7 +209,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
     setEditingLabel(false);
 
     // ensure that does not save an empty label
-    const safeLabel =
+    const safeLabel: string =
       formData.label?.trim() === '' ? 'Novo Elemento' : formData.label.trim();
 
     setFormData({
@@ -229,8 +229,8 @@ const ElementForm: React.FC<ElementFormProps> = ({
   };
 
   const renderCornerFields = (side: 'left' | 'right') => {
-    const corner = formData.corners[side];
-    const sideLabel = side === 'left' ? 'Esq.' : 'Dir.';
+    const corner: CornerType = formData.corners[side];
+    const sideLabel: string = side === 'left' ? 'Esq.' : 'Dir.';
 
     return (
       <>

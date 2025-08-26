@@ -127,7 +127,7 @@ const Chart: React.FC = () => {
   };
 
   const handleShapeClick = (id: string) => {
-    const clickedElement = elements.find(
+    const clickedElement: ElementItem | undefined = elements.find(
       (element: ElementItem) => element.id === id,
     );
 

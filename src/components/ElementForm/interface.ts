@@ -5,3 +5,5 @@ export interface ElementFormProps {
   onClose?: () => void;
   isNew?: boolean;
 }
+
+export type OptionItems = Array<{ value: string; label: string }>;

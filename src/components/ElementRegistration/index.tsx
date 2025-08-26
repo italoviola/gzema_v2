@@ -40,9 +40,9 @@ const ElementRegistration: React.FC = () => {
     label: element.label,
   }));
 
-  const selectedElement = selectedElementId
+  const selectedElement: ElementItem | undefined = selectedElementId
     ? elements.find((element: ElementItem) => element.id === selectedElementId)
-    : null;
+    : undefined;
 
   const handleSelectItem = (item: Item) => {
     if (selectedElementId === item.id) {
