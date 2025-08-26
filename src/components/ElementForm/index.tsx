@@ -250,7 +250,7 @@ const ElementForm: React.FC<ElementFormProps> = ({
               label={`Tipo de Raio ${sideLabel}`}
               name={`${side}RadiusType`}
               options={RADIUS_TYPE_OPTIONS}
-              value={(corner as any).radiusType ?? 'convex'}
+              value={corner.type === 'rounded' ? corner.radiusType : 'convex'}
               onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                 handleCornerChange(side, 'radiusType', e.target.value)
               }

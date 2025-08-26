@@ -1,3 +1,37 @@
+/**
+ * Computes the chamfer (beveled corner) points for a given vertex of a polygon.
+ *
+ * Mathematical approach:
+ * Given a polygon vertex `curr` and its adjacent vertices `prev` and `next`, this function computes two new points:
+ * - `pAlongPrev`: a point along the edge from `curr` to `prev`
+ * - `pAlongNext`: a point along the edge from `curr` to `next`
+ * These points are positioned such that, if the corner at `curr` is replaced by the segment connecting `pAlongPrev` and `pAlongNext`,
+ * the resulting shape has a chamfer (beveled) corner with the specified chamfer length and angle.
+ *
+ * The function works by:
+ * 1. Calculating normalized direction vectors from `curr` to `prev` and `curr` to `next`.
+ * 2. Determining the angle between these vectors.
+ * 3. Using trigonometry to compute the distance along each edge such that the segment between the two new points forms the desired chamfer.
+ * 4. Handling degenerate cases (colinear or zero-length edges) by returning the original vertex.
+ *
+ * Parameters:
+ * @param curr - The current vertex (corner) to chamfer.
+ * @param prev - The previous vertex in the polygon (defines one adjacent edge).
+ * @param next - The next vertex in the polygon (defines the other adjacent edge).
+ * @param angleDeg - The chamfer angle in degrees (typically the angle of the beveled corner).
+ * @param length - The length of the chamfer (distance from `curr` along each adjacent edge).
+ *
+ * @returns An object with:
+ *   - `pAlongPrev`: The new point along the edge from `curr` to `prev`.
+ *   - `pAlongNext`: The new point along the edge from `curr` to `next`.
+ * If the chamfer cannot be computed (e.g., edges are colinear or too short), both points will be equal to `curr`.
+ *
+ * Assumptions:
+ * - The input points are in 2D Cartesian coordinates.
+ * - The polygon is simple (non-self-intersecting).
+ * - The function does not modify the input points.
+ */
+
 import { Line, Rect, Circle, Path } from 'react-konva';
 import { ElementItem, ElementItems } from 'types/part';
 
