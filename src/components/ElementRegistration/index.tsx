@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+
+import { selectElement, deselectElement } from 'state/app/appSlice';
 
 import ItemList from 'components/ItemList';
 import ElementForm from 'components/ElementForm';
@@ -7,7 +9,9 @@ import Icon from 'components/Icon';
 import DescriptionText from 'components/DescriptionText';
 
 import { Item } from 'components/ItemList/interface';
-import { ElementItem, Elements } from 'types/element';
+
+import { ElementItem, ElementItems } from 'types/part';
+import { App } from 'types/app';
 
 import { colors } from 'styles/global.styles';
 import {
@@ -19,41 +23,45 @@ import {
 } from './style';
 
 const ElementRegistration: React.FC = () => {
+  const dispatch = useDispatch();
+
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements,
+    (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const selectedElementId = useSelector(
+    (state: { app: App }) => state.app.selectedElementId,
+  );
+
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  // convert Item to ItemList format
   const menuItems: Item[] = elements.map((element: ElementItem) => ({
     id: element.id,
     label: element.label,
   }));
 
+  const selectedElement: ElementItem | undefined = selectedElementId
+    ? elements.find((element: ElementItem) => element.id === selectedElementId)
+    : undefined;
+
   const handleSelectItem = (item: Item) => {
-    if (selectedItem?.id === item.id) {
-      setSelectedItem(null);
+    if (selectedElementId === item.id) {
+      dispatch(deselectElement());
       setIsAddingNew(false);
     } else {
-      setSelectedItem(item);
+      dispatch(selectElement(String(item.id)));
       setIsAddingNew(false);
     }
   };
 
   const handleAddClick = () => {
-    setSelectedItem(null);
     setIsAddingNew(true);
   };
 
   const handleCloseForm = () => {
     setIsAddingNew(false);
-    setSelectedItem(null);
+    dispatch(deselectElement());
   };
-
-  const selectedElement = selectedItem
-    ? elements.find((element: ElementItem) => element.id === selectedItem.id)
-    : null;
 
   return (
     <Container>
@@ -70,7 +78,7 @@ const ElementRegistration: React.FC = () => {
           <ItemList
             items={menuItems}
             onSelectItem={handleSelectItem}
-            selectedItemId={selectedItem?.id}
+            selectedItemId={selectedElementId}
           />
         </ItemListContainer>
       </ContentLeft>

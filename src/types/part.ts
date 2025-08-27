@@ -8,6 +8,10 @@ import {
 // Types
 export type ContourType = typeof TYPE_EXTERNAL | typeof TYPE_INTERNAL;
 export type Machining = typeof MACHINING_GRINDING | typeof MACHINING_DRESSING;
+export type CornerType =
+  | { type: 'rounded'; radiusType: 'convex' | 'concave'; radius: number }
+  | { type: 'chamfer'; length: number; angle: number }
+  | { type: 'none' };
 
 // Interfaces
 export interface ActionParamItem {
@@ -65,9 +69,28 @@ export interface GrindingWheelsItem {
 
 export interface GrindingWheels extends Array<GrindingWheelsItem> {}
 
+export interface ElementItem {
+  id: string;
+  label: string;
+  xaxis: number;
+  leftZAxis: number;
+  rightZAxis: number;
+  leftDiameter: number;
+  rightDiameter: number;
+  corners: Corners;
+}
+
+export interface Corners {
+  left: CornerType;
+  right: CornerType;
+}
+
+export interface ElementItems extends Array<ElementItem> {}
+
 export interface Part {
   id: string;
   contours: Contours;
   operations: Operations;
   grindingWheels: GrindingWheels;
+  elements: ElementItems;
 }

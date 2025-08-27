@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
 
 import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
+import { selectElement, deselectElement } from 'state/app/appSlice';
 
 import CartesianGrid from 'components/CartesianGrid';
 import CustomSlider from 'components/CustomSlider';
@@ -10,7 +11,9 @@ import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
 
-import { Elements } from 'types/element';
+import { App } from 'types/app';
+import { ElementItem, ElementItems } from 'types/part';
+
 import { colors } from 'styles/global.styles';
 import {
   ChartContainer,
@@ -22,20 +25,25 @@ import {
   ControlsContainer,
   SButton,
 } from './styles';
-import { shapes, points } from './shapesAndPoints';
+import { points } from './shapesAndPoints';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC = () => {
+  const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
+
   const elements = useSelector(
-    (state: { elements: Elements }) => state.elements,
+    (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
+  const selectedElementId = useSelector(
+    (state: { app: App }) => state.app.selectedElementId,
+  );
+
   const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
 
@@ -119,7 +127,14 @@ const Chart: React.FC = () => {
   };
 
   const handleShapeClick = (id: string) => {
-    setSelectedShape(id);
+    const clickedElement: ElementItem | undefined = elements.find(
+      (element: ElementItem) => element.id === id,
+    );
+
+    if (clickedElement) {
+      if (selectedElementId === id) dispatch(deselectElement());
+      else dispatch(selectElement(id));
+    }
   };
 
   const handleZoomSlider = (idx: number) => {
@@ -215,10 +230,9 @@ const Chart: React.FC = () => {
           <Layer>{cartesianGrid}</Layer>
           <Layer>
             {renderShapesAndPoints({
-              shapes,
               points,
-              elements,
-              selectedShape,
+              elementItems: elements,
+              selectedShape: selectedElementId,
               strokeWidth,
               colors,
               handleShapeClick,

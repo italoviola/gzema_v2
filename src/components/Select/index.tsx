@@ -10,13 +10,14 @@ const SelectComponent: React.FC<SelectComponentProps> = ({
   onChange,
   value,
   disabled = false,
+  className,
 }) => {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     onChange(event);
   };
 
   return (
-    <Container>
+    <Container className={className}>
       {label && <Label>{label}:</Label>}
       <SSelect
         name={name}
