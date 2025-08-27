@@ -37,7 +37,66 @@ import { ElementItem, ElementItems } from 'types/part';
 
 export type Point = { x: number; y: number };
 
-// Helpers geométricos (centralizados)
+// simple cache by element signature
+const ELEMENT_SHAPE_CACHE_MAX = 1000;
+const elementShapeCache = new Map<string, any>();
+const elementShapeCacheOrder: string[] = [];
+
+function cacheGet(key: string) {
+  return elementShapeCache.get(key);
+}
+function cacheSet(key: string, value: any) {
+  if (!elementShapeCache.has(key)) {
+    elementShapeCacheOrder.push(key);
+    if (elementShapeCacheOrder.length > ELEMENT_SHAPE_CACHE_MAX) {
+      const oldest = elementShapeCacheOrder.shift()!;
+      elementShapeCache.delete(oldest);
+    }
+  }
+  elementShapeCache.set(key, value);
+}
+
+function elementSignature(
+  element: ElementItem,
+  defaultColor: string,
+  defaultOpacity: number,
+): string {
+  const left = element.corners?.left
+    ? {
+        type: element.corners.left.type,
+        radius: (element.corners.left as any).radius,
+        radiusType: (element.corners.left as any).radiusType,
+        length: (element.corners.left as any).length,
+        angle: (element.corners.left as any).angle,
+      }
+    : undefined;
+  const right = element.corners?.right
+    ? {
+        type: element.corners.right.type,
+        radius: (element.corners.right as any).radius,
+        radiusType: (element.corners.right as any).radiusType,
+        length: (element.corners.right as any).length,
+        angle: (element.corners.right as any).angle,
+      }
+    : undefined;
+
+  // signature with only fields relevant to the shape
+  const sig = {
+    id: element.id,
+    label: element.label,
+    leftDiameter: element.leftDiameter,
+    rightDiameter: element.rightDiameter,
+    leftZAxis: element.leftZAxis,
+    rightZAxis: element.rightZAxis,
+    xaxis: element.xaxis,
+    corners: { left, right },
+    defaultColor,
+    defaultOpacity,
+  };
+  return JSON.stringify(sig);
+}
+
+// geometric helpers (centralized)
 const EPS = 1e-9;
 const clamp = (v: number, min: number, max: number) =>
   Math.max(min, Math.min(max, v));
@@ -49,7 +108,7 @@ const normalize = (v: Point): Point => {
   return l < EPS ? { x: 0, y: 0 } : { x: v.x / l, y: v.y / l };
 };
 
-// Cálculo genérico de chanfro para um canto (reutilizado)
+// generic chamfer calculation for a corner (reused)
 function computeChamfer(
   curr: Point,
   prev: Point,
@@ -66,27 +125,27 @@ function computeChamfer(
   const u1 = normalize(v1);
   const u2 = normalize(v2);
 
-  // Cantos degenerados (arestas colineares)
+  // degenerate corners (collinear edges)
   const det = cross(u1, u2);
   if (Math.abs(det) < EPS) return { pAlongPrev: curr, pAlongNext: curr };
 
-  // Ângulo interno do canto
+  // corner internal angle
   const cosPhi = clamp(dot(u1, u2), -1, 1);
   const phi = Math.acos(cosPhi);
   if (phi < 1e-6) return { pAlongPrev: curr, pAlongNext: curr };
 
-  // Padronização: medir angle sempre a partir da aresta mais "vertical"
+  // padronize: measure angle always from the most "vertical" edge
   const alpha = clamp(Math.abs(angleDeg) * (Math.PI / 180), EPS, phi - EPS);
 
-  // Descobrir qual vetor é o "vertical"
+  // find vertical vector
   const u1IsVert = Math.abs(u1.x) < Math.abs(u1.y);
 
-  // Razão de avanço em cada aresta para obter a direção do chanfro com ângulo 'alpha' relativo a uVert
+  // Feed rate in each area to obtain the chamfer direction with angle 'alpha' relative to uVert
   // sVert : sHorz = sin(phi - alpha) : sin(alpha)
   const rVert = Math.sin(phi - alpha);
   const rHorz = Math.sin(alpha);
 
-  // Escala k tal que o segmento do chanfro tenha comprimento "length"
+  // Scale k such that the chamfer segment has length "length"
   // |sHorz*uH - sVert*uV|^2 = sHorz^2 + sVert^2 - 2*sHorz*sVert*cos(phi)
   const denomSq = rHorz * rHorz + rVert * rVert - 2 * rHorz * rVert * cosPhi;
   const k = denomSq > EPS ? length / Math.sqrt(denomSq) : 0;
@@ -94,11 +153,11 @@ function computeChamfer(
   const sVert = k * rVert;
   const sHorz = k * rHorz;
 
-  // Mapear de volta para s1 (prev/u1) e s2 (next/u2)
+  // map back to s1 (prev/u1) and s2 (next/u2)
   let s1 = u1IsVert ? sVert : sHorz;
   let s2 = u1IsVert ? sHorz : sVert;
 
-  // Limites para não ultrapassar vértices adjacentes
+  // limits to not exceed adjacent vertices
   const max1 = lenV1 * 0.999;
   const max2 = lenV2 * 0.999;
   const scale = Math.min(1, max1 / s1, max2 / s2);
@@ -132,7 +191,7 @@ export function applyChamferToPolygon(
     angleDeg,
     length,
   );
-  // Se inválido, retorna cópia
+  // if invalid, return copy
   if (
     (pAlongPrev.x === curr.x && pAlongPrev.y === curr.y) ||
     (pAlongNext.x === curr.x && pAlongNext.y === curr.y)
@@ -154,12 +213,17 @@ export function convertElementsToPolygons(
   defaultOpacity: number = 0.9,
 ): any[] {
   return elementItems.map((element: ElementItem) => {
+    // cache by element
+    const cacheKey = elementSignature(element, defaultColor, defaultOpacity);
+    const cached = cacheGet(cacheKey);
+    if (cached) return cached;
+
     const leftHalfHeight = element.leftDiameter / 2;
     const rightHalfHeight = element.rightDiameter / 2;
     const leftX = element.leftZAxis;
     const rightX = element.rightZAxis;
 
-    // Sistema do Path (Y invertido)
+    // path system (inverted Y)
     const TL = { x: leftX, y: -(element.xaxis - leftHalfHeight) };
     const TR = { x: rightX, y: -(element.xaxis - rightHalfHeight) };
     const BR = { x: rightX, y: -(element.xaxis + rightHalfHeight) };
@@ -229,7 +293,7 @@ export function convertElementsToPolygons(
             }
           : null;
 
-      // Cálculos de chanfros (quando existirem)
+      // calculate chamfer (if exists)
       const chamTL = leftChamfer
         ? computeChamfer(TL, BL, TR, leftChamfer.angle, leftChamfer.length)
         : null;
@@ -283,7 +347,7 @@ export function convertElementsToPolygons(
           ? chamBR.pAlongPrev
           : chamBR.pAlongNext);
 
-      // Início e fim da borda superior
+      // start and end of the top border
       const startTop: Point = (() => {
         if (leftCorner.type === 'rounded') return p1;
         if (leftCorner.type === 'chamfer') return tlTop as Point;
@@ -300,7 +364,7 @@ export function convertElementsToPolygons(
 
       let d = `M ${startTop.x} ${startTop.y} L ${endTop.x} ${endTop.y} `;
 
-      // Canto superior direito
+      // right top corner
       if (rightCorner.type === 'rounded' && tr > 0)
         d += `A ${tr} ${tr} 0 0 ${rightRadiusType === 'concave' ? 1 : 0} ${
           p3.x
@@ -308,7 +372,7 @@ export function convertElementsToPolygons(
       else if (rightCorner.type === 'chamfer' && trVert)
         d += `L ${trVert.x} ${trVert.y} `;
 
-      // Borda direita para baixo
+      // right border down
       let rightDown: Point;
       if (rightCorner.type === 'rounded') {
         rightDown = p4;
@@ -319,7 +383,7 @@ export function convertElementsToPolygons(
       }
       d += `L ${rightDown.x} ${rightDown.y} `;
 
-      // Canto inferior direito
+      // right bottom corner
       if (rightCorner.type === 'rounded' && br > 0)
         d += `A ${br} ${br} 0 0 ${rightRadiusType === 'concave' ? 1 : 0} ${
           p5.x
@@ -327,7 +391,7 @@ export function convertElementsToPolygons(
       else if (rightCorner.type === 'chamfer' && brBottom)
         d += `L ${brBottom.x} ${brBottom.y} `;
 
-      // Borda inferior (direita -> esquerda)
+      // right bottom border (right -> left)
       const blBottom =
         chamBL &&
         (nearX(chamBL.pAlongPrev, BL.x) < nearX(chamBL.pAlongNext, BL.x)
@@ -343,7 +407,7 @@ export function convertElementsToPolygons(
       }
       d += `L ${endBottomLeft.x} ${endBottomLeft.y} `;
 
-      // Canto inferior esquerdo
+      // left bottom corner
       if (leftCorner.type === 'rounded' && bl > 0)
         d += `A ${bl} ${bl} 0 0 ${leftRadiusType === 'concave' ? 1 : 0} ${
           p7.x
@@ -351,7 +415,7 @@ export function convertElementsToPolygons(
       else if (leftCorner.type === 'chamfer' && blVert)
         d += `L ${blVert.x} ${blVert.y} `;
 
-      // Borda esquerda (subindo)
+      // left border (up)
       let leftUp: Point;
       if (leftCorner.type === 'rounded') {
         leftUp = p8;
@@ -362,7 +426,7 @@ export function convertElementsToPolygons(
       }
       d += `L ${leftUp.x} ${leftUp.y} `;
 
-      // Canto superior esquerdo e fechamento
+      // left top corner and close path
       if (leftCorner.type === 'rounded' && tl > 0)
         d += `A ${tl} ${tl} 0 0 ${leftRadiusType === 'concave' ? 1 : 0} ${
           p1.x
@@ -371,7 +435,7 @@ export function convertElementsToPolygons(
         d += `L ${tlTop.x} ${tlTop.y} `;
       d += 'Z';
 
-      return {
+      const shape = {
         type: 'path',
         data: d,
         fill: defaultColor,
@@ -379,11 +443,13 @@ export function convertElementsToPolygons(
         id: element.id,
         label: element.label,
       };
+      cacheSet(cacheKey, shape);
+      return shape;
     }
 
-    // Sem tratamentos: polígono simples (reverter Y para o Line)
+    // without treatments: simple polygon (reverse Y for the Line)
     const points = [TL.x, -TL.y, TR.x, -TR.y, BR.x, -BR.y, BL.x, -BL.y];
-    return {
+    const shape = {
       type: 'polygon',
       points,
       fill: defaultColor,
@@ -391,6 +457,8 @@ export function convertElementsToPolygons(
       id: element.id,
       label: element.label,
     };
+    cacheSet(cacheKey, shape);
+    return shape;
   });
 }
 
@@ -455,7 +523,6 @@ export function renderShapesAndPoints({
             />
           );
         }
-        // Removido: 'concaveRoundedRect' (código morto neste fluxo)
         if (shape.type === 'path') {
           return (
             <Path
