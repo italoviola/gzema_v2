@@ -36,6 +36,15 @@ export const PageHead = styled.div`
   margin-bottom: ${measures.gutter};
 `;
 
+export const ChartContainer = styled.div`
+  width: 100%;
+  height: 300px;
+  margin-bottom: ${measures.gutter};
+  border: 1px solid ${colors.greyMedium};
+  border-radius: ${measures.borderRadius};
+  overflow: hidden;
+`;
+
 export const TitleContainer = styled.div`
   display: flex;
   flex-flow: row nowrap;

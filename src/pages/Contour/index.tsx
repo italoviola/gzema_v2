@@ -1,5 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, {
+  ChangeEvent,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -13,6 +19,7 @@ import CodePreview from 'components/CodePreview';
 import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
 import TranslatedToolName from 'components/TranslatedToolName';
+import Chart from 'components/Chart';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
 import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
@@ -59,6 +66,7 @@ import {
   BackBtn,
   BackBtnContent,
   IconBack,
+  ChartContainer,
 } from './style';
 
 const defaultValue: ContourItem = {
@@ -68,6 +76,14 @@ const defaultValue: ContourItem = {
   type: TYPE_EXTERNAL,
   activities: [],
 };
+
+interface ContourPoint {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+}
 
 const Contour: React.FC = () => {
   const dispatch = useDispatch();
@@ -96,6 +112,42 @@ const Contour: React.FC = () => {
     fieldId: string;
     index: number;
   } | null>(null);
+
+  const [contourPoints, setContourPoints] = useState<ContourPoint[]>([]);
+
+  // Função para atualizar os pontos do contorno baseado nos valores X e Z das atividades
+  const updateContourPoints = useCallback(() => {
+    const newPoints: ContourPoint[] = [];
+
+    formData.activities.forEach((activity, activityIndex) => {
+      // Verifica se a atividade tem parâmetros X e Z
+      const hasX = activity.actionParams.some((param) => param.id === 'X');
+      const hasZ = activity.actionParams.some((param) => param.id === 'Z');
+
+      if (hasX && hasZ) {
+        const xValue = (activity as any).adtParamX;
+        const zValue = (activity as any).adtParamZ;
+
+        // Se temos valores válidos para X e Z, criamos um ponto
+        if (
+          xValue &&
+          zValue &&
+          !Number.isNaN(Number(xValue)) &&
+          !Number.isNaN(Number(zValue))
+        ) {
+          newPoints.push({
+            id: `point-${activityIndex}`,
+            x: Number(xValue),
+            y: Number(zValue), // Z é mapeado para Y no gráfico
+            radius: 6,
+            fill: colors.orangeDark,
+          });
+        }
+      }
+    });
+
+    setContourPoints(newPoints);
+  }, [formData.activities]);
 
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
@@ -193,6 +245,11 @@ const Contour: React.FC = () => {
       return newCanNavigatePrev;
     });
   }, [formData.activities]);
+
+  // Atualiza os pontos do contorno sempre que as atividades mudarem
+  useEffect(() => {
+    updateContourPoints();
+  }, [updateContourPoints]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -514,6 +571,9 @@ const Contour: React.FC = () => {
                   </CodePreviewBtn>
                 </TitleContainer>
               </PageHead>
+              <ChartContainer>
+                <Chart points={contourPoints} />
+              </ChartContainer>
               <Block>
                 <TableWrapper>
                   <Table className="table table-ordenation">

@@ -15,6 +15,7 @@ import { App } from 'types/app';
 import { ElementItem, ElementItems } from 'types/part';
 
 import { colors } from 'styles/global.styles';
+import { points as defaultPoints } from './shapesAndPoints';
 import {
   ChartContainer,
   CornerBox,
@@ -25,13 +26,16 @@ import {
   ControlsContainer,
   SButton,
 } from './styles';
-import { points } from './shapesAndPoints';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
-const Chart: React.FC = () => {
+interface ChartProps {
+  points: any[];
+}
+
+const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
