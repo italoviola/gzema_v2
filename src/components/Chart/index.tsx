@@ -6,7 +6,7 @@ import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
 import { selectElement, deselectElement } from 'state/app/appSlice';
 
 import CartesianGrid from 'components/CartesianGrid';
-import CustomSlider from 'components/CustomSlider';
+import VerticalSlider from 'components/VerticalSlider';
 import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
@@ -32,7 +32,7 @@ const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 interface ChartProps {
-  points: any[];
+  points?: any[];
 }
 
 const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
@@ -263,21 +263,23 @@ const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
             +
           </SButton>
         </ControlsContainer>
+        <SliderContainer>
+          <VerticalSlider
+            value={getZoomIndex(zoomLevel)}
+            min={0}
+            max={ZOOM_STEPS.length - 1}
+            step={1}
+            onChange={handleZoomSlider}
+            valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
+          />
+        </SliderContainer>
       </StageContainer>
-      <SliderContainer>
-        <CustomSlider
-          value={getZoomIndex(zoomLevel)}
-          min={0}
-          max={ZOOM_STEPS.length - 1}
-          step={1}
-          label=""
-          height={40}
-          onChange={handleZoomSlider}
-          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
-        />
-      </SliderContainer>
     </ChartContainer>
   );
+};
+
+Chart.defaultProps = {
+  points: defaultPoints,
 };
 
 export default Chart;

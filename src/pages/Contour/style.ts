@@ -37,11 +37,7 @@ export const PageHead = styled.div`
 `;
 
 export const ChartContainer = styled.div`
-  width: 100%;
-  height: 300px;
   margin-bottom: ${measures.gutter};
-  border: 1px solid ${colors.greyMedium};
-  border-radius: ${measures.borderRadius};
   overflow: hidden;
 `;
 
@@ -126,6 +122,7 @@ export const Block = styled(ContentBlock)`
   height: 100%;
   padding: ${measures.gutter} 10px;
   box-sizing: border-box;
+  max-height: calc(100vh - ${measures.contentBelowChartToHeader});
 `;
 
 export const TableWrapper = styled.div``;

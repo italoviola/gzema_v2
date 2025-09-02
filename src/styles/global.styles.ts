@@ -52,6 +52,7 @@ export const gridColors = {
 export const measures = {
   gutter: '15px',
   contentToHeader: '273px',
+  contentBelowChartToHeader: '520px',
   contentBelowSliderToHeader: '180px',
   contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',

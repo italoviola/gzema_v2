@@ -35,6 +35,25 @@ export const StageContainer = styled.div`
   position: relative;
 `;
 
+export const SliderContainer = styled.div`
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 12px 8px;
+  transition: opacity 0.2s ease;
+  opacity: 0.5;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
 export const CrosshairContainer = styled.div`
   position: relative;
 `;
@@ -74,11 +93,6 @@ export const Crosshair = styled.div`
     transform: translateY(-50%);
     opacity: 0.2;
   }
-`;
-
-export const SliderContainer = styled.div`
-  grid-column: 1 / 3;
-  grid-row: 3;
 `;
 
 export const ControlsContainer = styled.div`
