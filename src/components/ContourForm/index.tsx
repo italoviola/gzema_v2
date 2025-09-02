@@ -195,7 +195,7 @@ const ContourForm: React.FC<FormProps> = ({
           <Field>
             <Label>Tipo:</Label>
             {formData.type.error && <Message>{formData.type.message}</Message>}
-            {availableTypes.includes(TYPE_EXTERNAL) && (
+            {(availableTypes || []).includes(TYPE_EXTERNAL) && (
               <RadioButton>
                 <input
                   type="radio"

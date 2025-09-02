@@ -101,7 +101,7 @@ const SideMenu: React.FC = () => {
       return (
         contoursIds.length > 0 &&
         contoursIdsExcluded?.length === contoursIds.length &&
-        contoursIds.every((id) => contoursIdsExcluded.includes(id))
+        (contoursIdsExcluded || []).every((id) => contoursIds.includes(id))
       );
     });
     if (
