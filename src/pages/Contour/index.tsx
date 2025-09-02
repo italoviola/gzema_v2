@@ -95,6 +95,7 @@ const Contour: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isModalEditDressingOpen, setIsModalEditDressingOpen] =
     useState<boolean>(false);
+  const [showChart, setShowChart] = useState<boolean>(true);
   const [formData, setFormData] = useState<ContourItem>({
     ...initialState,
   });
@@ -552,29 +553,41 @@ const Contour: React.FC = () => {
                       <TranslatedToolName name={formData.dressingTool} />
                     </InfoLabel>
                   )}
-                  <CodePreviewBtn>
+                  <CodePreviewBtn
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                  >
                     <StyledIcon
                       className="icon-code"
                       color={colors.white}
                       fontSize="28px"
                     />
-                    <BtnText
-                      onClick={(
-                        e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-                      ) => {
-                        e.preventDefault();
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      Code Preview
+                    <BtnText>Code Preview</BtnText>
+                  </CodePreviewBtn>
+                  <CodePreviewBtn
+                    type="button"
+                    style={{ marginLeft: '8px' }}
+                    onClick={() => setShowChart(!showChart)}
+                  >
+                    <StyledIcon
+                      className={
+                        showChart ? 'icon-visibility_off' : 'icon-visibility'
+                      }
+                      color={colors.white}
+                      fontSize="26px"
+                    />
+                    <BtnText>
+                      {showChart ? 'Ocultar Gráfico' : 'Mostrar Gráfico'}
                     </BtnText>
                   </CodePreviewBtn>
                 </TitleContainer>
               </PageHead>
-              <ChartContainer>
-                <Chart points={contourPoints} />
-              </ChartContainer>
-              <Block>
+              {showChart && (
+                <ChartContainer>
+                  <Chart points={contourPoints} />
+                </ChartContainer>
+              )}
+              <Block showChart={showChart}>
                 <TableWrapper>
                   <Table className="table table-ordenation">
                     <TableHead className="table-ordenation head">

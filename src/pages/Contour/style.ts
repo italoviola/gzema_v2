@@ -116,13 +116,16 @@ export const BtnText = styled.span`
   margin-left: 5px;
 `;
 
-export const Block = styled(ContentBlock)`
+export const Block = styled(ContentBlock)<{ showChart?: boolean }>`
   background-color: ${colors.grey};
   width: 100%;
   height: 100%;
   padding: ${measures.gutter} 10px;
   box-sizing: border-box;
-  max-height: calc(100vh - ${measures.contentBelowChartToHeader});
+  max-height: ${({ showChart = true }) =>
+    showChart
+      ? `calc(100vh - ${measures.contentBelowChartToHeader})`
+      : `calc(100vh - ${measures.contentToHeader})`};
 `;
 
 export const TableWrapper = styled.div``;
