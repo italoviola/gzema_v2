@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import Button from 'components/Button';
-import { colors, rulerColors } from 'styles/global.styles';
+import { colors, measures, rulerColors } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
@@ -16,6 +16,7 @@ export const ChartContainer = styled.div`
   grid-template-rows: 30px 1fr;
   width: 100%;
   height: 100%;
+  margin-bottom: ${measures.gutter};
 `;
 
 export const CornerBox = styled.div`

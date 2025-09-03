@@ -37,7 +37,6 @@ export const PageHead = styled.div`
 `;
 
 export const ChartContainer = styled.div`
-  margin-bottom: ${measures.gutter};
   overflow: hidden;
 `;
 
@@ -110,6 +109,12 @@ export const CodePreviewBtn = styled.button`
   cursor: pointer;
   border-radius: ${measures.borderRadius};
   padding: 0 10px;
+`;
+
+export const ShowChartBtn = styled(CodePreviewBtn)`
+  background-color: ${colors.white};
+  color: ${colors.blue};
+  border: 1px solid ${colors.blue};
 `;
 
 export const BtnText = styled.span`

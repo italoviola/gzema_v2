@@ -67,6 +67,7 @@ import {
   BackBtnContent,
   IconBack,
   ChartContainer,
+  ShowChartBtn,
 } from './style';
 
 const defaultValue: ContourItem = {
@@ -564,22 +565,22 @@ const Contour: React.FC = () => {
                     />
                     <BtnText>Code Preview</BtnText>
                   </CodePreviewBtn>
-                  <CodePreviewBtn
+                  <ShowChartBtn
                     type="button"
                     style={{ marginLeft: '8px' }}
                     onClick={() => setShowChart(!showChart)}
                   >
                     <StyledIcon
                       className={
-                        showChart ? 'icon-visibility_off' : 'icon-visibility'
+                        showChart
+                          ? 'icon-visibility_off'
+                          : 'icon-remove_red_eye'
                       }
-                      color={colors.white}
+                      color={colors.blue}
                       fontSize="26px"
                     />
-                    <BtnText>
-                      {showChart ? 'Ocultar Gráfico' : 'Mostrar Gráfico'}
-                    </BtnText>
-                  </CodePreviewBtn>
+                    <BtnText>Gráfico</BtnText>
+                  </ShowChartBtn>
                 </TitleContainer>
               </PageHead>
               {showChart && (

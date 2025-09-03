@@ -15,7 +15,7 @@ import { App } from 'types/app';
 import { ElementItem, ElementItems } from 'types/part';
 
 import { colors } from 'styles/global.styles';
-import { points as defaultPoints } from './shapesAndPoints';
+import { ChartProps } from './interface';
 import {
   ChartContainer,
   CornerBox,
@@ -31,11 +31,7 @@ const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
-interface ChartProps {
-  points?: any[];
-}
-
-const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
+const Chart: React.FC<ChartProps> = ({ points }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -234,7 +230,7 @@ const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
           <Layer>{cartesianGrid}</Layer>
           <Layer>
             {renderShapesAndPoints({
-              points,
+              points: points || [],
               elementItems: elements,
               selectedShape: selectedElementId,
               strokeWidth,
@@ -276,10 +272,6 @@ const Chart: React.FC<ChartProps> = ({ points = defaultPoints }) => {
       </StageContainer>
     </ChartContainer>
   );
-};
-
-Chart.defaultProps = {
-  points: defaultPoints,
 };
 
 export default Chart;
