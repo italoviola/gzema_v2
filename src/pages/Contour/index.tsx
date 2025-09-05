@@ -115,6 +115,32 @@ const Contour: React.FC = () => {
   } | null>(null);
   const [contourPoints, setContourPoints] = useState<ContourPoint[]>([]);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableSectionElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (selectedRowIndex === null) return;
+
+      const chartElement = chartRef.current;
+      const tableElement = tableRef.current;
+
+      if (
+        chartElement &&
+        tableElement &&
+        !chartElement.contains(event.target as Node) &&
+        !tableElement.contains(event.target as Node)
+      ) {
+        setSelectedRowIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [selectedRowIndex]);
 
   const updateContourPoints = useCallback(() => {
     const newPoints: ContourPoint[] = [];
@@ -605,10 +631,12 @@ const Contour: React.FC = () => {
               </PageHead>
               {showChart && (
                 <ChartContainer>
-                  <Chart
-                    points={contourPoints}
-                    focusedPointId={getFocusedPointId()}
-                  />
+                  <div ref={chartRef}>
+                    <Chart
+                      points={contourPoints}
+                      focusedPointId={getFocusedPointId()}
+                    />
+                  </div>
                 </ChartContainer>
               )}
               <Block showChart={showChart}>
@@ -628,7 +656,7 @@ const Contour: React.FC = () => {
                         <TableH />
                       </tr>
                     </TableHead>
-                    <TableBody>
+                    <TableBody ref={tableRef}>
                       {formData.activities.map((item, index) => (
                         <tr
                           key={item.id}
