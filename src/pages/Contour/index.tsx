@@ -109,15 +109,13 @@ const Contour: React.FC = () => {
   );
   const [canNavigateNext, setCanNavigateNext] = useState<boolean[]>([]);
   const [canNavigatePrev, setCanNavigatePrev] = useState<boolean[]>([]);
-
   const [focusedField, setFocusedField] = useState<{
     fieldId: string;
     index: number;
   } | null>(null);
-
   const [contourPoints, setContourPoints] = useState<ContourPoint[]>([]);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
-  // Função para atualizar os pontos do contorno baseado nos valores X e Z das atividades
   const updateContourPoints = useCallback(() => {
     const newPoints: ContourPoint[] = [];
 
@@ -401,6 +399,8 @@ const Contour: React.FC = () => {
       newCanNavigatePrev.splice(index + 1, 0, false);
       return newCanNavigatePrev;
     });
+
+    setSelectedRowIndex(index + 1);
   };
 
   const handleDelete = (index: number) => () => {
@@ -473,17 +473,23 @@ const Contour: React.FC = () => {
 
   // Determinar qual ponto deve ser destacado com base no campo focado
   const getFocusedPointId = useCallback(() => {
-    if (!focusedField) return undefined;
-
-    // Verificar se o campo focado é X ou Z, que são os que compõem os pontos
-    if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
-      return `point-${focusedField.index}`;
+    // Se houver um campo com foco, usar essa informação
+    if (focusedField) {
+      if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
+        return `point-${focusedField.index}`;
+      }
     }
+
+    // Se não houver campo com foco, mas houver uma linha selecionada, usar o índice da linha
+    if (selectedRowIndex !== null) {
+      return `point-${selectedRowIndex}`;
+    }
+
     return undefined;
-  }, [focusedField]);
+  }, [focusedField, selectedRowIndex]);
 
   const renderField = (
-    item: ActivitiyItem, // ActivitiyItem with additional keys dynamically included in handleChange
+    item: ActivitiyItem,
     param: ActionParamItem,
     fieldName: string,
     index: number,
@@ -499,10 +505,13 @@ const Contour: React.FC = () => {
               className="input is-edit"
               type="text"
               name={fieldName}
-              value={item[fieldName as keyof ActivitiyItem] as string} // as the fields need to be controlled by the dynamic keys of formData, we adjusted the typing to handle them accordingly
+              value={item[fieldName as keyof ActivitiyItem] as string}
               placeholder={param.placeholder}
               onChange={(e) => handleChange(e, index)}
-              onFocus={() => setFocusedField({ fieldId: param.id, index })}
+              onFocus={() => {
+                setFocusedField({ fieldId: param.id, index });
+                setSelectedRowIndex(index);
+              }}
               onBlur={() => setFocusedField(null)}
             />
             {focusedField?.fieldId === param.id &&
@@ -621,7 +630,15 @@ const Contour: React.FC = () => {
                     </TableHead>
                     <TableBody>
                       {formData.activities.map((item, index) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          style={{
+                            backgroundColor:
+                              selectedRowIndex === index
+                                ? `${colors.blueLighter}`
+                                : 'transparent',
+                          }}
+                        >
                           <TableD>
                             <AddBtn
                               type="button"
@@ -639,6 +656,9 @@ const Contour: React.FC = () => {
                               name="actionCode"
                               value={item.actionCode}
                               onChange={(e) => handleChange(e, index)}
+                              onFocus={() => {
+                                setSelectedRowIndex(index);
+                              }}
                             />
                           </TableD>
                           <TableD>
