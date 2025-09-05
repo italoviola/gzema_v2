@@ -471,6 +471,17 @@ const Contour: React.FC = () => {
     }
   }, [isEditingName]);
 
+  // Determinar qual ponto deve ser destacado com base no campo focado
+  const getFocusedPointId = useCallback(() => {
+    if (!focusedField) return undefined;
+
+    // Verificar se o campo focado é X ou Z, que são os que compõem os pontos
+    if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
+      return `point-${focusedField.index}`;
+    }
+    return undefined;
+  }, [focusedField]);
+
   const renderField = (
     item: ActivitiyItem, // ActivitiyItem with additional keys dynamically included in handleChange
     param: ActionParamItem,
@@ -585,7 +596,10 @@ const Contour: React.FC = () => {
               </PageHead>
               {showChart && (
                 <ChartContainer>
-                  <Chart points={contourPoints} />
+                  <Chart
+                    points={contourPoints}
+                    focusedPointId={getFocusedPointId()}
+                  />
                 </ChartContainer>
               )}
               <Block showChart={showChart}>

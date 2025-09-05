@@ -470,6 +470,7 @@ export function renderShapesAndPoints({
   colors,
   handleShapeClick,
   zoomLevel,
+  focusedPointId,
 }: {
   points: any[];
   elementItems: ElementItem[];
@@ -478,6 +479,7 @@ export function renderShapesAndPoints({
   colors: any;
   handleShapeClick: (id: string) => void;
   zoomLevel: number;
+  focusedPointId?: string;
 }) {
   const elementShapes = elementItems
     ? convertElementsToPolygons(elementItems, colors.silver)
@@ -543,18 +545,31 @@ export function renderShapesAndPoints({
         stroke={colors.orangeDark}
         strokeWidth={strokeWidth}
       />
-      {points.map((point) => (
-        <Circle
-          key={point.id}
-          x={point.x}
-          y={-point.y}
-          radius={zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel}
-          fill={point.fill}
-          stroke={strokeOf(point.id)}
-          strokeWidth={strokeWOf(point.id)}
-          onClick={() => handleShapeClick(point.id)}
-        />
-      ))}
+      {points.map((point) => {
+        const isFocused = point.id === focusedPointId;
+
+        return (
+          <Circle
+            key={point.id}
+            x={point.x}
+            y={-point.y}
+            radius={(() => {
+              if (isFocused) {
+                return zoomLevel <= 4
+                  ? point.radius * 0.8
+                  : (point.radius / zoomLevel) * 2.5;
+              }
+              return zoomLevel <= 4
+                ? point.radius / 2
+                : point.radius / zoomLevel;
+            })()}
+            fill={isFocused ? colors.orange : point.fill}
+            stroke={isFocused ? 'blue' : strokeOf(point.id)}
+            strokeWidth={isFocused ? strokeWidth * 3 : strokeWOf(point.id)}
+            onClick={() => handleShapeClick(point.id)}
+          />
+        );
+      })}
     </>
   );
 }

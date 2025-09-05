@@ -31,7 +31,7 @@ const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
-const Chart: React.FC<ChartProps> = ({ points }) => {
+const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -237,6 +237,7 @@ const Chart: React.FC<ChartProps> = ({ points }) => {
               colors,
               handleShapeClick,
               zoomLevel,
+              focusedPointId, // Passar o ID do ponto focado
             })}
           </Layer>
         </Stage>
