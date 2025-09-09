@@ -10,9 +10,10 @@ import VerticalSlider from 'components/VerticalSlider';
 import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
+import { StyledIcon } from 'components/SideMenu/styles';
 
 import { App } from 'types/app';
-import { ElementItem, ElementItems } from 'types/part';
+import { ElementItem, ElementItems, ContourItem } from 'types/part';
 
 import { colors } from 'styles/global.styles';
 import { ChartProps } from './interface';
@@ -25,6 +26,7 @@ import {
   Crosshair,
   ControlsContainer,
   SButton,
+  ViewPointsButton,
 } from './styles';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
@@ -38,34 +40,64 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
   const elements = useSelector(
     (state: { part: { elements: ElementItems } }) => state.part.elements,
   );
+  const contours = useSelector(
+    (state: { part: { contours: ContourItem[] } }) => state.part.contours,
+  );
   const selectedElementId = useSelector(
     (state: { app: App }) => state.app.selectedElementId,
   );
 
-  const [stageSize] = useState({ width: 872, height: 200 }); // width: 902 - 30 (ruler width), height: 484 - 40 (slider height) - 30 (ruler height)
+  const [stageSize] = useState({ width: 872, height: 200 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
+  const [showAllContourPoints, setShowAllContourPoints] =
+    useState<boolean>(false);
+  const [allContourPoints, setAllContourPoints] = useState<any[]>([]);
 
   const { showExplosion, handleContextMenu } = useExplosionEasterEgg({
-    isEnabled: true, // toogle easter egg, we can define later the condition to enable it
+    isEnabled: true,
   });
 
   const RULER_SIZE = 30;
 
-  // useEffect(() => {
-  //   function updateSize() {
-  //     if (containerRef.current) {
-  //       setStageSize({
-  //         width: containerRef.current.offsetWidth,
-  //         height: containerRef.current.offsetHeight,
-  //       });
-  //     }
-  //   }
-  //   updateSize();
-  //   window.addEventListener('resize', updateSize);
-  //   return () => window.removeEventListener('resize', updateSize);
-  // }, []);
+  // extract all contour points
+  useEffect(() => {
+    if (showAllContourPoints) {
+      const newPoints: any[] = [];
+
+      contours.forEach((contour) => {
+        contour.activities.forEach((activity, activityIndex) => {
+          // check if the activity has X and Z parameters
+          const hasX = activity.actionParams.some((param) => param.id === 'X');
+          const hasZ = activity.actionParams.some((param) => param.id === 'Z');
+
+          if (hasX && hasZ) {
+            const xValue = (activity as any).adtParamX;
+            const zValue = (activity as any).adtParamZ;
+
+            // if we have valid values for X and Z, we create a point
+            if (
+              xValue &&
+              zValue &&
+              !Number.isNaN(Number(xValue)) &&
+              !Number.isNaN(Number(zValue))
+            ) {
+              newPoints.push({
+                id: `point-${contour.id}-${activityIndex}`,
+                x: Number(xValue),
+                y: Number(zValue), // Z is represented on Y axis
+                radius: 6,
+                fill: colors.orangeDark,
+              });
+            }
+          }
+        });
+      });
+
+      setAllContourPoints(newPoints);
+    }
+  }, [contours, showAllContourPoints]);
 
   useEffect(() => {
     if (zoomLevel >= 4096) setStrokeWidth(0.0005);
@@ -188,6 +220,9 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     [zoomLevel, stagePosition, strokeWidth, getFontSize, stageSize],
   );
 
+  // decide which points to render based on the toggle state
+  const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
+
   return (
     <ChartContainer ref={containerRef}>
       <CornerBox />
@@ -210,6 +245,25 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
         />
       </RulerContainer>
       <StageContainer>
+        <ViewPointsButton
+          type="button"
+          onClick={() => setShowAllContourPoints(!showAllContourPoints)}
+          $active={showAllContourPoints}
+          color={colors.blueLight}
+          bgColor={colors.blueLighter}
+          borderColor={colors.blueLight}
+        >
+          <StyledIcon
+            className={
+              showAllContourPoints
+                ? 'icon-remove_red_eye'
+                : 'icon-visibility_off'
+            }
+            color={colors.blueLight}
+            fontSize="18px"
+          />
+        </ViewPointsButton>
+
         <Stage
           width={stageSize.width}
           height={stageSize.height}
@@ -230,14 +284,14 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
           <Layer>{cartesianGrid}</Layer>
           <Layer>
             {renderShapesAndPoints({
-              points: points || [],
+              points: pointsToRender,
               elementItems: elements,
               selectedShape: selectedElementId,
               strokeWidth,
               colors,
               handleShapeClick,
               zoomLevel,
-              focusedPointId, // Passar o ID do ponto focado
+              focusedPointId,
             })}
           </Layer>
         </Stage>

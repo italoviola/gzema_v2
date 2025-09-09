@@ -113,3 +113,17 @@ export const SButton = styled(Button)`
   padding: 0;
   font-size: 22px;
 `;
+
+export const ViewPointsButton = styled(Button)<{ $active: boolean }>`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.8;
+`;

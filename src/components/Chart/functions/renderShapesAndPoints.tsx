@@ -490,6 +490,21 @@ export function renderShapesAndPoints({
   const strokeWOf = (id: string) =>
     selectedShape === id ? strokeWidth * 2 : strokeWidth;
 
+  // group points by contour
+  const contourGroups = new Map<string, any[]>();
+
+  points.forEach((point) => {
+    // extract contour ID from point ID (format: "point-{contourId}-{index}")
+    const idParts = point.id.split('-');
+    if (idParts.length >= 2) {
+      const contourId = idParts[1];
+      if (!contourGroups.has(contourId)) {
+        contourGroups.set(contourId, []);
+      }
+      contourGroups.get(contourId)?.push(point);
+    }
+  });
+
   return (
     <>
       {elementShapes.map((shape) => {
@@ -540,11 +555,22 @@ export function renderShapesAndPoints({
         }
         return null;
       })}
-      <Line
-        points={points.flatMap((p) => [p.x, -p.y])}
-        stroke={colors.orangeDark}
-        strokeWidth={strokeWidth}
-      />
+
+      {Array.from(contourGroups.entries()).map(([contourId, contourPoints]) => (
+        <Line
+          key={`contour-line-${contourId}`}
+          points={contourPoints
+            .sort((a, b) => {
+              const aIndex = parseInt(a.id.split('-')[2], 10) || 0;
+              const bIndex = parseInt(b.id.split('-')[2], 10) || 0;
+              return aIndex - bIndex;
+            })
+            .flatMap((p) => [p.x, -p.y])}
+          stroke={colors.orangeDark}
+          strokeWidth={strokeWidth}
+        />
+      ))}
+
       {points.map((point) => {
         const isFocused = point.id === focusedPointId;
 
