@@ -85,8 +85,8 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
             ) {
               newPoints.push({
                 id: `point-${contour.id}-${activityIndex}`,
-                x: Number(xValue),
-                y: Number(zValue), // Z is represented on Y axis
+                x: Number(zValue), // Z is mapped for X (horizontal)
+                y: Number(xValue), // X is mapped for Y (vertical)
                 radius: 6,
                 fill: colors.orangeDark,
               });

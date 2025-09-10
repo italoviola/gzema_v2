@@ -163,8 +163,8 @@ const Contour: React.FC = () => {
         ) {
           newPoints.push({
             id: `point-${activityIndex}`,
-            x: Number(xValue),
-            y: Number(zValue), // Z é mapeado para Y no gráfico
+            x: Number(zValue), // Z is mapped to X in the chart (horizontal)
+            y: Number(xValue), // X is mapped to Y in the chart (vertical)
             radius: 6,
             fill: colors.orangeDark,
           });
