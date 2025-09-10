@@ -114,7 +114,7 @@ export const SButton = styled(Button)`
   font-size: 22px;
 `;
 
-export const ViewPointsButton = styled(Button)<{ $active: boolean }>`
+export const ViewPointsButton = styled(Button)`
   position: absolute;
   top: 10px;
   left: 10px;
@@ -127,3 +127,38 @@ export const ViewPointsButton = styled(Button)<{ $active: boolean }>`
   cursor: pointer;
   opacity: 0.8;
 `;
+
+export const FullScreenButton = styled(Button)`
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.8;
+`;
+
+export const FullScreenModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const FullScreenHeader = styled.div`
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid ${colors.grey};
+`;
+
+export const FullScreenContent = styled.div``;

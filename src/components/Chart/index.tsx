@@ -9,13 +9,16 @@ import CartesianGrid from 'components/CartesianGrid';
 import VerticalSlider from 'components/VerticalSlider';
 import Ruler from 'components/Ruler';
 import Explosion from 'components/Explosion';
+import Icon from 'components/Icon';
+
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
-import { StyledIcon } from 'components/SideMenu/styles';
+import { CloseButton } from 'components/Modal/style';
 
 import { App } from 'types/app';
 import { ElementItem, ElementItems, ContourItem } from 'types/part';
 
 import { colors } from 'styles/global.styles';
+import { StyledIcon } from 'components/SideMenu/styles';
 import { ChartProps } from './interface';
 import {
   ChartContainer,
@@ -27,6 +30,10 @@ import {
   ControlsContainer,
   SButton,
   ViewPointsButton,
+  FullScreenModal,
+  FullScreenHeader,
+  FullScreenContent,
+  FullScreenButton,
 } from './styles';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
@@ -54,12 +61,23 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
   const [showAllContourPoints, setShowAllContourPoints] =
     useState<boolean>(false);
   const [allContourPoints, setAllContourPoints] = useState<any[]>([]);
+  const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
   const { showExplosion, handleContextMenu } = useExplosionEasterEgg({
     isEnabled: true,
   });
 
   const RULER_SIZE = 30;
+
+  // Função para obter o tamanho do Stage em tela cheia
+  const getFullScreenStageSize = () => {
+    if (typeof window === 'undefined') return { width: 1024, height: 768 };
+
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+  };
 
   // extract all contour points
   useEffect(() => {
@@ -133,11 +151,19 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     const newX = stage.x();
     const newY = stage.y();
 
-    // Defina os limites do plano cartesiano com base nas linhas desenhadas
-    const minX = -1500 * zoomLevel + 1100; // Limite mínimo no eixo X
-    const maxX = 1500 * zoomLevel - 300; // Limite máximo no eixo X
-    const minY = -1500 * zoomLevel + 800; // Limite mínimo no eixo Y
-    const maxY = 1500 * zoomLevel - 300; // Limite máximo no eixo Y
+    // Definir limites com base no modo (tela cheia ou normal)
+    const currentWidth = isFullScreen
+      ? getFullScreenStageSize().width
+      : stageSize.width;
+    const currentHeight = isFullScreen
+      ? getFullScreenStageSize().height
+      : stageSize.height;
+
+    // Limites ajustados conforme o tamanho da tela
+    const minX = -1500 * zoomLevel + currentWidth / 2;
+    const maxX = 1500 * zoomLevel - currentWidth / 2;
+    const minY = -1500 * zoomLevel + currentHeight / 2;
+    const maxY = 1500 * zoomLevel - currentHeight / 2;
 
     // Verifique se a nova posição está dentro dos limites
     if (newX < minX) {
@@ -211,17 +237,63 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
         key={`grid-${zoomLevel < 512 ? 'low' : 'high'}`}
         zoomLevel={zoomLevel}
         stagePosition={stagePosition}
-        stageWidth={stageSize.width}
-        stageHeight={stageSize.height}
+        stageWidth={
+          isFullScreen ? getFullScreenStageSize().width : stageSize.width
+        }
+        stageHeight={
+          isFullScreen ? getFullScreenStageSize().height : stageSize.height
+        }
         strokeWidth={strokeWidth}
         getFontSize={getFontSize}
       />
     ),
-    [zoomLevel, stagePosition, strokeWidth, getFontSize, stageSize],
+    [
+      zoomLevel,
+      stagePosition,
+      strokeWidth,
+      getFontSize,
+      stageSize,
+      isFullScreen,
+    ],
   );
 
   // decide which points to render based on the toggle state
   const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
+
+  // Renderizar o gráfico (usado tanto no modo normal quanto em tela cheia)
+  const renderChart = (width: number, height: number) => (
+    <Stage
+      width={width}
+      height={height}
+      draggable
+      scaleX={zoomLevel}
+      scaleY={zoomLevel}
+      x={stagePosition.x}
+      y={stagePosition.y}
+      offsetX={0}
+      offsetY={0}
+      onDragMove={handleDragMove}
+      onContextMenu={handleContextMenu}
+      style={{
+        border: `1px solid ${colors.greyMedium}`,
+        background: 'white',
+      }}
+    >
+      <Layer>{cartesianGrid}</Layer>
+      <Layer>
+        {renderShapesAndPoints({
+          points: pointsToRender,
+          elementItems: elements,
+          selectedShape: selectedElementId,
+          strokeWidth,
+          colors,
+          handleShapeClick,
+          zoomLevel,
+          focusedPointId,
+        })}
+      </Layer>
+    </Stage>
+  );
 
   return (
     <ChartContainer ref={containerRef}>
@@ -248,7 +320,6 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
         <ViewPointsButton
           type="button"
           onClick={() => setShowAllContourPoints(!showAllContourPoints)}
-          $active={showAllContourPoints}
           color={colors.blueLight}
           bgColor={colors.blueLighter}
           borderColor={colors.blueLight}
@@ -264,37 +335,23 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
           />
         </ViewPointsButton>
 
-        <Stage
-          width={stageSize.width}
-          height={stageSize.height}
-          draggable
-          scaleX={zoomLevel}
-          scaleY={zoomLevel}
-          x={stagePosition.x}
-          y={stagePosition.y}
-          offsetX={0}
-          offsetY={0}
-          onDragMove={handleDragMove}
-          onContextMenu={handleContextMenu}
-          style={{
-            border: `1px solid ${colors.greyMedium}`,
-            background: 'white',
-          }}
+        {/* Botão de tela cheia */}
+        <FullScreenButton
+          type="button"
+          onClick={() => setIsFullScreen(true)}
+          color={colors.blueLight}
+          bgColor={colors.blueLighter}
+          borderColor={colors.blueLight}
         >
-          <Layer>{cartesianGrid}</Layer>
-          <Layer>
-            {renderShapesAndPoints({
-              points: pointsToRender,
-              elementItems: elements,
-              selectedShape: selectedElementId,
-              strokeWidth,
-              colors,
-              handleShapeClick,
-              zoomLevel,
-              focusedPointId,
-            })}
-          </Layer>
-        </Stage>
+          <StyledIcon
+            className="icon-fullscreen"
+            color={colors.blueLight}
+            fontSize="18px"
+          />
+        </FullScreenButton>
+
+        {renderChart(stageSize.width, stageSize.height)}
+
         {showExplosion ? <Explosion /> : <Crosshair />}
         <ControlsContainer>
           <SButton
@@ -325,6 +382,56 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
           />
         </SliderContainer>
       </StageContainer>
+
+      {/* Modal de tela cheia */}
+      {isFullScreen && (
+        <FullScreenModal>
+          <FullScreenHeader>
+            <CloseButton onClick={() => setIsFullScreen(false)}>
+              <Icon
+                className="icon-x"
+                color={colors.greyFont}
+                fontSize="30px"
+              />
+            </CloseButton>
+          </FullScreenHeader>
+          <FullScreenContent>
+            {renderChart(
+              getFullScreenStageSize().width,
+              getFullScreenStageSize().height,
+            )}
+            {showExplosion ? <Explosion /> : <Crosshair />}
+            <ControlsContainer>
+              <SButton
+                onClick={handleZoomOut}
+                color={colors.white}
+                bgColor={colors.blueLight}
+                borderColor={colors.blue}
+              >
+                -
+              </SButton>
+              <SButton
+                onClick={handleZoomIn}
+                color={colors.white}
+                bgColor={colors.blueLight}
+                borderColor={colors.blue}
+              >
+                +
+              </SButton>
+            </ControlsContainer>
+            <SliderContainer>
+              <VerticalSlider
+                value={getZoomIndex(zoomLevel)}
+                min={0}
+                max={ZOOM_STEPS.length - 1}
+                step={1}
+                onChange={handleZoomSlider}
+                valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
+              />
+            </SliderContainer>
+          </FullScreenContent>
+        </FullScreenModal>
+      )}
     </ChartContainer>
   );
 };
