@@ -158,6 +158,9 @@ table {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-enlarge2:before {
+  content: '\e98b';
+}
 .icon-floppy-disk:before {
   content: '\e962';
 }

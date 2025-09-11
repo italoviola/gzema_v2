@@ -114,31 +114,23 @@ export const SButton = styled(Button)`
   font-size: 22px;
 `;
 
-export const ViewPointsButton = styled(Button)`
+export const TopLeftControls = styled.div`
   position: absolute;
   top: 10px;
   left: 10px;
-  z-index: 10;
-  width: 32px;
-  height: 32px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.8;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
 `;
 
-export const FullScreenButton = styled(Button)`
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  z-index: 10;
-  width: 32px;
-  height: 32px;
+export const TopLeftControlsBtn = styled(Button)`
+  box-sizing: border-box;
+  width: 35px;
+  height: 35px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   opacity: 0.8;
 `;
 

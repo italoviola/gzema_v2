@@ -29,11 +29,11 @@ import {
   Crosshair,
   ControlsContainer,
   SButton,
-  ViewPointsButton,
   FullScreenModal,
   FullScreenHeader,
   FullScreenContent,
-  FullScreenButton,
+  TopLeftControls,
+  TopLeftControlsBtn,
 } from './styles';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
@@ -317,38 +317,38 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
         />
       </RulerContainer>
       <StageContainer>
-        <ViewPointsButton
-          type="button"
-          onClick={() => setShowAllContourPoints(!showAllContourPoints)}
-          color={colors.blueLight}
-          bgColor={colors.blueLighter}
-          borderColor={colors.blueLight}
-        >
-          <StyledIcon
-            className={
-              showAllContourPoints
-                ? 'icon-remove_red_eye'
-                : 'icon-visibility_off'
-            }
+        <TopLeftControls>
+          <TopLeftControlsBtn
+            type="button"
+            onClick={() => setIsFullScreen(true)}
             color={colors.blueLight}
-            fontSize="18px"
-          />
-        </ViewPointsButton>
-
-        {/* Botão de tela cheia */}
-        <FullScreenButton
-          type="button"
-          onClick={() => setIsFullScreen(true)}
-          color={colors.blueLight}
-          bgColor={colors.blueLighter}
-          borderColor={colors.blueLight}
-        >
-          <StyledIcon
-            className="icon-fullscreen"
+            bgColor={colors.blueLighter}
+            borderColor={colors.blueLight}
+          >
+            <StyledIcon
+              className="icon-enlarge2"
+              color={colors.blueLight}
+              fontSize="18px"
+            />
+          </TopLeftControlsBtn>
+          <TopLeftControlsBtn
+            type="button"
+            onClick={() => setShowAllContourPoints(!showAllContourPoints)}
             color={colors.blueLight}
-            fontSize="18px"
-          />
-        </FullScreenButton>
+            bgColor={colors.blueLighter}
+            borderColor={colors.blueLight}
+          >
+            <StyledIcon
+              className={
+                showAllContourPoints
+                  ? 'icon-remove_red_eye'
+                  : 'icon-visibility_off'
+              }
+              color={colors.blueLight}
+              fontSize="18px"
+            />
+          </TopLeftControlsBtn>
+        </TopLeftControls>
 
         {renderChart(stageSize.width, stageSize.height)}
 
