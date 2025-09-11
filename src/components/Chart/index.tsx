@@ -260,39 +260,114 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
   // decide which points to render based on the toggle state
   const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
 
-  // Renderizar o gráfico (usado tanto no modo normal quanto em tela cheia)
-  const renderChart = (width: number, height: number) => (
-    <Stage
-      width={width}
-      height={height}
-      draggable
-      scaleX={zoomLevel}
-      scaleY={zoomLevel}
-      x={stagePosition.x}
-      y={stagePosition.y}
-      offsetX={0}
-      offsetY={0}
-      onDragMove={handleDragMove}
-      onContextMenu={handleContextMenu}
-      style={{
-        border: `1px solid ${colors.greyMedium}`,
-        background: 'white',
-      }}
-    >
-      <Layer>{cartesianGrid}</Layer>
-      <Layer>
-        {renderShapesAndPoints({
-          points: pointsToRender,
-          elementItems: elements,
-          selectedShape: selectedElementId,
-          strokeWidth,
-          colors,
-          handleShapeClick,
-          zoomLevel,
-          focusedPointId,
-        })}
-      </Layer>
-    </Stage>
+  // Função para renderizar os controles (zoom e slider)
+  const renderControls = () => (
+    <>
+      <ControlsContainer>
+        <SButton
+          onClick={handleZoomOut}
+          color={colors.white}
+          bgColor={colors.blueLight}
+          borderColor={colors.blue}
+        >
+          -
+        </SButton>
+        <SButton
+          onClick={handleZoomIn}
+          color={colors.white}
+          bgColor={colors.blueLight}
+          borderColor={colors.blue}
+        >
+          +
+        </SButton>
+      </ControlsContainer>
+      <SliderContainer>
+        <VerticalSlider
+          value={getZoomIndex(zoomLevel)}
+          min={0}
+          max={ZOOM_STEPS.length - 1}
+          step={1}
+          onChange={handleZoomSlider}
+          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
+        />
+      </SliderContainer>
+    </>
+  );
+
+  // Função para renderizar os botões do canto superior esquerdo
+  const renderTopLeftControls = () => (
+    <TopLeftControls isFullScreen={isFullScreen}>
+      {!isFullScreen && (
+        <TopLeftControlsBtn
+          type="button"
+          onClick={() => setIsFullScreen(true)}
+          color={colors.blueLight}
+          bgColor={colors.blueLighter}
+          borderColor={colors.blueLight}
+        >
+          <StyledIcon
+            className="icon-enlarge2"
+            color={colors.blueLight}
+            fontSize="18px"
+          />
+        </TopLeftControlsBtn>
+      )}
+      <TopLeftControlsBtn
+        type="button"
+        onClick={() => setShowAllContourPoints(!showAllContourPoints)}
+        color={colors.blueLight}
+        bgColor={colors.blueLighter}
+        borderColor={colors.blueLight}
+      >
+        <StyledIcon
+          className={
+            showAllContourPoints ? 'icon-remove_red_eye' : 'icon-visibility_off'
+          }
+          color={colors.blueLight}
+          fontSize="18px"
+        />
+      </TopLeftControlsBtn>
+    </TopLeftControls>
+  );
+
+  // Função principal para renderizar o gráfico com controles
+  const renderChartWithControls = (width: number, height: number) => (
+    <>
+      {renderTopLeftControls()}
+      <Stage
+        width={width}
+        height={height}
+        draggable
+        scaleX={zoomLevel}
+        scaleY={zoomLevel}
+        x={stagePosition.x}
+        y={stagePosition.y}
+        offsetX={0}
+        offsetY={0}
+        onDragMove={handleDragMove}
+        onContextMenu={handleContextMenu}
+        style={{
+          border: `1px solid ${colors.greyMedium}`,
+          background: 'white',
+        }}
+      >
+        <Layer>{cartesianGrid}</Layer>
+        <Layer>
+          {renderShapesAndPoints({
+            points: pointsToRender,
+            elementItems: elements,
+            selectedShape: selectedElementId,
+            strokeWidth,
+            colors,
+            handleShapeClick,
+            zoomLevel,
+            focusedPointId,
+          })}
+        </Layer>
+      </Stage>
+      {showExplosion ? <Explosion /> : <Crosshair />}
+      {renderControls()}
+    </>
   );
 
   return (
@@ -317,70 +392,7 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
         />
       </RulerContainer>
       <StageContainer>
-        <TopLeftControls>
-          <TopLeftControlsBtn
-            type="button"
-            onClick={() => setIsFullScreen(true)}
-            color={colors.blueLight}
-            bgColor={colors.blueLighter}
-            borderColor={colors.blueLight}
-          >
-            <StyledIcon
-              className="icon-enlarge2"
-              color={colors.blueLight}
-              fontSize="18px"
-            />
-          </TopLeftControlsBtn>
-          <TopLeftControlsBtn
-            type="button"
-            onClick={() => setShowAllContourPoints(!showAllContourPoints)}
-            color={colors.blueLight}
-            bgColor={colors.blueLighter}
-            borderColor={colors.blueLight}
-          >
-            <StyledIcon
-              className={
-                showAllContourPoints
-                  ? 'icon-remove_red_eye'
-                  : 'icon-visibility_off'
-              }
-              color={colors.blueLight}
-              fontSize="18px"
-            />
-          </TopLeftControlsBtn>
-        </TopLeftControls>
-
-        {renderChart(stageSize.width, stageSize.height)}
-
-        {showExplosion ? <Explosion /> : <Crosshair />}
-        <ControlsContainer>
-          <SButton
-            onClick={handleZoomOut}
-            color={colors.white}
-            bgColor={colors.blueLight}
-            borderColor={colors.blue}
-          >
-            -
-          </SButton>
-          <SButton
-            onClick={handleZoomIn}
-            color={colors.white}
-            bgColor={colors.blueLight}
-            borderColor={colors.blue}
-          >
-            +
-          </SButton>
-        </ControlsContainer>
-        <SliderContainer>
-          <VerticalSlider
-            value={getZoomIndex(zoomLevel)}
-            min={0}
-            max={ZOOM_STEPS.length - 1}
-            step={1}
-            onChange={handleZoomSlider}
-            valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
-          />
-        </SliderContainer>
+        {renderChartWithControls(stageSize.width, stageSize.height)}
       </StageContainer>
 
       {/* Modal de tela cheia */}
@@ -396,39 +408,10 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
             </CloseButton>
           </FullScreenHeader>
           <FullScreenContent>
-            {renderChart(
+            {renderChartWithControls(
               getFullScreenStageSize().width,
               getFullScreenStageSize().height,
             )}
-            {showExplosion ? <Explosion /> : <Crosshair />}
-            <ControlsContainer>
-              <SButton
-                onClick={handleZoomOut}
-                color={colors.white}
-                bgColor={colors.blueLight}
-                borderColor={colors.blue}
-              >
-                -
-              </SButton>
-              <SButton
-                onClick={handleZoomIn}
-                color={colors.white}
-                bgColor={colors.blueLight}
-                borderColor={colors.blue}
-              >
-                +
-              </SButton>
-            </ControlsContainer>
-            <SliderContainer>
-              <VerticalSlider
-                value={getZoomIndex(zoomLevel)}
-                min={0}
-                max={ZOOM_STEPS.length - 1}
-                step={1}
-                onChange={handleZoomSlider}
-                valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
-              />
-            </SliderContainer>
           </FullScreenContent>
         </FullScreenModal>
       )}

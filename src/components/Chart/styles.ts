@@ -114,9 +114,9 @@ export const SButton = styled(Button)`
   font-size: 22px;
 `;
 
-export const TopLeftControls = styled.div`
+export const TopLeftControls = styled.div<{ isFullScreen: boolean }>`
   position: absolute;
-  top: 10px;
+  top: ${(props) => (props.isFullScreen ? '60px' : '10px')};
   left: 10px;
   display: flex;
   flex-direction: column;
