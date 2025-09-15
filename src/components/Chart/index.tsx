@@ -69,15 +69,33 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
 
   const RULER_SIZE = 30;
 
-  // Função para obter o tamanho do Stage em tela cheia
   const getFullScreenStageSize = () => {
     if (typeof window === 'undefined') return { width: 1024, height: 768 };
-
-    return {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
+    return { width: window.innerWidth, height: window.innerHeight };
   };
+
+  const [fullScreenSize, setFullScreenSize] = useState(
+    getFullScreenStageSize(),
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (isFullScreen) {
+        setFullScreenSize(getFullScreenStageSize());
+      }
+    };
+    if (isFullScreen) {
+      window.addEventListener('resize', handleResize);
+    }
+    return () => {
+      if (isFullScreen) {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
+  }, [isFullScreen]);
+
+  const fullChartWidth = fullScreenSize.width - RULER_SIZE;
+  const fullChartHeight = fullScreenSize.height - RULER_SIZE;
 
   // extract all contour points
   useEffect(() => {
@@ -296,7 +314,7 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
 
   // Função para renderizar os botões do canto superior esquerdo
   const renderTopLeftControls = () => (
-    <TopLeftControls isFullScreen={isFullScreen}>
+    <TopLeftControls>
       {!isFullScreen && (
         <TopLeftControlsBtn
           type="button"
@@ -330,7 +348,6 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     </TopLeftControls>
   );
 
-  // Função principal para renderizar o gráfico com controles
   const renderChartWithControls = (width: number, height: number) => (
     <>
       {renderTopLeftControls()}
@@ -408,10 +425,28 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
             </CloseButton>
           </FullScreenHeader>
           <FullScreenContent>
-            {renderChartWithControls(
-              getFullScreenStageSize().width,
-              getFullScreenStageSize().height,
-            )}
+            <CornerBox />
+            <RulerContainer style={{ gridColumn: 2, gridRow: 1 }}>
+              <Ruler
+                orientation="horizontal"
+                width={fullChartWidth}
+                height={RULER_SIZE}
+                zoomLevel={zoomLevel}
+                stagePosition={stagePosition}
+              />
+            </RulerContainer>
+            <RulerContainer style={{ gridColumn: 1, gridRow: 2 }}>
+              <Ruler
+                orientation="vertical"
+                width={RULER_SIZE}
+                height={fullChartHeight}
+                zoomLevel={zoomLevel}
+                stagePosition={stagePosition}
+              />
+            </RulerContainer>
+            <StageContainer style={{ gridColumn: 2, gridRow: 2 }}>
+              {renderChartWithControls(fullChartWidth, fullChartHeight)}
+            </StageContainer>
           </FullScreenContent>
         </FullScreenModal>
       )}

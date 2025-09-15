@@ -114,9 +114,9 @@ export const SButton = styled(Button)`
   font-size: 22px;
 `;
 
-export const TopLeftControls = styled.div<{ isFullScreen: boolean }>`
+export const TopLeftControls = styled.div`
   position: absolute;
-  top: ${(props) => (props.isFullScreen ? '60px' : '10px')};
+  top: 10px;
   left: 10px;
   display: flex;
   flex-direction: column;
@@ -153,4 +153,13 @@ export const FullScreenHeader = styled.div`
   border-bottom: 1px solid ${colors.grey};
 `;
 
-export const FullScreenContent = styled.div``;
+export const FullScreenContent = styled.div`
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 50px);
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-template-rows: 30px 1fr;
+  background: #fff;
+  overflow: hidden;
+`;
