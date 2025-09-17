@@ -169,31 +169,32 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     const newX = stage.x();
     const newY = stage.y();
 
-    // Definir limites com base no modo (tela cheia ou normal)
-    const currentWidth = isFullScreen
-      ? getFullScreenStageSize().width
-      : stageSize.width;
+    // Definir o tamanho da viewport
+    const currentWidth = isFullScreen ? fullScreenSize.width : stageSize.width;
     const currentHeight = isFullScreen
-      ? getFullScreenStageSize().height
+      ? fullScreenSize.height
       : stageSize.height;
 
-    // Limites ajustados conforme o tamanho da tela
-    const minX = -1500 * zoomLevel + currentWidth / 2;
-    const maxX = 1500 * zoomLevel - currentWidth / 2;
-    const minY = -1500 * zoomLevel + currentHeight / 2;
-    const maxY = 1500 * zoomLevel - currentHeight / 2;
+    // Definir limites do mundo
+    const worldLimit = 1500;
 
-    // Verifique se a nova posição está dentro dos limites
-    if (newX < minX) {
-      stage.x(minX);
-    } else if (newX > maxX) {
-      stage.x(maxX);
+    // Correção: Invertido o sinal do leftLimit
+    const leftLimit = worldLimit * zoomLevel; // Para ver -1500 na borda esquerda
+    const rightLimit = currentWidth - worldLimit * zoomLevel; // Para ver 1500 na borda direita
+    const topLimit = worldLimit * zoomLevel; // Para ver 1500 na borda superior
+    const bottomLimit = currentHeight - worldLimit * zoomLevel; // Para ver -1500 na borda inferior
+
+    // Aplicar limites de navegação
+    if (newX > leftLimit) {
+      stage.x(leftLimit);
+    } else if (newX < rightLimit) {
+      stage.x(rightLimit);
     }
 
-    if (newY < minY) {
-      stage.y(minY);
-    } else if (newY > maxY) {
-      stage.y(maxY);
+    if (newY > topLimit) {
+      stage.y(topLimit);
+    } else if (newY < bottomLimit) {
+      stage.y(bottomLimit);
     }
 
     setStagePosition({
