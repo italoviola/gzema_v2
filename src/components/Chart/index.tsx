@@ -169,20 +169,22 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     const newX = stage.x();
     const newY = stage.y();
 
-    // Definir o tamanho da viewport
-    const currentWidth = isFullScreen ? fullScreenSize.width : stageSize.width;
+    // Definir o tamanho da viewport - CORRIGIDO
+    const currentWidth = isFullScreen
+      ? fullChartWidth // Usar fullChartWidth ao invés de fullScreenSize.width
+      : stageSize.width;
     const currentHeight = isFullScreen
-      ? fullScreenSize.height
+      ? fullChartHeight // Usar fullChartHeight ao invés de fullScreenSize.height
       : stageSize.height;
 
     // Definir limites do mundo
     const worldLimit = 1500;
 
     // Correção: Invertido o sinal do leftLimit
-    const leftLimit = worldLimit * zoomLevel; // Para ver -1500 na borda esquerda
-    const rightLimit = currentWidth - worldLimit * zoomLevel; // Para ver 1500 na borda direita
-    const topLimit = worldLimit * zoomLevel; // Para ver 1500 na borda superior
-    const bottomLimit = currentHeight - worldLimit * zoomLevel; // Para ver -1500 na borda inferior
+    const leftLimit = worldLimit * zoomLevel;
+    const rightLimit = currentWidth - worldLimit * zoomLevel;
+    const topLimit = worldLimit * zoomLevel;
+    const bottomLimit = currentHeight - worldLimit * zoomLevel;
 
     // Aplicar limites de navegação
     if (newX > leftLimit) {
