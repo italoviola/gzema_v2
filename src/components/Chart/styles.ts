@@ -60,13 +60,9 @@ export const CrosshairContainer = styled.div`
 `;
 
 export const Crosshair = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 12px;
   height: 12px;
-  transform: translate(-50%, -50%);
-  pointer-events: none; /* make sure it doesn't interfere with chart interactions */
+  pointer-events: none;
 
   &::before,
   &::after {
@@ -96,9 +92,9 @@ export const Crosshair = styled.div`
   }
 `;
 
-export const ControlsContainer = styled.div`
+export const ControlsContainer = styled.div<{ isFullScreen?: boolean }>`
   position: absolute;
-  bottom: 16px;
+  bottom: ${({ isFullScreen }) => (isFullScreen ? '66px' : '16px')};
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -162,4 +158,17 @@ export const FullScreenContent = styled.div`
   grid-template-rows: 30px 1fr;
   background: #fff;
   overflow: hidden;
+`;
+
+export const CenteredElement = styled.div<{ isFullScreen?: boolean }>`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Aqui usamos a prop para ajustar o centro */
+  transform: ${({ isFullScreen }) =>
+    isFullScreen
+      ? 'translate(-50%, calc(-50% - 25px))'
+      : 'translate(-50%, -50%)'};
+  pointer-events: none;
+  z-index: 10;
 `;

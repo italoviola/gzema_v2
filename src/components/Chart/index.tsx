@@ -34,6 +34,7 @@ import {
   FullScreenContent,
   TopLeftControls,
   TopLeftControlsBtn,
+  CenteredElement,
 } from './styles';
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
@@ -220,14 +221,18 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     const prevZoom = zoomLevel;
     const newZoom = ZOOM_STEPS[idx];
 
+    // Use as dimensões corretas baseadas no modo atual
+    const currentWidth = isFullScreen ? fullChartWidth : stageSize.width;
+    const currentHeight = isFullScreen ? fullChartHeight : stageSize.height;
+
     const centerScreen = {
-      x: (stageSize.width / 2 - stagePosition.x) / prevZoom,
-      y: (stageSize.height / 2 - stagePosition.y) / prevZoom,
+      x: (currentWidth / 2 - stagePosition.x) / prevZoom,
+      y: (currentHeight / 2 - stagePosition.y) / prevZoom,
     };
 
     const newStagePosition = {
-      x: stageSize.width / 2 - centerScreen.x * newZoom,
-      y: stageSize.height / 2 - centerScreen.y * newZoom,
+      x: currentWidth / 2 - centerScreen.x * newZoom,
+      y: currentHeight / 2 - centerScreen.y * newZoom,
     };
 
     setZoomLevel(newZoom);
@@ -283,36 +288,24 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
 
   // Função para renderizar os controles (zoom e slider)
   const renderControls = () => (
-    <>
-      <ControlsContainer>
-        <SButton
-          onClick={handleZoomOut}
-          color={colors.white}
-          bgColor={colors.blueLight}
-          borderColor={colors.blue}
-        >
-          -
-        </SButton>
-        <SButton
-          onClick={handleZoomIn}
-          color={colors.white}
-          bgColor={colors.blueLight}
-          borderColor={colors.blue}
-        >
-          +
-        </SButton>
-      </ControlsContainer>
-      <SliderContainer>
-        <VerticalSlider
-          value={getZoomIndex(zoomLevel)}
-          min={0}
-          max={ZOOM_STEPS.length - 1}
-          step={1}
-          onChange={handleZoomSlider}
-          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
-        />
-      </SliderContainer>
-    </>
+    <ControlsContainer isFullScreen={isFullScreen}>
+      <SButton
+        onClick={handleZoomOut}
+        color={colors.white}
+        bgColor={colors.blueLight}
+        borderColor={colors.blue}
+      >
+        -
+      </SButton>
+      <SButton
+        onClick={handleZoomIn}
+        color={colors.white}
+        bgColor={colors.blueLight}
+        borderColor={colors.blue}
+      >
+        +
+      </SButton>
+    </ControlsContainer>
   );
 
   // Função para renderizar os botões do canto superior esquerdo
@@ -385,35 +378,60 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
           })}
         </Layer>
       </Stage>
-      {showExplosion ? <Explosion /> : <Crosshair />}
+      {showExplosion ? (
+        <CenteredElement isFullScreen={isFullScreen}>
+          <Explosion />
+        </CenteredElement>
+      ) : (
+        <CenteredElement isFullScreen={isFullScreen}>
+          <Crosshair />
+        </CenteredElement>
+      )}
       {renderControls()}
+      <SliderContainer
+        style={isFullScreen ? { marginTop: '-25px' } : undefined}
+      >
+        <VerticalSlider
+          value={getZoomIndex(zoomLevel)}
+          min={0}
+          max={ZOOM_STEPS.length - 1}
+          step={1}
+          onChange={handleZoomSlider}
+          valueFormatter={(idx) => `${ZOOM_STEPS[idx]}x`}
+        />
+      </SliderContainer>
     </>
   );
 
   return (
     <ChartContainer ref={containerRef}>
-      <CornerBox />
-      <RulerContainer style={{ gridColumn: 2, gridRow: 1 }}>
-        <Ruler
-          orientation="horizontal"
-          width={stageSize.width}
-          height={RULER_SIZE}
-          zoomLevel={zoomLevel}
-          stagePosition={stagePosition}
-        />
-      </RulerContainer>
-      <RulerContainer style={{ gridColumn: 1, gridRow: 2 }}>
-        <Ruler
-          orientation="vertical"
-          width={RULER_SIZE}
-          height={stageSize.height}
-          zoomLevel={zoomLevel}
-          stagePosition={stagePosition}
-        />
-      </RulerContainer>
-      <StageContainer>
-        {renderChartWithControls(stageSize.width, stageSize.height)}
-      </StageContainer>
+      {/* Renderize o conteúdo normal apenas quando NÃO estiver em fullscreen */}
+      {!isFullScreen && (
+        <>
+          <CornerBox />
+          <RulerContainer style={{ gridColumn: 2, gridRow: 1 }}>
+            <Ruler
+              orientation="horizontal"
+              width={stageSize.width}
+              height={RULER_SIZE}
+              zoomLevel={zoomLevel}
+              stagePosition={stagePosition}
+            />
+          </RulerContainer>
+          <RulerContainer style={{ gridColumn: 1, gridRow: 2 }}>
+            <Ruler
+              orientation="vertical"
+              width={RULER_SIZE}
+              height={stageSize.height}
+              zoomLevel={zoomLevel}
+              stagePosition={stagePosition}
+            />
+          </RulerContainer>
+          <StageContainer>
+            {renderChartWithControls(stageSize.width, stageSize.height)}
+          </StageContainer>
+        </>
+      )}
 
       {/* Modal de tela cheia */}
       {isFullScreen && (

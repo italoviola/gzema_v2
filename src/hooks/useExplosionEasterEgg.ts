@@ -1,3 +1,4 @@
+import { KonvaEventObject } from 'konva/lib/Node';
 import { useState, useRef, useEffect } from 'react';
 
 interface UseExplosionEasterEggProps {
