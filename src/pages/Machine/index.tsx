@@ -9,6 +9,7 @@ import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
+import Input from 'components/Input';
 
 import { editApp } from 'state/app/appSlice';
 
@@ -180,34 +181,68 @@ const EditableForm: React.FC = () => {
   const renderField = ({
     label,
     name,
+    type = 'number',
+    inputType = 'select',
     options = [],
+    placeholder = '',
   }: {
     label: string;
     name: string;
+    type?: string;
+    inputType?: 'select' | 'text';
     options?: SelectOptions;
-  }) => (
-    <Field key={name}>
-      <Label>{label}:</Label>
-      <SSelect
-        name={name}
-        options={options}
-        onChange={(selectedOption) => {
-          const value = Number(selectedOption.target.value);
-          setFormState((prevState: FormState) => ({
-            ...prevState,
-            [name]: {
-              ...prevState[name as keyof FormState],
-              value,
-              error: false,
-              message: undefined,
-            } as FieldState,
-          }));
-        }}
-        value={Number(formState[name as keyof FormState].value)}
-        disabled={!isEditing}
-      />
-    </Field>
-  );
+    placeholder?: string;
+  }) => {
+    if (inputType === 'text') {
+      return (
+        <Field key={name}>
+          <Label>{label}:</Label>
+          <Input
+            type={type}
+            name={name}
+            value={formState[name as keyof FormState].value}
+            placeholder={placeholder}
+            onChange={(event) => {
+              setFormState((prevState: FormState) => ({
+                ...prevState,
+                [name]: {
+                  ...prevState[name as keyof FormState],
+                  value: event.target.value,
+                  error: false,
+                  message: undefined,
+                } as FieldState,
+              }));
+            }}
+            disabled={!isEditing}
+          />
+        </Field>
+      );
+    }
+
+    return (
+      <Field key={name}>
+        <Label>{label}:</Label>
+        <SSelect
+          name={name}
+          options={options}
+          onChange={(selectedOption) => {
+            const value = Number(selectedOption.target.value);
+            setFormState((prevState: FormState) => ({
+              ...prevState,
+              [name]: {
+                ...prevState[name as keyof FormState],
+                value,
+                error: false,
+                message: undefined,
+              } as FieldState,
+            }));
+          }}
+          value={Number(formState[name as keyof FormState].value)}
+          disabled={!isEditing}
+        />
+      </Field>
+    );
+  };
 
   return (
     <Container>

@@ -13,6 +13,7 @@ import Icon from 'components/Icon';
 
 import { renderShapesAndPoints } from 'components/Chart/functions/renderShapesAndPoints';
 import { CloseButton } from 'components/Modal/style';
+import { MAX_RECT_LEN_DEFAULT, MAX_RECT_DIAM_DEFAULT } from 'utils/constants';
 
 import { App } from 'types/app';
 import { ElementItem, ElementItems, ContourItem } from 'types/part';
@@ -41,7 +42,12 @@ const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
-const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
+const Chart: React.FC<ChartProps> = ({
+  points,
+  focusedPointId,
+  worldLimitX = MAX_RECT_LEN_DEFAULT,
+  worldLimitY = MAX_RECT_DIAM_DEFAULT,
+}) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -174,18 +180,15 @@ const Chart: React.FC<ChartProps> = ({ points, focusedPointId }) => {
     const currentWidth = isFullScreen ? fullChartWidth : stageSize.width;
     const currentHeight = isFullScreen ? fullChartHeight : stageSize.height;
 
-    // Definir limites do mundo
-    const worldLimit = 2000;
-
-    // Correção: Invertido o sinal do leftLimit
-    const leftLimit = worldLimit * zoomLevel;
-    const rightLimit = currentWidth - worldLimit * zoomLevel;
-    const topLimit = worldLimit * zoomLevel;
+    // Usar os limites separados para X e Y
+    const leftLimit = worldLimitX * zoomLevel;
+    const rightLimit = currentWidth - worldLimitX * zoomLevel;
+    const topLimit = worldLimitY * zoomLevel;
 
     // Ajuste específico para o modo fullscreen - adicionar correção de 50px
     const fullscreenCorrection = isFullScreen ? 50 : 0;
     const bottomLimit =
-      currentHeight - worldLimit * zoomLevel - fullscreenCorrection;
+      currentHeight - worldLimitY * zoomLevel - fullscreenCorrection;
 
     // Aplicar limites de navegação
     if (newX > leftLimit) {

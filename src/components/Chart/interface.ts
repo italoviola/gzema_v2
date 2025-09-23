@@ -1,6 +1,8 @@
 export interface ChartProps {
   points?: Points;
   focusedPointId?: string;
+  worldLimitX?: number;
+  worldLimitY?: number;
 }
 
 export interface Points extends Array<PointItem> {}

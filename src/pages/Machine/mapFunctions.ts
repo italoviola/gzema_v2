@@ -7,6 +7,8 @@ export const mapFormStateToStoredCncData = (
   return {
     notationPattern: Number(fState.notationPattern.value),
     hasBAxis: Number(fState.hasBAxis.value),
+    maxRectifiableLength: String(fState.maxRectifiableLength.value),
+    maxRectifiableDiameter: String(fState.maxRectifiableDiameter.value),
   };
 };
 

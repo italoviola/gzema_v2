@@ -22,7 +22,15 @@ import TranslatedToolName from 'components/TranslatedToolName';
 import Chart from 'components/Chart';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
-import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
+import {
+  MACHINING_GRINDING,
+  TYPE_EXTERNAL,
+  XZ_REGEX,
+  MAX_RECT_LEN_DEFAULT,
+  MAX_RECT_DIAM_DEFAULT,
+} from 'utils/constants';
+import { loadCncData } from 'utils/loadCncData';
+import { StoredCncData } from 'types/api';
 
 import { ActionParamItem, ActivitiyItem, ContourItem, Part } from 'types/part';
 
@@ -117,6 +125,13 @@ const Contour: React.FC = () => {
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableSectionElement>(null);
+  const [machineData, setMachineData] = useState<{
+    maxRectifiableLength: number;
+    maxRectifiableDiameter: number;
+  }>({
+    maxRectifiableLength: MAX_RECT_LEN_DEFAULT,
+    maxRectifiableDiameter: MAX_RECT_DIAM_DEFAULT,
+  });
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -551,6 +566,26 @@ const Contour: React.FC = () => {
     return null;
   };
 
+  // Carregando os dados de máquina do electron store
+  useEffect(() => {
+    async function fetchMachineData() {
+      const cncData: StoredCncData = await loadCncData();
+
+      // Convertendo strings para números e usando valores padrão caso não existam
+      const maxLength =
+        Number(cncData.maxRectifiableLength) || MAX_RECT_LEN_DEFAULT;
+      const maxDiameter =
+        Number(cncData.maxRectifiableDiameter) || MAX_RECT_DIAM_DEFAULT;
+
+      setMachineData({
+        maxRectifiableLength: maxLength,
+        maxRectifiableDiameter: maxDiameter,
+      });
+    }
+
+    fetchMachineData();
+  }, []);
+
   return (
     <Container>
       {formData.activities ? (
@@ -635,6 +670,8 @@ const Contour: React.FC = () => {
                     <Chart
                       points={contourPoints}
                       focusedPointId={getFocusedPointId()}
+                      worldLimitX={machineData.maxRectifiableLength}
+                      worldLimitY={machineData.maxRectifiableDiameter}
                     />
                   </div>
                 </ChartContainer>
