@@ -31,12 +31,12 @@ const Visualization: React.FC = () => {
     setLoaded(true);
   }, []);
 
-  // Carregando os dados de máquina do electron store
+  // load machine data from electron store
   useEffect(() => {
     async function fetchMachineData() {
       const cncData: StoredCncData = await loadCncData();
 
-      // Convertendo strings para números e usando valores padrão caso não existam
+      // converting strings to numbers and use default values if not exist
       const maxLength =
         Number(cncData.maxRectifiableLength) || MAX_RECT_LEN_DEFAULT;
       const maxDiameter =

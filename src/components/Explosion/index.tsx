@@ -17,7 +17,7 @@ const ExplosionContent = styled.div`
   animation: ${scaleUpDown} 0.1s;
 `;
 
-const Explosion: React.FC<> = () => {
+const Explosion: React.FC = () => {
   return <ExplosionContent>💥</ExplosionContent>;
 };
 

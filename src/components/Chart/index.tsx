@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
 
@@ -83,6 +89,53 @@ const Chart: React.FC<ChartProps> = ({
 
   const [fullScreenSize, setFullScreenSize] = useState(
     getFullScreenStageSize(),
+  );
+
+  // obtain the current dimensions of the stage
+  const getCurrentStageDimensions = useCallback(() => {
+    if (isFullScreen) {
+      return {
+        width: fullScreenSize.width - RULER_SIZE,
+        height: fullScreenSize.height - RULER_SIZE,
+      };
+    }
+    return {
+      width: stageSize.width,
+      height: stageSize.height,
+    };
+  }, [isFullScreen, fullScreenSize, stageSize, RULER_SIZE]);
+
+  // calcuate navigation limits
+  const getNavigationLimits = useCallback(
+    (currentZoom: number = zoomLevel) => {
+      const { width: currentWidth, height: currentHeight } =
+        getCurrentStageDimensions();
+
+      const leftLimit = worldLimitX * currentZoom;
+      const rightLimit = currentWidth - worldLimitX * currentZoom;
+      const topLimit = worldLimitY * currentZoom;
+
+      // fullscreen adjust
+      const fullscreenCorrection = isFullScreen ? 50 : 0;
+      const bottomLimit =
+        currentHeight - worldLimitY * currentZoom - fullscreenCorrection;
+
+      return {
+        leftLimit,
+        rightLimit,
+        topLimit,
+        bottomLimit,
+        currentWidth,
+        currentHeight,
+      };
+    },
+    [
+      getCurrentStageDimensions,
+      worldLimitX,
+      worldLimitY,
+      zoomLevel,
+      isFullScreen,
+    ],
   );
 
   useEffect(() => {
@@ -176,21 +229,10 @@ const Chart: React.FC<ChartProps> = ({
     const newX = stage.x();
     const newY = stage.y();
 
-    // Definir o tamanho da viewport
-    const currentWidth = isFullScreen ? fullChartWidth : stageSize.width;
-    const currentHeight = isFullScreen ? fullChartHeight : stageSize.height;
+    const { leftLimit, rightLimit, topLimit, bottomLimit } =
+      getNavigationLimits();
 
-    // Usar os limites separados para X e Y
-    const leftLimit = worldLimitX * zoomLevel;
-    const rightLimit = currentWidth - worldLimitX * zoomLevel;
-    const topLimit = worldLimitY * zoomLevel;
-
-    // Ajuste específico para o modo fullscreen - adicionar correção de 50px
-    const fullscreenCorrection = isFullScreen ? 50 : 0;
-    const bottomLimit =
-      currentHeight - worldLimitY * zoomLevel - fullscreenCorrection;
-
-    // Aplicar limites de navegação
+    // apply navigation limits
     if (newX > leftLimit) {
       stage.x(leftLimit);
     } else if (newX < rightLimit) {
@@ -224,9 +266,8 @@ const Chart: React.FC<ChartProps> = ({
     const prevZoom = zoomLevel;
     const newZoom = ZOOM_STEPS[idx];
 
-    // Use as dimensões corretas baseadas no modo atual
-    const currentWidth = isFullScreen ? fullChartWidth : stageSize.width;
-    const currentHeight = isFullScreen ? fullChartHeight : stageSize.height;
+    // use correct dimensions based on the current mode
+    const { currentWidth, currentHeight } = getNavigationLimits(newZoom);
 
     const centerScreen = {
       x: (currentWidth / 2 - stagePosition.x) / prevZoom,
@@ -289,7 +330,6 @@ const Chart: React.FC<ChartProps> = ({
   // decide which points to render based on the toggle state
   const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
 
-  // Função para renderizar os controles (zoom e slider)
   const renderControls = () => (
     <ControlsContainer isFullScreen={isFullScreen}>
       <SButton
@@ -311,7 +351,6 @@ const Chart: React.FC<ChartProps> = ({
     </ControlsContainer>
   );
 
-  // Função para renderizar os botões do canto superior esquerdo
   const renderTopLeftControls = () => (
     <TopLeftControls>
       {!isFullScreen && (
@@ -408,7 +447,6 @@ const Chart: React.FC<ChartProps> = ({
 
   return (
     <ChartContainer ref={containerRef}>
-      {/* Renderize o conteúdo normal apenas quando NÃO estiver em fullscreen */}
       {!isFullScreen && (
         <>
           <CornerBox />
@@ -436,7 +474,6 @@ const Chart: React.FC<ChartProps> = ({
         </>
       )}
 
-      {/* Modal de tela cheia */}
       {isFullScreen && (
         <FullScreenModal>
           <FullScreenHeader>
