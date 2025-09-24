@@ -36,7 +36,9 @@ export const SInput = styled.input<{
   &:disabled {
     background-color: ${colors.greyMedium};
     border-color: ${colors.greyMedium};
+    color: ${colors.greyFont};
     cursor: not-allowed;
+    opacity: 0.7;
   }
 
   &::placeholder {

@@ -59,6 +59,8 @@ export enum BAxisSpin {
 export interface StoredCncData {
   notationPattern: number;
   hasBAxis: number;
+  maxRectifiableLength: string;
+  maxRectifiableDiameter: string;
 }
 
 export interface DressingQtdVars {

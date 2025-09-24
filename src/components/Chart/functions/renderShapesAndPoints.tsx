@@ -470,6 +470,7 @@ export function renderShapesAndPoints({
   colors,
   handleShapeClick,
   zoomLevel,
+  focusedPointId,
 }: {
   points: any[];
   elementItems: ElementItem[];
@@ -478,6 +479,7 @@ export function renderShapesAndPoints({
   colors: any;
   handleShapeClick: (id: string) => void;
   zoomLevel: number;
+  focusedPointId?: string;
 }) {
   const elementShapes = elementItems
     ? convertElementsToPolygons(elementItems, colors.silver)
@@ -487,6 +489,21 @@ export function renderShapesAndPoints({
     selectedShape === id ? 'blue' : colors.greyFont;
   const strokeWOf = (id: string) =>
     selectedShape === id ? strokeWidth * 2 : strokeWidth;
+
+  // group points by contour
+  const contourGroups = new Map<string, any[]>();
+
+  points.forEach((point) => {
+    // extract contour ID from point ID (format: "point-{contourId}-{index}")
+    const idParts = point.id.split('-');
+    if (idParts.length >= 2) {
+      const contourId = idParts[1];
+      if (!contourGroups.has(contourId)) {
+        contourGroups.set(contourId, []);
+      }
+      contourGroups.get(contourId)?.push(point);
+    }
+  });
 
   return (
     <>
@@ -538,23 +555,47 @@ export function renderShapesAndPoints({
         }
         return null;
       })}
-      <Line
-        points={points.flatMap((p) => [p.x, -p.y])}
-        stroke={colors.orangeDark}
-        strokeWidth={strokeWidth}
-      />
-      {points.map((point) => (
-        <Circle
-          key={point.id}
-          x={point.x}
-          y={-point.y}
-          radius={zoomLevel <= 4 ? point.radius / 2 : point.radius / zoomLevel}
-          fill={point.fill}
-          stroke={strokeOf(point.id)}
-          strokeWidth={strokeWOf(point.id)}
-          onClick={() => handleShapeClick(point.id)}
+
+      {Array.from(contourGroups.entries()).map(([contourId, contourPoints]) => (
+        <Line
+          key={`contour-line-${contourId}`}
+          points={contourPoints
+            .sort((a, b) => {
+              const aIndex = parseInt(a.id.split('-')[2], 10) || 0;
+              const bIndex = parseInt(b.id.split('-')[2], 10) || 0;
+              return aIndex - bIndex;
+            })
+            .flatMap((p) => [p.x, -p.y])}
+          stroke={colors.orangeDark}
+          strokeWidth={strokeWidth}
         />
       ))}
+
+      {points.map((point) => {
+        const isFocused = point.id === focusedPointId;
+
+        return (
+          <Circle
+            key={point.id}
+            x={point.x}
+            y={-point.y}
+            radius={(() => {
+              if (isFocused) {
+                return zoomLevel <= 4
+                  ? point.radius * 0.8
+                  : (point.radius / zoomLevel) * 2.5;
+              }
+              return zoomLevel <= 4
+                ? point.radius / 2
+                : point.radius / zoomLevel;
+            })()}
+            fill={isFocused ? colors.orange : point.fill}
+            stroke={isFocused ? 'blue' : strokeOf(point.id)}
+            strokeWidth={isFocused ? strokeWidth * 3 : strokeWOf(point.id)}
+            onClick={() => handleShapeClick(point.id)}
+          />
+        );
+      })}
     </>
   );
 }

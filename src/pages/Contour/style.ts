@@ -36,6 +36,10 @@ export const PageHead = styled.div`
   margin-bottom: ${measures.gutter};
 `;
 
+export const ChartContainer = styled.div`
+  overflow: hidden;
+`;
+
 export const TitleContainer = styled.div`
   display: flex;
   flex-flow: row nowrap;
@@ -107,16 +111,26 @@ export const CodePreviewBtn = styled.button`
   padding: 0 10px;
 `;
 
+export const ShowChartBtn = styled(CodePreviewBtn)`
+  background-color: ${colors.white};
+  color: ${colors.blue};
+  border: 1px solid ${colors.blue};
+`;
+
 export const BtnText = styled.span`
   margin-left: 5px;
 `;
 
-export const Block = styled(ContentBlock)`
+export const Block = styled(ContentBlock)<{ showChart?: boolean }>`
   background-color: ${colors.grey};
   width: 100%;
   height: 100%;
   padding: ${measures.gutter} 10px;
   box-sizing: border-box;
+  max-height: ${({ showChart = true }) =>
+    showChart
+      ? `calc(100vh - ${measures.contentBelowChartToHeader})`
+      : `calc(100vh - ${measures.contentToHeader})`};
 `;
 
 export const TableWrapper = styled.div``;

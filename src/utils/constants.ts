@@ -5,6 +5,8 @@ export const MACHINING_DRESSING = 2;
 export const NOTATION_ZEMA = 0;
 export const NOTATION_JUNKER = 1;
 export const B_AXIS_NO_SPIN = 0;
+export const MAX_RECT_LEN_DEFAULT = 5000;
+export const MAX_RECT_DIAM_DEFAULT = 500;
 
 export const isElectron = () => {
   // Renderer process

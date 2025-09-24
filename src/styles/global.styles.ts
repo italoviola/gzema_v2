@@ -52,12 +52,13 @@ export const gridColors = {
 export const measures = {
   gutter: '15px',
   contentToHeader: '273px',
+  contentBelowChartToHeader: '520px',
   contentBelowSliderToHeader: '180px',
   contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',
-  registrationFormHeight: '175px',
-  itemListHeight: '202px',
+  registrationFormHeight: '200px',
+  itemListHeight: '227px',
 };
 
 export const fonts = {

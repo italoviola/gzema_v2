@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 import Button from 'components/Button';
 import SelectComponent from 'components/Select';
+import Input from 'components/Input';
 
 import { PageTitle, PageContent, ContentBlock } from 'styles/Components';
 import { colors, measures } from 'styles/global.styles';
@@ -81,6 +82,10 @@ export const BtnText = styled.p`
   margin-left: 5px;
   line-height: 27px;
   font-size: 18px;
+`;
+
+export const SInput = styled(Input)`
+  width: 100%;
 `;
 
 export const ModalContent = styled.div`

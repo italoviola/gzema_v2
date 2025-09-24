@@ -1,5 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, {
+  ChangeEvent,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -13,9 +19,18 @@ import CodePreview from 'components/CodePreview';
 import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
 import TranslatedToolName from 'components/TranslatedToolName';
+import Chart from 'components/Chart';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
-import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
+import {
+  MACHINING_GRINDING,
+  TYPE_EXTERNAL,
+  XZ_REGEX,
+  MAX_RECT_LEN_DEFAULT,
+  MAX_RECT_DIAM_DEFAULT,
+} from 'utils/constants';
+import { loadCncData } from 'utils/loadCncData';
+import { StoredCncData } from 'types/api';
 
 import { ActionParamItem, ActivitiyItem, ContourItem, Part } from 'types/part';
 
@@ -59,6 +74,8 @@ import {
   BackBtn,
   BackBtnContent,
   IconBack,
+  ChartContainer,
+  ShowChartBtn,
 } from './style';
 
 const defaultValue: ContourItem = {
@@ -68,6 +85,14 @@ const defaultValue: ContourItem = {
   type: TYPE_EXTERNAL,
   activities: [],
 };
+
+interface ContourPoint {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+}
 
 const Contour: React.FC = () => {
   const dispatch = useDispatch();
@@ -79,6 +104,7 @@ const Contour: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isModalEditDressingOpen, setIsModalEditDressingOpen] =
     useState<boolean>(false);
+  const [showChart, setShowChart] = useState<boolean>(true);
   const [formData, setFormData] = useState<ContourItem>({
     ...initialState,
   });
@@ -91,11 +117,78 @@ const Contour: React.FC = () => {
   );
   const [canNavigateNext, setCanNavigateNext] = useState<boolean[]>([]);
   const [canNavigatePrev, setCanNavigatePrev] = useState<boolean[]>([]);
-
   const [focusedField, setFocusedField] = useState<{
     fieldId: string;
     index: number;
   } | null>(null);
+  const [contourPoints, setContourPoints] = useState<ContourPoint[]>([]);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableSectionElement>(null);
+  const [machineData, setMachineData] = useState<{
+    maxRectifiableLength: number;
+    maxRectifiableDiameter: number;
+  }>({
+    maxRectifiableLength: MAX_RECT_LEN_DEFAULT,
+    maxRectifiableDiameter: MAX_RECT_DIAM_DEFAULT,
+  });
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (selectedRowIndex === null) return;
+
+      const chartElement = chartRef.current;
+      const tableElement = tableRef.current;
+
+      if (
+        chartElement &&
+        tableElement &&
+        !chartElement.contains(event.target as Node) &&
+        !tableElement.contains(event.target as Node)
+      ) {
+        setSelectedRowIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [selectedRowIndex]);
+
+  const updateContourPoints = useCallback(() => {
+    const newPoints: ContourPoint[] = [];
+
+    formData.activities.forEach((activity, activityIndex) => {
+      // Verifica se a atividade tem parâmetros X e Z
+      const hasX = activity.actionParams.some((param) => param.id === 'X');
+      const hasZ = activity.actionParams.some((param) => param.id === 'Z');
+
+      if (hasX && hasZ) {
+        const xValue = (activity as any).adtParamX;
+        const zValue = (activity as any).adtParamZ;
+
+        // Se temos valores válidos para X e Z, criamos um ponto
+        if (
+          xValue &&
+          zValue &&
+          !Number.isNaN(Number(xValue)) &&
+          !Number.isNaN(Number(zValue))
+        ) {
+          newPoints.push({
+            id: `point-${activityIndex}`,
+            x: Number(zValue), // Z is mapped to X in the chart (horizontal)
+            y: Number(xValue), // X is mapped to Y in the chart (vertical)
+            radius: 6,
+            fill: colors.orangeDark,
+          });
+        }
+      }
+    });
+
+    setContourPoints(newPoints);
+  }, [formData.activities]);
 
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
@@ -193,6 +286,11 @@ const Contour: React.FC = () => {
       return newCanNavigatePrev;
     });
   }, [formData.activities]);
+
+  // Atualiza os pontos do contorno sempre que as atividades mudarem
+  useEffect(() => {
+    updateContourPoints();
+  }, [updateContourPoints]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -342,6 +440,8 @@ const Contour: React.FC = () => {
       newCanNavigatePrev.splice(index + 1, 0, false);
       return newCanNavigatePrev;
     });
+
+    setSelectedRowIndex(index + 1);
   };
 
   const handleDelete = (index: number) => () => {
@@ -412,8 +512,25 @@ const Contour: React.FC = () => {
     }
   }, [isEditingName]);
 
+  // Determinar qual ponto deve ser destacado com base no campo focado
+  const getFocusedPointId = useCallback(() => {
+    // Se houver um campo com foco, usar essa informação
+    if (focusedField) {
+      if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
+        return `point-${focusedField.index}`;
+      }
+    }
+
+    // Se não houver campo com foco, mas houver uma linha selecionada, usar o índice da linha
+    if (selectedRowIndex !== null) {
+      return `point-${selectedRowIndex}`;
+    }
+
+    return undefined;
+  }, [focusedField, selectedRowIndex]);
+
   const renderField = (
-    item: ActivitiyItem, // ActivitiyItem with additional keys dynamically included in handleChange
+    item: ActivitiyItem,
     param: ActionParamItem,
     fieldName: string,
     index: number,
@@ -429,10 +546,13 @@ const Contour: React.FC = () => {
               className="input is-edit"
               type="text"
               name={fieldName}
-              value={item[fieldName as keyof ActivitiyItem] as string} // as the fields need to be controlled by the dynamic keys of formData, we adjusted the typing to handle them accordingly
+              value={item[fieldName as keyof ActivitiyItem] as string}
               placeholder={param.placeholder}
               onChange={(e) => handleChange(e, index)}
-              onFocus={() => setFocusedField({ fieldId: param.id, index })}
+              onFocus={() => {
+                setFocusedField({ fieldId: param.id, index });
+                setSelectedRowIndex(index);
+              }}
               onBlur={() => setFocusedField(null)}
             />
             {focusedField?.fieldId === param.id &&
@@ -445,6 +565,26 @@ const Contour: React.FC = () => {
     }
     return null;
   };
+
+  // Carregando os dados de máquina do electron store
+  useEffect(() => {
+    async function fetchMachineData() {
+      const cncData: StoredCncData = await loadCncData();
+
+      // Convertendo strings para números e usando valores padrão caso não existam
+      const maxLength =
+        Number(cncData.maxRectifiableLength) || MAX_RECT_LEN_DEFAULT;
+      const maxDiameter =
+        Number(cncData.maxRectifiableDiameter) || MAX_RECT_DIAM_DEFAULT;
+
+      setMachineData({
+        maxRectifiableLength: maxLength,
+        maxRectifiableDiameter: maxDiameter,
+      });
+    }
+
+    fetchMachineData();
+  }, []);
 
   return (
     <Container>
@@ -495,26 +635,48 @@ const Contour: React.FC = () => {
                       <TranslatedToolName name={formData.dressingTool} />
                     </InfoLabel>
                   )}
-                  <CodePreviewBtn>
+                  <CodePreviewBtn
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                  >
                     <StyledIcon
                       className="icon-code"
                       color={colors.white}
                       fontSize="28px"
                     />
-                    <BtnText
-                      onClick={(
-                        e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-                      ) => {
-                        e.preventDefault();
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      Code Preview
-                    </BtnText>
+                    <BtnText>Code Preview</BtnText>
                   </CodePreviewBtn>
+                  <ShowChartBtn
+                    type="button"
+                    style={{ marginLeft: '8px' }}
+                    onClick={() => setShowChart(!showChart)}
+                  >
+                    <StyledIcon
+                      className={
+                        showChart
+                          ? 'icon-visibility_off'
+                          : 'icon-remove_red_eye'
+                      }
+                      color={colors.blue}
+                      fontSize="26px"
+                    />
+                    <BtnText>Gráfico</BtnText>
+                  </ShowChartBtn>
                 </TitleContainer>
               </PageHead>
-              <Block>
+              {showChart && (
+                <ChartContainer>
+                  <div ref={chartRef}>
+                    <Chart
+                      points={contourPoints}
+                      focusedPointId={getFocusedPointId()}
+                      worldLimitX={machineData.maxRectifiableLength}
+                      worldLimitY={machineData.maxRectifiableDiameter}
+                    />
+                  </div>
+                </ChartContainer>
+              )}
+              <Block showChart={showChart}>
                 <TableWrapper>
                   <Table className="table table-ordenation">
                     <TableHead className="table-ordenation head">
@@ -531,9 +693,17 @@ const Contour: React.FC = () => {
                         <TableH />
                       </tr>
                     </TableHead>
-                    <TableBody>
+                    <TableBody ref={tableRef}>
                       {formData.activities.map((item, index) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          style={{
+                            backgroundColor:
+                              selectedRowIndex === index
+                                ? `${colors.blueLighter}`
+                                : 'transparent',
+                          }}
+                        >
                           <TableD>
                             <AddBtn
                               type="button"
@@ -551,6 +721,9 @@ const Contour: React.FC = () => {
                               name="actionCode"
                               value={item.actionCode}
                               onChange={(e) => handleChange(e, index)}
+                              onFocus={() => {
+                                setSelectedRowIndex(index);
+                              }}
                             />
                           </TableD>
                           <TableD>
