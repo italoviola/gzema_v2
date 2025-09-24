@@ -4,6 +4,8 @@ import { defaultTools } from 'utils/loadTools';
 import { StoredCncData, Tools } from 'types/api';
 
 import {
+  MAX_RECT_DIAM_DEFAULT,
+  MAX_RECT_LEN_DEFAULT,
   NOTATION_JUNKER,
   NOTATION_ZEMA,
   TYPE_EXTERNAL,

@@ -9,7 +9,6 @@ import Icon from 'components/Icon';
 import Spinner from 'components/Spinner';
 import Modal from 'components/Modal';
 import ConfirmAction from 'components/ConfirmAction';
-import Input from 'components/Input';
 
 import { editApp } from 'state/app/appSlice';
 
@@ -44,6 +43,7 @@ import {
   SSelect,
   ModalContent,
   ModalText,
+  SInput,
 } from './styles';
 
 const breadcrumbsItems = [
@@ -197,12 +197,12 @@ const EditableForm: React.FC = () => {
       return (
         <Field key={name}>
           <Label>{label}:</Label>
-          <Input
+          <SInput
             type={type}
             name={name}
             value={formState[name as keyof FormState].value}
             placeholder={placeholder}
-            onChange={(event) => {
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               setFormState((prevState: FormState) => ({
                 ...prevState,
                 [name]: {
