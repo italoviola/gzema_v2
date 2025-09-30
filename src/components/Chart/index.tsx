@@ -77,8 +77,7 @@ const Chart: React.FC<ChartProps> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
-  const [showAllContourPoints, setShowAllContourPoints] =
-    useState<boolean>(false);
+  const [showContourPoints, setShowContourPoints] = useState<boolean>(true);
   const [allContourPoints, setAllContourPoints] = useState<any[]>([]);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
@@ -178,7 +177,7 @@ const Chart: React.FC<ChartProps> = ({
 
   // extract all contour points
   useEffect(() => {
-    if (showAllContourPoints) {
+    if (showContourPoints) {
       const newPoints: any[] = [];
 
       contours.forEach((contour) => {
@@ -212,7 +211,7 @@ const Chart: React.FC<ChartProps> = ({
 
       setAllContourPoints(newPoints);
     }
-  }, [contours, showAllContourPoints]);
+  }, [contours, showContourPoints]);
 
   useEffect(() => {
     if (zoomLevel >= 4096) setStrokeWidth(0.0005);
@@ -343,7 +342,7 @@ const Chart: React.FC<ChartProps> = ({
   );
 
   // decide which points to render based on the toggle state
-  const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
+  const pointsToRender = showContourPoints ? allContourPoints : points || [];
 
   const renderControls = () => (
     <ControlsContainer isFullScreen={isFullScreen}>
@@ -385,14 +384,16 @@ const Chart: React.FC<ChartProps> = ({
       )}
       <TopLeftControlsBtn
         type="button"
-        onClick={() => setShowAllContourPoints(!showAllContourPoints)}
+        onClick={() => {
+          setShowContourPoints(!showContourPoints);
+        }}
         color={colors.blueLight}
         bgColor={colors.blueLighter}
         borderColor={colors.blueLight}
       >
         <StyledIcon
           className={
-            showAllContourPoints ? 'icon-remove_red_eye' : 'icon-visibility_off'
+            showContourPoints ? 'icon-visibility_off' : 'icon-remove_red_eye'
           }
           color={colors.blueLight}
           fontSize="18px"
@@ -432,6 +433,7 @@ const Chart: React.FC<ChartProps> = ({
             handleShapeClick,
             zoomLevel,
             focusedPointId,
+            showContourPoints,
           })}
         </Layer>
       </Stage>

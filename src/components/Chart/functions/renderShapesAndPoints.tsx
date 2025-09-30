@@ -471,6 +471,7 @@ export function renderShapesAndPoints({
   handleShapeClick,
   zoomLevel,
   focusedPointId,
+  showContourPoints,
 }: {
   points: any[];
   elementItems: ElementItem[];
@@ -480,6 +481,7 @@ export function renderShapesAndPoints({
   handleShapeClick: (id: string) => void;
   zoomLevel: number;
   focusedPointId?: string;
+  showContourPoints?: boolean;
 }) {
   const elementShapes = elementItems
     ? convertElementsToPolygons(elementItems, colors.silver)
@@ -556,46 +558,69 @@ export function renderShapesAndPoints({
         return null;
       })}
 
-      {Array.from(contourGroups.entries()).map(([contourId, contourPoints]) => (
-        <Line
-          key={`contour-line-${contourId}`}
-          points={contourPoints
-            .sort((a, b) => {
-              const aIndex = parseInt(a.id.split('-')[2], 10) || 0;
-              const bIndex = parseInt(b.id.split('-')[2], 10) || 0;
-              return aIndex - bIndex;
-            })
-            .flatMap((p) => [p.x, -p.y])}
-          stroke={colors.orangeDark}
-          strokeWidth={strokeWidth}
-        />
-      ))}
+      {/* Renderizar linhas que conectam pontos somente se os pontos estiverem visíveis */}
+      {showContourPoints &&
+        Array.from(contourGroups.entries()).map(
+          ([contourId, contourPoints]) => (
+            <Line
+              key={`contour-line-${contourId}`}
+              points={contourPoints
+                .sort((a, b) => {
+                  const aIndex = parseInt(a.id.split('-')[2], 10) || 0;
+                  const bIndex = parseInt(b.id.split('-')[2], 10) || 0;
+                  return aIndex - bIndex;
+                })
+                .flatMap((p) => [p.x, -p.y])}
+              stroke={colors.orangeDark}
+              strokeWidth={strokeWidth}
+            />
+          ),
+        )}
 
-      {points.map((point) => {
-        const isFocused = point.id === focusedPointId;
+      {/* Renderize os pontos apenas se showContourPoints for true */}
+      {showContourPoints &&
+        points.map((point) => {
+          // Verifique se o ponto está focado de maneira mais flexível
+          const isFocused = (() => {
+            if (!focusedPointId) return false;
 
-        return (
-          <Circle
-            key={point.id}
-            x={point.x}
-            y={-point.y}
-            radius={(() => {
-              if (isFocused) {
+            // Verificação exata do ID
+            if (point.id === focusedPointId) return true;
+
+            // Verificação alternativa para lidar com diferentes formatos de ID
+            const pointParts = point.id.split('-');
+            const focusParts = focusedPointId.split('-');
+
+            // Se o ID tem o formato point-contourId-index, verifique se o índice corresponde
+            if (pointParts.length === 3 && focusParts.length === 2) {
+              return pointParts[2] === focusParts[1];
+            }
+
+            return false;
+          })();
+
+          return (
+            <Circle
+              key={point.id}
+              x={point.x}
+              y={-point.y}
+              radius={(() => {
+                if (isFocused) {
+                  return zoomLevel <= 4
+                    ? point.radius * 0.8
+                    : (point.radius / zoomLevel) * 2.5;
+                }
                 return zoomLevel <= 4
-                  ? point.radius * 0.8
-                  : (point.radius / zoomLevel) * 2.5;
-              }
-              return zoomLevel <= 4
-                ? point.radius / 2
-                : point.radius / zoomLevel;
-            })()}
-            fill={isFocused ? colors.orange : point.fill}
-            stroke={isFocused ? 'blue' : strokeOf(point.id)}
-            strokeWidth={isFocused ? strokeWidth * 3 : strokeWOf(point.id)}
-            onClick={() => handleShapeClick(point.id)}
-          />
-        );
-      })}
+                  ? point.radius / 2
+                  : point.radius / zoomLevel;
+              })()}
+              fill={isFocused ? colors.orange : point.fill}
+              stroke={isFocused ? 'blue' : strokeOf(point.id)}
+              strokeWidth={isFocused ? strokeWidth * 3 : strokeWOf(point.id)}
+              onClick={() => handleShapeClick(point.id)}
+            />
+          );
+        })}
     </>
   );
 }

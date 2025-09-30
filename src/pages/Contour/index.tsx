@@ -161,7 +161,6 @@ const Contour: React.FC = () => {
     const newPoints: ContourPoint[] = [];
 
     formData.activities.forEach((activity, activityIndex) => {
-      // Verifica se a atividade tem parâmetros X e Z
       const hasX = activity.actionParams.some((param) => param.id === 'X');
       const hasZ = activity.actionParams.some((param) => param.id === 'Z');
 
@@ -169,7 +168,6 @@ const Contour: React.FC = () => {
         const xValue = (activity as any).adtParamX;
         const zValue = (activity as any).adtParamZ;
 
-        // Se temos valores válidos para X e Z, criamos um ponto
         if (
           xValue &&
           zValue &&
@@ -177,9 +175,11 @@ const Contour: React.FC = () => {
           !Number.isNaN(Number(zValue))
         ) {
           newPoints.push({
-            id: `point-${activityIndex}`,
-            x: Number(zValue), // Z is mapped to X in the chart (horizontal)
-            y: Number(xValue), // X is mapped to Y in the chart (vertical)
+            // antes: point-${activityIndex}
+            // agora inclui o id do contorno para permitir agrupar e desenhar a linha
+            id: `point-${formData.id}-${activityIndex}`,
+            x: Number(zValue),
+            y: Number(xValue),
             radius: 6,
             fill: colors.orangeDark,
           });
@@ -188,7 +188,7 @@ const Contour: React.FC = () => {
     });
 
     setContourPoints(newPoints);
-  }, [formData.activities]);
+  }, [formData.activities, formData.id]);
 
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
