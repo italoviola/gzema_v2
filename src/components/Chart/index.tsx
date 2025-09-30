@@ -87,13 +87,13 @@ const Chart: React.FC<ChartProps> = ({
   });
 
   const RULER_SIZE = 30;
-  const HEADER_SIZE = 51; // Altura do header em modo fullscreen
+  const HEADER_SIZE = 51;
 
   const getFullScreenStageSize = () => {
     if (typeof window === 'undefined') return { width: 1024, height: 768 };
     return {
       width: window.innerWidth,
-      height: window.innerHeight - HEADER_SIZE, // Subtrair a altura do header
+      height: window.innerHeight - HEADER_SIZE,
     };
   };
 
@@ -121,8 +121,8 @@ const Chart: React.FC<ChartProps> = ({
       const { width: currentWidth, height: currentHeight } =
         getCurrentStageDimensions();
 
-      // Fórmulas derivadas:
-      // visibleMinX = (-stage.x)/zoom  >= -worldLimitX
+      // formulas:
+      // visibleMinX = (-stage.x)/zoom >= -worldLimitX
       // visibleMaxX = (currentWidth - stage.x)/zoom <=  worldLimitX
       // =>
       // stage.x <=  worldLimitX * zoom
@@ -133,7 +133,7 @@ const Chart: React.FC<ChartProps> = ({
       let minY = currentHeight - worldLimitY * currentZoom;
       let maxY = worldLimitY * currentZoom;
 
-      // Se o Stage for grande demais (intervalo invertido), centraliza.
+      // if stage is too large (inverted interval), center it.
       if (minX > maxX) {
         const cx = (minX + maxX) / 2;
         minX = cx;
@@ -276,7 +276,7 @@ const Chart: React.FC<ChartProps> = ({
 
     const { currentWidth, currentHeight } = getNavigationLimits(newZoom);
 
-    // Mantém o centro visível em coordenadas de mundo
+    // keep center visible in world coordinates
     const centerWorld = {
       x: (currentWidth / 2 - stagePosition.x) / prevZoom,
       y: (currentHeight / 2 - stagePosition.y) / prevZoom,
@@ -287,7 +287,7 @@ const Chart: React.FC<ChartProps> = ({
       y: currentHeight / 2 - centerWorld.y * newZoom,
     };
 
-    // Clamp após calcular nova posição
+    // clamp after calculating new position
     const { minX, maxX, minY, maxY } = getNavigationLimits(newZoom);
     newStagePosition = {
       x: clamp(newStagePosition.x, minX, maxX),
