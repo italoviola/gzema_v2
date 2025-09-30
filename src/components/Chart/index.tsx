@@ -46,6 +46,12 @@ import {
 
 const ZOOM_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
+const clamp = (v: number, min: number, max: number) => {
+  if (v < min) return min;
+  if (v > max) return max;
+  return v;
+};
+
 const getZoomIndex = (zoom: number) => ZOOM_STEPS.indexOf(zoom);
 
 const Chart: React.FC<ChartProps> = ({
@@ -81,10 +87,14 @@ const Chart: React.FC<ChartProps> = ({
   });
 
   const RULER_SIZE = 30;
+  const HEADER_SIZE = 51; // Altura do header em modo fullscreen
 
   const getFullScreenStageSize = () => {
     if (typeof window === 'undefined') return { width: 1024, height: 768 };
-    return { width: window.innerWidth, height: window.innerHeight };
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight - HEADER_SIZE, // Subtrair a altura do header
+    };
   };
 
   const [fullScreenSize, setFullScreenSize] = useState(
@@ -105,37 +115,46 @@ const Chart: React.FC<ChartProps> = ({
     };
   }, [isFullScreen, fullScreenSize, stageSize, RULER_SIZE]);
 
-  // calcuate navigation limits
+  // calcuate navigation limits (corrigido para considerar tamanho do Stage)
   const getNavigationLimits = useCallback(
     (currentZoom: number = zoomLevel) => {
       const { width: currentWidth, height: currentHeight } =
         getCurrentStageDimensions();
 
-      const leftLimit = worldLimitX * currentZoom;
-      const rightLimit = currentWidth - worldLimitX * currentZoom;
-      const topLimit = worldLimitY * currentZoom;
+      // Fórmulas derivadas:
+      // visibleMinX = (-stage.x)/zoom  >= -worldLimitX
+      // visibleMaxX = (currentWidth - stage.x)/zoom <=  worldLimitX
+      // =>
+      // stage.x <=  worldLimitX * zoom
+      // stage.x >=  currentWidth - worldLimitX * zoom
+      let minX = currentWidth - worldLimitX * currentZoom;
+      let maxX = worldLimitX * currentZoom;
 
-      // fullscreen adjust
-      const fullscreenCorrection = isFullScreen ? 50 : 0;
-      const bottomLimit =
-        currentHeight - worldLimitY * currentZoom - fullscreenCorrection;
+      let minY = currentHeight - worldLimitY * currentZoom;
+      let maxY = worldLimitY * currentZoom;
+
+      // Se o Stage for grande demais (intervalo invertido), centraliza.
+      if (minX > maxX) {
+        const cx = (minX + maxX) / 2;
+        minX = cx;
+        maxX = cx;
+      }
+      if (minY > maxY) {
+        const cy = (minY + maxY) / 2;
+        minY = cy;
+        maxY = cy;
+      }
 
       return {
-        leftLimit,
-        rightLimit,
-        topLimit,
-        bottomLimit,
+        minX,
+        maxX,
+        minY,
+        maxY,
         currentWidth,
         currentHeight,
       };
     },
-    [
-      getCurrentStageDimensions,
-      worldLimitX,
-      worldLimitY,
-      zoomLevel,
-      isFullScreen,
-    ],
+    [getCurrentStageDimensions, worldLimitX, worldLimitY, zoomLevel],
   );
 
   useEffect(() => {
@@ -226,29 +245,18 @@ const Chart: React.FC<ChartProps> = ({
 
   const handleDragMove = (e: any) => {
     const stage = e.target;
-    const newX = stage.x();
-    const newY = stage.y();
+    let newX = stage.x();
+    let newY = stage.y();
 
-    const { leftLimit, rightLimit, topLimit, bottomLimit } =
-      getNavigationLimits();
+    const { minX, maxX, minY, maxY } = getNavigationLimits();
 
-    // apply navigation limits
-    if (newX > leftLimit) {
-      stage.x(leftLimit);
-    } else if (newX < rightLimit) {
-      stage.x(rightLimit);
-    }
+    newX = clamp(newX, minX, maxX);
+    newY = clamp(newY, minY, maxY);
 
-    if (newY > topLimit) {
-      stage.y(topLimit);
-    } else if (newY < bottomLimit) {
-      stage.y(bottomLimit);
-    }
+    stage.x(newX);
+    stage.y(newY);
 
-    setStagePosition({
-      x: stage.x(),
-      y: stage.y(),
-    });
+    setStagePosition({ x: newX, y: newY });
   };
 
   const handleShapeClick = (id: string) => {
@@ -266,17 +274,24 @@ const Chart: React.FC<ChartProps> = ({
     const prevZoom = zoomLevel;
     const newZoom = ZOOM_STEPS[idx];
 
-    // use correct dimensions based on the current mode
     const { currentWidth, currentHeight } = getNavigationLimits(newZoom);
 
-    const centerScreen = {
+    // Mantém o centro visível em coordenadas de mundo
+    const centerWorld = {
       x: (currentWidth / 2 - stagePosition.x) / prevZoom,
       y: (currentHeight / 2 - stagePosition.y) / prevZoom,
     };
 
-    const newStagePosition = {
-      x: currentWidth / 2 - centerScreen.x * newZoom,
-      y: currentHeight / 2 - centerScreen.y * newZoom,
+    let newStagePosition = {
+      x: currentWidth / 2 - centerWorld.x * newZoom,
+      y: currentHeight / 2 - centerWorld.y * newZoom,
+    };
+
+    // Clamp após calcular nova posição
+    const { minX, maxX, minY, maxY } = getNavigationLimits(newZoom);
+    newStagePosition = {
+      x: clamp(newStagePosition.x, minX, maxX),
+      y: clamp(newStagePosition.y, minY, maxY),
     };
 
     setZoomLevel(newZoom);
