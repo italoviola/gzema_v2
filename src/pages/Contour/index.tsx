@@ -672,6 +672,7 @@ const Contour: React.FC = () => {
                       focusedPointId={getFocusedPointId()}
                       worldLimitX={machineData.maxRectifiableLength}
                       worldLimitY={machineData.maxRectifiableDiameter}
+                      disableShapeSelection
                     />
                   </div>
                 </ChartContainer>

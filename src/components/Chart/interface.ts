@@ -3,6 +3,7 @@ export interface ChartProps {
   focusedPointId?: string;
   worldLimitX?: number;
   worldLimitY?: number;
+  disableShapeSelection?: boolean;
 }
 
 export interface Points extends Array<PointItem> {}

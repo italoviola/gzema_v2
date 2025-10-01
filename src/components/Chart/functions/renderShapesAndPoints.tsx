@@ -472,6 +472,7 @@ export function renderShapesAndPoints({
   zoomLevel,
   focusedPointId,
   showContourPoints,
+  shapesClickable = true,
 }: {
   points: any[];
   elementItems: ElementItem[];
@@ -482,6 +483,7 @@ export function renderShapesAndPoints({
   zoomLevel: number;
   focusedPointId?: string;
   showContourPoints?: boolean;
+  shapesClickable?: boolean;
 }) {
   const elementShapes = elementItems
     ? convertElementsToPolygons(elementItems, colors.silver)
@@ -538,7 +540,10 @@ export function renderShapesAndPoints({
               strokeWidth={strokeWOf(shape.id)}
               closed
               opacity={shape.opacity}
-              onClick={() => handleShapeClick(shape.id)}
+              onClick={
+                shapesClickable ? () => handleShapeClick(shape.id) : undefined
+              }
+              listening={shapesClickable}
             />
           );
         }
@@ -551,7 +556,10 @@ export function renderShapesAndPoints({
               stroke={strokeOf(shape.id)}
               strokeWidth={strokeWOf(shape.id)}
               opacity={shape.opacity}
-              onClick={() => handleShapeClick(shape.id)}
+              onClick={
+                shapesClickable ? () => handleShapeClick(shape.id) : undefined
+              }
+              listening={shapesClickable}
             />
           );
         }

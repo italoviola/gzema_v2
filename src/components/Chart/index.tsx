@@ -59,6 +59,7 @@ const Chart: React.FC<ChartProps> = ({
   focusedPointId,
   worldLimitX = MAX_RECT_LEN_DEFAULT,
   worldLimitY = MAX_RECT_DIAM_DEFAULT,
+  disableShapeSelection = false,
 }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,13 @@ const Chart: React.FC<ChartProps> = ({
   const selectedElementId = useSelector(
     (state: { app: App }) => state.app.selectedElementId,
   );
+
+  // if disable and something was selected, clear it
+  useEffect(() => {
+    if (disableShapeSelection && selectedElementId) {
+      dispatch(deselectElement());
+    }
+  }, [disableShapeSelection, selectedElementId, dispatch]);
 
   const [stageSize] = useState({ width: 872, height: 200 });
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -259,6 +267,7 @@ const Chart: React.FC<ChartProps> = ({
   };
 
   const handleShapeClick = (id: string) => {
+    if (disableShapeSelection) return;
     const clickedElement: ElementItem | undefined = elements.find(
       (element: ElementItem) => element.id === id,
     );
@@ -427,13 +436,16 @@ const Chart: React.FC<ChartProps> = ({
           {renderShapesAndPoints({
             points: pointsToRender,
             elementItems: elements,
-            selectedShape: selectedElementId,
+            selectedShape: disableShapeSelection
+              ? undefined
+              : selectedElementId,
             strokeWidth,
             colors,
             handleShapeClick,
             zoomLevel,
             focusedPointId,
             showContourPoints,
+            shapesClickable: !disableShapeSelection,
           })}
         </Layer>
       </Stage>
