@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import ReactDOM from 'react-dom';
 
 import { editContour } from 'state/part/partSlice';
 
@@ -20,6 +21,7 @@ import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
 import TranslatedToolName from 'components/TranslatedToolName';
 import Chart from 'components/Chart';
+import Icon from 'components/Icon';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
 import {
@@ -76,6 +78,10 @@ import {
   IconBack,
   ChartContainer,
   ShowChartBtn,
+  RowActionsInline,
+  RepositionWrapper,
+  MenuToggleBtn,
+  RepositionMenuFloating,
 } from './style';
 
 const defaultValue: ContourItem = {
@@ -132,6 +138,18 @@ const Contour: React.FC = () => {
     maxRectifiableLength: MAX_RECT_LEN_DEFAULT,
     maxRectifiableDiameter: MAX_RECT_DIAM_DEFAULT,
   });
+  const [openRepositionMenuIndex, setOpenRepositionMenuIndex] = useState<
+    number | null
+  >(null);
+
+  // Coordenadas do menu flutuante
+  const [repositionMenuPos, setRepositionMenuPos] = useState<{
+    top: number;
+    left: number;
+  }>({ top: 0, left: 0 });
+
+  // Ref para medir altura real do menu
+  const repositionMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -156,6 +174,43 @@ const Contour: React.FC = () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, [selectedRowIndex]);
+
+  // Helper para fechar menu + deselecionar linha
+  const closeRepositionMenu = useCallback(() => {
+    setOpenRepositionMenuIndex(null);
+    setSelectedRowIndex(null);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideMenus = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest('[data-reposition-wrapper]') &&
+        !target.closest('[data-reposition-menu="true"]')
+      ) {
+        if (openRepositionMenuIndex !== null) {
+          closeRepositionMenu();
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (openRepositionMenuIndex !== null) closeRepositionMenu();
+    };
+    const handleResize = () => {
+      if (openRepositionMenuIndex !== null) closeRepositionMenu();
+    };
+
+    document.addEventListener('mousedown', handleOutsideMenus);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideMenus);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [openRepositionMenuIndex, closeRepositionMenu]);
 
   const updateContourPoints = useCallback(() => {
     const newPoints: ContourPoint[] = [];
@@ -476,6 +531,117 @@ const Contour: React.FC = () => {
     }
   };
 
+  const computeMenuPositionSide = (
+    btnEl: HTMLElement,
+    menuHeight?: number,
+  ): { top: number; left: number } => {
+    const rect = btnEl.getBoundingClientRect();
+    const gapX = 6;
+    const estimatedHeight = menuHeight || 34 * 2 + 12; // 2 botões + padding
+    const viewportH = window.innerHeight;
+    let top = rect.top + rect.height / 2 - estimatedHeight / 2; // centraliza vertical
+    const left = rect.right + gapX;
+
+    const margin = 8;
+    if (top < margin) top = margin;
+    if (top + estimatedHeight > viewportH - margin)
+      top = Math.max(margin, viewportH - margin - estimatedHeight);
+
+    return { top, left };
+  };
+
+  const toggleRepositionMenu = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    e.stopPropagation();
+    // Seleciona a linha do botão
+    setSelectedRowIndex(index);
+
+    // Se já está aberto neste índice: fecha e deseleciona
+    if (openRepositionMenuIndex === index) {
+      closeRepositionMenu();
+      return;
+    }
+
+    const btn = e.currentTarget;
+    const pos = computeMenuPositionSide(btn);
+    setRepositionMenuPos(pos);
+    setOpenRepositionMenuIndex(index);
+  };
+
+  // Recalcula posição após render do menu aberto (para usar altura real)
+  useEffect(() => {
+    if (openRepositionMenuIndex !== null && repositionMenuRef.current) {
+      const table = tableRef.current;
+      if (!table) return;
+      const btns = table.querySelectorAll<HTMLButtonElement>(
+        '[data-reposition-wrapper] > button',
+      );
+      const btn = btns[openRepositionMenuIndex];
+      if (btn) {
+        const realHeight = repositionMenuRef.current.offsetHeight;
+        const pos = computeMenuPositionSide(btn, realHeight);
+        setRepositionMenuPos(pos);
+      }
+    }
+  }, [openRepositionMenuIndex, formData.activities]);
+
+  const handleMove = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const total = formData.activities.length;
+    if (targetIndex < 0 || targetIndex >= total) return;
+
+    // Reordena atividades
+    setFormData((prev) => {
+      const activities = [...prev.activities];
+      const temp = activities[index];
+      activities[index] = activities[targetIndex];
+      activities[targetIndex] = temp;
+      const reIdActivities = activities.map((a, i) => ({ ...a, id: i + 1 }));
+      return { ...prev, activities: reIdActivities };
+    });
+
+    // Reordena estruturas auxiliares
+    const swapInPlace = <T,>(arr: T[]) => {
+      const clone = [...arr];
+      [clone[index], clone[targetIndex]] = [clone[targetIndex], clone[index]];
+      return clone;
+    };
+    setVisibleFields((prev) => swapInPlace(prev));
+    setCanNavigateNext((prev) => swapInPlace(prev));
+    setCanNavigatePrev((prev) => swapInPlace(prev));
+
+    // Seleção acompanha SEMPRE a linha movimentada
+    setSelectedRowIndex((prevSel) => {
+      if (prevSel === index) return targetIndex;
+      // Caso a seleção não estivesse na linha, mas o menu aberto indica intenção de mover essa linha,
+      // garantimos que a seleção acompanhe a mesma "entidade" manipulada.
+      if (openRepositionMenuIndex === index) return targetIndex;
+      return prevSel;
+    });
+
+    // Menu acompanha a mesma linha (se estiver aberto nela)
+    setOpenRepositionMenuIndex((prev) => (prev === index ? targetIndex : prev));
+
+    // Reposiciona o menu (apenas se ele estava aberto na linha movida)
+    requestAnimationFrame(() => {
+      if (openRepositionMenuIndex !== index) return;
+      const table = tableRef.current;
+      if (!table) return;
+      const btns = table.querySelectorAll<HTMLButtonElement>(
+        '[data-reposition-wrapper] > button',
+      );
+      const newBtn = btns[targetIndex];
+      if (newBtn) {
+        const pos = computeMenuPositionSide(newBtn);
+        setRepositionMenuPos(pos);
+      }
+    });
+
+    setFocusedField(null);
+  };
+
   const renderTableBlocks = (length: number, vFields: number[]) => {
     const blocks = [];
     const renderCount = Math.max(...vFields) - length;
@@ -706,11 +872,34 @@ const Contour: React.FC = () => {
                           }}
                         >
                           <TableD>
-                            <AddBtn
-                              type="button"
-                              className="icon-add"
-                              onClick={() => handleAdd(index)}
-                            />
+                            <RowActionsInline>
+                              <AddBtn
+                                type="button"
+                                className="icon-add"
+                                onClick={() => handleAdd(index)}
+                                title="Duplicar abaixo"
+                              />
+                              <RepositionWrapper>
+                                <MenuToggleBtn
+                                  type="button"
+                                  $active={openRepositionMenuIndex === index}
+                                  onClick={(e) =>
+                                    toggleRepositionMenu(e, index)
+                                  }
+                                  title="Reordenar"
+                                >
+                                  <Icon
+                                    className={
+                                      openRepositionMenuIndex === index
+                                        ? 'icon-x'
+                                        : 'icon-more_vert'
+                                    }
+                                    color={colors.white}
+                                    fontSize="18px"
+                                  />
+                                </MenuToggleBtn>
+                              </RepositionWrapper>
+                            </RowActionsInline>
                           </TableD>
                           <TableD>
                             <TableIdText>{item.id}</TableIdText>
@@ -734,11 +923,12 @@ const Contour: React.FC = () => {
                             <ScrollBtn
                               type="button"
                               onClick={() => handlePrev(index)}
-                              color={
+                              bgColor={
                                 canNavigatePrev[index]
                                   ? colors.blue
                                   : colors.greyMedium
                               }
+                              color={colors.white}
                             >
                               <RotatedIcon
                                 className="icon-expand_less"
@@ -766,11 +956,12 @@ const Contour: React.FC = () => {
                             <ScrollBtn
                               type="button"
                               onClick={() => handleNext(index)}
-                              color={
+                              bgColor={
                                 canNavigateNext[index]
                                   ? colors.blue
                                   : colors.greyMedium
                               }
+                              color={colors.white}
                             >
                               <RotatedIcon
                                 className="icon-expand_more"
@@ -784,6 +975,7 @@ const Contour: React.FC = () => {
                               type="button"
                               className="icon-delete"
                               onClick={handleDelete(index)}
+                              title="Remover linha"
                             />
                           </TableD>
                         </tr>
@@ -817,6 +1009,65 @@ const Contour: React.FC = () => {
           onButtonClick={() => setIsModalEditDressingOpen(false)}
         />
       </Modal>
+      {ReactDOM.createPortal(
+        <RepositionMenuFloating
+          ref={repositionMenuRef}
+          data-reposition-menu="true"
+          open={openRepositionMenuIndex !== null}
+          top={repositionMenuPos.top}
+          left={repositionMenuPos.left}
+        >
+          <ScrollBtn
+            type="button"
+            onClick={() =>
+              openRepositionMenuIndex !== null &&
+              handleMove(openRepositionMenuIndex, 'up')
+            }
+            disabled={openRepositionMenuIndex === 0}
+            bgColor={
+              openRepositionMenuIndex === 0 ? colors.greyMedium : colors.blue
+            }
+            color={
+              openRepositionMenuIndex === 0 ? colors.greyMedium : colors.blue
+            }
+            title="Mover para cima"
+          >
+            <Icon
+              className="icon-expand_less"
+              color={colors.white}
+              fontSize="18px"
+            />
+          </ScrollBtn>
+          <ScrollBtn
+            type="button"
+            onClick={() =>
+              openRepositionMenuIndex !== null &&
+              handleMove(openRepositionMenuIndex, 'down')
+            }
+            disabled={
+              openRepositionMenuIndex === formData.activities.length - 1
+            }
+            bgColor={
+              openRepositionMenuIndex === formData.activities.length - 1
+                ? colors.greyMedium
+                : colors.blue
+            }
+            color={
+              openRepositionMenuIndex === formData.activities.length - 1
+                ? colors.blue
+                : colors.white
+            }
+            title="Mover para baixo"
+          >
+            <Icon
+              className="icon-expand_more"
+              color={colors.white}
+              fontSize="18px"
+            />
+          </ScrollBtn>
+        </RepositionMenuFloating>,
+        document.body,
+      )}
     </Container>
   );
 };
