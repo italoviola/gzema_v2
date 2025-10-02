@@ -7,6 +7,7 @@ import useAppSaveStatus from 'hooks/useAppSaveStatus';
 
 // Pages
 import WorkGroup from 'pages/WorkGroup';
+import Visualization from 'pages/Visualization';
 import Contour from 'pages/Contour';
 import OffPage from 'pages/OffPage';
 import Machine from 'pages/Machine';
@@ -60,6 +61,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<OffPage />} />
             <Route path="/workgroup" element={<WorkGroup />} />
+            <Route path="/visualization" element={<Visualization />} />
             <Route path="/contour/:id" element={<Contour />} />
             <Route path="/config" element={<Config />} />
             <Route path="/machine" element={<Machine />} />

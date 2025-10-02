@@ -48,9 +48,10 @@ const ContourForm: React.FC<FormProps> = ({
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
   const relatedTools = useRelatedTools();
-  const availableTypes = Array.from(
-    new Set(formattedTools.map((tool: ToolOptionItem) => tool.type)),
-  );
+  const availableTypes =
+    Array.from(
+      new Set(formattedTools.map((tool: ToolOptionItem) => tool.type)),
+    ) || [];
 
   const contours = useSelector(
     (state: { part: { contours: Contours } }) => state.part.contours,

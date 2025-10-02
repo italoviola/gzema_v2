@@ -4,6 +4,8 @@ import { defaultTools } from 'utils/loadTools';
 import { StoredCncData, Tools } from 'types/api';
 
 import {
+  MAX_RECT_DIAM_DEFAULT,
+  MAX_RECT_LEN_DEFAULT,
   NOTATION_JUNKER,
   NOTATION_ZEMA,
   TYPE_EXTERNAL,
@@ -12,6 +14,7 @@ import {
 
 import { FormState, RenderFieldProps } from './interface';
 
+// Initial state and field properties for the machine data form
 export const initialState: FormState = {
   notationPattern: {
     value: defaultData.notationPattern,
@@ -28,6 +31,18 @@ export const initialState: FormState = {
       { label: 'Não', value: 0 },
       { label: 'Sim', value: 1 },
     ],
+    error: false,
+    message: undefined,
+  },
+  maxRectifiableLength: {
+    value: `${MAX_RECT_LEN_DEFAULT}`,
+    inputType: 'text',
+    error: false,
+    message: undefined,
+  },
+  maxRectifiableDiameter: {
+    value: `${MAX_RECT_DIAM_DEFAULT}`,
+    inputType: 'text',
     error: false,
     message: undefined,
   },
@@ -294,6 +309,7 @@ export const fieldsProps: RenderFieldProps = [
     label: 'Padrão de Notação (Zema ou Junker)',
     name: 'notationPattern',
     type: 'number',
+    inputType: 'select',
     options: [
       { label: 'Zema', value: NOTATION_ZEMA },
       { label: 'Junker', value: NOTATION_JUNKER },
@@ -303,10 +319,25 @@ export const fieldsProps: RenderFieldProps = [
     label: 'Possui Eixo B',
     name: 'hasBAxis',
     type: 'number',
+    inputType: 'select',
     options: [
       { label: 'Não', value: 0 },
       { label: 'Sim', value: 1 },
     ],
+  },
+  {
+    label: 'Comprimento Máximo Retificável',
+    name: 'maxRectifiableLength',
+    type: 'text',
+    inputType: 'text',
+    placeholder: 'Ex: 500mm',
+  },
+  {
+    label: 'Diâmetro Máximo Retificável',
+    name: 'maxRectifiableDiameter',
+    type: 'text',
+    inputType: 'text',
+    placeholder: 'Ex: 300mm',
   },
   {
     label: 'Tipo do Rebolo 1',
@@ -579,6 +610,14 @@ export const updateFormState = (
   hasBAxis: {
     ...prevState.hasBAxis,
     value: cncData.hasBAxis,
+  },
+  maxRectifiableLength: {
+    ...prevState.maxRectifiableLength,
+    value: cncData.maxRectifiableLength || '',
+  },
+  maxRectifiableDiameter: {
+    ...prevState.maxRectifiableDiameter,
+    value: cncData.maxRectifiableDiameter || '',
   },
   tool1Var: {
     ...prevState.tool1Var,

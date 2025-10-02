@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { colors, shadows } from 'styles/global.styles';
+import { colors, measures, shadows } from 'styles/global.styles';
 
 export const Container = styled.div<{
   isActive?: boolean;
@@ -121,7 +121,7 @@ export const SubButton = styled.button`
   border: none;
   background-color: ${colors.greyPreMedium};
   color: ${colors.greyFont};
-  padding: 15px 12px;
+  padding: ${measures.gutter} 12px;
   cursor: pointer;
   border-bottom: 1px solid ${colors.greyMedium};
 

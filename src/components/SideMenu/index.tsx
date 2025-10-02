@@ -101,7 +101,7 @@ const SideMenu: React.FC = () => {
       return (
         contoursIds.length > 0 &&
         contoursIdsExcluded?.length === contoursIds.length &&
-        contoursIds.every((id) => contoursIdsExcluded.includes(id))
+        contoursIds.every((id) => (contoursIdsExcluded || []).includes(id))
       );
     });
     if (
@@ -203,7 +203,7 @@ const SideMenu: React.FC = () => {
             </StyledLink>
           </ListItem>
           <ListItem>
-            <StyledLink to="/">
+            <StyledLink to="/visualization">
               <StyledIcon
                 className="icon-remove_red_eye"
                 color={colors.white}

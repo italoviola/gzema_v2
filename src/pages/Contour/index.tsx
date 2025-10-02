@@ -1,7 +1,14 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, {
+  ChangeEvent,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import ReactDOM from 'react-dom';
 
 import { editContour } from 'state/part/partSlice';
 
@@ -13,9 +20,19 @@ import CodePreview from 'components/CodePreview';
 import Tooltip from 'components/Tooltip';
 import InfoLabel from 'components/InfoLabel';
 import TranslatedToolName from 'components/TranslatedToolName';
+import Chart from 'components/Chart';
+import Icon from 'components/Icon';
 
 import { actionParams as actionParamsAux } from 'integration/functions-code';
-import { MACHINING_GRINDING, TYPE_EXTERNAL, XZ_REGEX } from 'utils/constants';
+import {
+  MACHINING_GRINDING,
+  TYPE_EXTERNAL,
+  XZ_REGEX,
+  MAX_RECT_LEN_DEFAULT,
+  MAX_RECT_DIAM_DEFAULT,
+} from 'utils/constants';
+import { loadCncData } from 'utils/loadCncData';
+import { StoredCncData } from 'types/api';
 
 import { ActionParamItem, ActivitiyItem, ContourItem, Part } from 'types/part';
 
@@ -31,7 +48,7 @@ import {
   Container,
   TitleContainer,
   Title,
-  TitleEdit,
+  STitleEdit,
   Block,
   TableWrapper,
   Table,
@@ -59,6 +76,12 @@ import {
   BackBtn,
   BackBtnContent,
   IconBack,
+  ChartContainer,
+  ShowChartBtn,
+  RowActionsInline,
+  RepositionWrapper,
+  MenuToggleBtn,
+  RepositionMenuFloating,
 } from './style';
 
 const defaultValue: ContourItem = {
@@ -68,6 +91,14 @@ const defaultValue: ContourItem = {
   type: TYPE_EXTERNAL,
   activities: [],
 };
+
+interface ContourPoint {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+}
 
 const Contour: React.FC = () => {
   const dispatch = useDispatch();
@@ -79,6 +110,7 @@ const Contour: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isModalEditDressingOpen, setIsModalEditDressingOpen] =
     useState<boolean>(false);
+  const [showChart, setShowChart] = useState<boolean>(true);
   const [formData, setFormData] = useState<ContourItem>({
     ...initialState,
   });
@@ -91,11 +123,125 @@ const Contour: React.FC = () => {
   );
   const [canNavigateNext, setCanNavigateNext] = useState<boolean[]>([]);
   const [canNavigatePrev, setCanNavigatePrev] = useState<boolean[]>([]);
-
   const [focusedField, setFocusedField] = useState<{
     fieldId: string;
     index: number;
   } | null>(null);
+  const [contourPoints, setContourPoints] = useState<ContourPoint[]>([]);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableSectionElement>(null);
+  const [machineData, setMachineData] = useState<{
+    maxRectifiableLength: number;
+    maxRectifiableDiameter: number;
+  }>({
+    maxRectifiableLength: MAX_RECT_LEN_DEFAULT,
+    maxRectifiableDiameter: MAX_RECT_DIAM_DEFAULT,
+  });
+  const [openRepositionMenuIndex, setOpenRepositionMenuIndex] = useState<
+    number | null
+  >(null);
+
+  const [repositionMenuPos, setRepositionMenuPos] = useState<{
+    top: number;
+    left: number;
+  }>({ top: 0, left: 0 });
+
+  // ref for measuring the real height of the menu
+  const repositionMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (selectedRowIndex === null) return;
+
+      const chartElement = chartRef.current;
+      const tableElement = tableRef.current;
+
+      if (
+        chartElement &&
+        tableElement &&
+        !chartElement.contains(event.target as Node) &&
+        !tableElement.contains(event.target as Node)
+      ) {
+        setSelectedRowIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [selectedRowIndex]);
+
+  // helper to close menu + deselect row
+  const closeRepositionMenu = useCallback(() => {
+    setOpenRepositionMenuIndex(null);
+    setSelectedRowIndex(null);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideMenus = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest('[data-reposition-wrapper]') &&
+        !target.closest('[data-reposition-menu="true"]')
+      ) {
+        if (openRepositionMenuIndex !== null) {
+          closeRepositionMenu();
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (openRepositionMenuIndex !== null) closeRepositionMenu();
+    };
+    const handleResize = () => {
+      if (openRepositionMenuIndex !== null) closeRepositionMenu();
+    };
+
+    document.addEventListener('mousedown', handleOutsideMenus);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideMenus);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [openRepositionMenuIndex, closeRepositionMenu]);
+
+  const updateContourPoints = useCallback(() => {
+    const newPoints: ContourPoint[] = [];
+
+    formData.activities.forEach((activity, activityIndex) => {
+      const hasX = activity.actionParams.some((param) => param.id === 'X');
+      const hasZ = activity.actionParams.some((param) => param.id === 'Z');
+
+      if (hasX && hasZ) {
+        const xValue = (activity as any).adtParamX;
+        const zValue = (activity as any).adtParamZ;
+
+        if (
+          xValue &&
+          zValue &&
+          !Number.isNaN(Number(xValue)) &&
+          !Number.isNaN(Number(zValue))
+        ) {
+          newPoints.push({
+            // includes contour id to allow grouping and drawing the line
+            id: `point-${formData.id}-${activityIndex}`,
+            x: Number(zValue),
+            y: Number(xValue),
+            radius: 6,
+            fill: colors.orangeDark,
+          });
+        }
+      }
+    });
+
+    setContourPoints(newPoints);
+  }, [formData.activities, formData.id]);
 
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
@@ -194,6 +340,11 @@ const Contour: React.FC = () => {
     });
   }, [formData.activities]);
 
+  // update contour points whenever activities change
+  useEffect(() => {
+    updateContourPoints();
+  }, [updateContourPoints]);
+
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     index?: number,
@@ -215,7 +366,7 @@ const Contour: React.FC = () => {
             const newActionParams: ActionParamsValidation =
               defineActionParams(value);
 
-            // Remove props to prevent user error
+            // remove props to prevent user error
             const updatedItem = { ...item };
             Object.keys(updatedItem).forEach((key) => {
               if (key.startsWith('adtParam')) {
@@ -342,6 +493,8 @@ const Contour: React.FC = () => {
       newCanNavigatePrev.splice(index + 1, 0, false);
       return newCanNavigatePrev;
     });
+
+    setSelectedRowIndex(index + 1);
   };
 
   const handleDelete = (index: number) => () => {
@@ -374,6 +527,116 @@ const Contour: React.FC = () => {
         return newCanNavigatePrev;
       });
     }
+  };
+
+  const computeMenuPositionSide = (
+    btnEl: HTMLElement,
+    menuHeight?: number,
+  ): { top: number; left: number } => {
+    const rect = btnEl.getBoundingClientRect();
+    const gapX = 6;
+    const estimatedHeight = menuHeight || 34 * 2 + 12; // 2 buttons + padding
+    const viewportH = window.innerHeight;
+    let top = rect.top + rect.height / 2 - estimatedHeight / 2; // vertical centralized
+    const left = rect.right + gapX;
+
+    const margin = 8;
+    if (top < margin) top = margin;
+    if (top + estimatedHeight > viewportH - margin)
+      top = Math.max(margin, viewportH - margin - estimatedHeight);
+
+    return { top, left };
+  };
+
+  const toggleRepositionMenu = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    e.stopPropagation();
+    setSelectedRowIndex(index);
+
+    // if already open at this index: close and deselect
+    if (openRepositionMenuIndex === index) {
+      closeRepositionMenu();
+      return;
+    }
+
+    const btn = e.currentTarget;
+    const pos = computeMenuPositionSide(btn);
+    setRepositionMenuPos(pos);
+    setOpenRepositionMenuIndex(index);
+  };
+
+  // re-calculate position after rendering the open menu (to use real height)
+  useEffect(() => {
+    if (openRepositionMenuIndex !== null && repositionMenuRef.current) {
+      const table = tableRef.current;
+      if (!table) return;
+      const btns = table.querySelectorAll<HTMLButtonElement>(
+        '[data-reposition-wrapper] > button',
+      );
+      const btn = btns[openRepositionMenuIndex];
+      if (btn) {
+        const realHeight = repositionMenuRef.current.offsetHeight;
+        const pos = computeMenuPositionSide(btn, realHeight);
+        setRepositionMenuPos(pos);
+      }
+    }
+  }, [openRepositionMenuIndex, formData.activities]);
+
+  const handleMove = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const total = formData.activities.length;
+    if (targetIndex < 0 || targetIndex >= total) return;
+
+    // reorder activities
+    setFormData((prev) => {
+      const activities = [...prev.activities];
+      const temp = activities[index];
+      activities[index] = activities[targetIndex];
+      activities[targetIndex] = temp;
+      const reIdActivities = activities.map((a, i) => ({ ...a, id: i + 1 }));
+      return { ...prev, activities: reIdActivities };
+    });
+
+    // reorder auxiliary structures
+    const swapInPlace = <T,>(arr: T[]) => {
+      const clone = [...arr];
+      [clone[index], clone[targetIndex]] = [clone[targetIndex], clone[index]];
+      return clone;
+    };
+    setVisibleFields((prev) => swapInPlace(prev));
+    setCanNavigateNext((prev) => swapInPlace(prev));
+    setCanNavigatePrev((prev) => swapInPlace(prev));
+
+    // selection always follows the moved row
+    setSelectedRowIndex((prevSel) => {
+      if (prevSel === index) return targetIndex;
+      // if the selection was not on the row, but the open menu indicates intention to move this row,
+      // we ensure that the selection follows the same manipulated "entity".
+      if (openRepositionMenuIndex === index) return targetIndex;
+      return prevSel;
+    });
+
+    // menu follows the same row (if it was open on it)
+    setOpenRepositionMenuIndex((prev) => (prev === index ? targetIndex : prev));
+
+    // reposition the menu (only if it was open on the moved row)
+    requestAnimationFrame(() => {
+      if (openRepositionMenuIndex !== index) return;
+      const table = tableRef.current;
+      if (!table) return;
+      const btns = table.querySelectorAll<HTMLButtonElement>(
+        '[data-reposition-wrapper] > button',
+      );
+      const newBtn = btns[targetIndex];
+      if (newBtn) {
+        const pos = computeMenuPositionSide(newBtn);
+        setRepositionMenuPos(pos);
+      }
+    });
+
+    setFocusedField(null);
   };
 
   const renderTableBlocks = (length: number, vFields: number[]) => {
@@ -412,8 +675,25 @@ const Contour: React.FC = () => {
     }
   }, [isEditingName]);
 
+  // determine which point should be highlighted based on the focused field
+  const getFocusedPointId = useCallback(() => {
+    // if there is a focused field, use that information
+    if (focusedField) {
+      if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
+        return `point-${focusedField.index}`;
+      }
+    }
+
+    // if there is no focused field, but there is a selected row, use the row index
+    if (selectedRowIndex !== null) {
+      return `point-${selectedRowIndex}`;
+    }
+
+    return undefined;
+  }, [focusedField, selectedRowIndex]);
+
   const renderField = (
-    item: ActivitiyItem, // ActivitiyItem with additional keys dynamically included in handleChange
+    item: ActivitiyItem,
     param: ActionParamItem,
     fieldName: string,
     index: number,
@@ -429,10 +709,13 @@ const Contour: React.FC = () => {
               className="input is-edit"
               type="text"
               name={fieldName}
-              value={item[fieldName as keyof ActivitiyItem] as string} // as the fields need to be controlled by the dynamic keys of formData, we adjusted the typing to handle them accordingly
+              value={item[fieldName as keyof ActivitiyItem] as string}
               placeholder={param.placeholder}
               onChange={(e) => handleChange(e, index)}
-              onFocus={() => setFocusedField({ fieldId: param.id, index })}
+              onFocus={() => {
+                setFocusedField({ fieldId: param.id, index });
+                setSelectedRowIndex(index);
+              }}
               onBlur={() => setFocusedField(null)}
             />
             {focusedField?.fieldId === param.id &&
@@ -445,6 +728,26 @@ const Contour: React.FC = () => {
     }
     return null;
   };
+
+  // loading machine data from electron store
+  useEffect(() => {
+    async function fetchMachineData() {
+      const cncData: StoredCncData = await loadCncData();
+
+      // converting strings to numbers and using default values if they don't exist
+      const maxLength =
+        Number(cncData.maxRectifiableLength) || MAX_RECT_LEN_DEFAULT;
+      const maxDiameter =
+        Number(cncData.maxRectifiableDiameter) || MAX_RECT_DIAM_DEFAULT;
+
+      setMachineData({
+        maxRectifiableLength: maxLength,
+        maxRectifiableDiameter: maxDiameter,
+      });
+    }
+
+    fetchMachineData();
+  }, []);
 
   return (
     <Container>
@@ -466,7 +769,7 @@ const Contour: React.FC = () => {
               <PageHead>
                 <TitleContainer>
                   {isEditingName ? (
-                    <TitleEdit
+                    <STitleEdit
                       ref={nameInputRef}
                       type="text"
                       name="name"
@@ -495,26 +798,49 @@ const Contour: React.FC = () => {
                       <TranslatedToolName name={formData.dressingTool} />
                     </InfoLabel>
                   )}
-                  <CodePreviewBtn>
+                  <CodePreviewBtn
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                  >
                     <StyledIcon
                       className="icon-code"
                       color={colors.white}
                       fontSize="28px"
                     />
-                    <BtnText
-                      onClick={(
-                        e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-                      ) => {
-                        e.preventDefault();
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      Code Preview
-                    </BtnText>
+                    <BtnText>Code Preview</BtnText>
                   </CodePreviewBtn>
+                  <ShowChartBtn
+                    type="button"
+                    style={{ marginLeft: '8px' }}
+                    onClick={() => setShowChart(!showChart)}
+                  >
+                    <StyledIcon
+                      className={
+                        showChart
+                          ? 'icon-visibility_off'
+                          : 'icon-remove_red_eye'
+                      }
+                      color={colors.blue}
+                      fontSize="26px"
+                    />
+                    <BtnText>Gráfico</BtnText>
+                  </ShowChartBtn>
                 </TitleContainer>
               </PageHead>
-              <Block>
+              {showChart && (
+                <ChartContainer>
+                  <div ref={chartRef}>
+                    <Chart
+                      points={contourPoints}
+                      focusedPointId={getFocusedPointId()}
+                      worldLimitX={machineData.maxRectifiableLength}
+                      worldLimitY={machineData.maxRectifiableDiameter}
+                      disableShapeSelection
+                    />
+                  </div>
+                </ChartContainer>
+              )}
+              <Block showChart={showChart}>
                 <TableWrapper>
                   <Table className="table table-ordenation">
                     <TableHead className="table-ordenation head">
@@ -531,15 +857,46 @@ const Contour: React.FC = () => {
                         <TableH />
                       </tr>
                     </TableHead>
-                    <TableBody>
+                    <TableBody ref={tableRef}>
                       {formData.activities.map((item, index) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          style={{
+                            backgroundColor:
+                              selectedRowIndex === index
+                                ? `${colors.blueLighter}`
+                                : 'transparent',
+                          }}
+                        >
                           <TableD>
-                            <AddBtn
-                              type="button"
-                              className="icon-add"
-                              onClick={() => handleAdd(index)}
-                            />
+                            <RowActionsInline>
+                              <AddBtn
+                                type="button"
+                                className="icon-add"
+                                onClick={() => handleAdd(index)}
+                                title="Duplicar abaixo"
+                              />
+                              <RepositionWrapper>
+                                <MenuToggleBtn
+                                  type="button"
+                                  $active={openRepositionMenuIndex === index}
+                                  onClick={(e) =>
+                                    toggleRepositionMenu(e, index)
+                                  }
+                                  title="Reordenar"
+                                >
+                                  <Icon
+                                    className={
+                                      openRepositionMenuIndex === index
+                                        ? 'icon-x'
+                                        : 'icon-more_vert'
+                                    }
+                                    color={colors.white}
+                                    fontSize="18px"
+                                  />
+                                </MenuToggleBtn>
+                              </RepositionWrapper>
+                            </RowActionsInline>
                           </TableD>
                           <TableD>
                             <TableIdText>{item.id}</TableIdText>
@@ -551,6 +908,9 @@ const Contour: React.FC = () => {
                               name="actionCode"
                               value={item.actionCode}
                               onChange={(e) => handleChange(e, index)}
+                              onFocus={() => {
+                                setSelectedRowIndex(index);
+                              }}
                             />
                           </TableD>
                           <TableD>
@@ -560,11 +920,12 @@ const Contour: React.FC = () => {
                             <ScrollBtn
                               type="button"
                               onClick={() => handlePrev(index)}
-                              color={
+                              bgColor={
                                 canNavigatePrev[index]
                                   ? colors.blue
                                   : colors.greyMedium
                               }
+                              color={colors.white}
                             >
                               <RotatedIcon
                                 className="icon-expand_less"
@@ -592,11 +953,12 @@ const Contour: React.FC = () => {
                             <ScrollBtn
                               type="button"
                               onClick={() => handleNext(index)}
-                              color={
+                              bgColor={
                                 canNavigateNext[index]
                                   ? colors.blue
                                   : colors.greyMedium
                               }
+                              color={colors.white}
                             >
                               <RotatedIcon
                                 className="icon-expand_more"
@@ -610,6 +972,7 @@ const Contour: React.FC = () => {
                               type="button"
                               className="icon-delete"
                               onClick={handleDelete(index)}
+                              title="Remover linha"
                             />
                           </TableD>
                         </tr>
@@ -643,6 +1006,65 @@ const Contour: React.FC = () => {
           onButtonClick={() => setIsModalEditDressingOpen(false)}
         />
       </Modal>
+      {ReactDOM.createPortal(
+        <RepositionMenuFloating
+          ref={repositionMenuRef}
+          data-reposition-menu="true"
+          open={openRepositionMenuIndex !== null}
+          top={repositionMenuPos.top}
+          left={repositionMenuPos.left}
+        >
+          <ScrollBtn
+            type="button"
+            onClick={() =>
+              openRepositionMenuIndex !== null &&
+              handleMove(openRepositionMenuIndex, 'up')
+            }
+            disabled={openRepositionMenuIndex === 0}
+            bgColor={
+              openRepositionMenuIndex === 0 ? colors.greyMedium : colors.blue
+            }
+            color={
+              openRepositionMenuIndex === 0 ? colors.greyMedium : colors.blue
+            }
+            title="Mover para cima"
+          >
+            <Icon
+              className="icon-expand_less"
+              color={colors.white}
+              fontSize="18px"
+            />
+          </ScrollBtn>
+          <ScrollBtn
+            type="button"
+            onClick={() =>
+              openRepositionMenuIndex !== null &&
+              handleMove(openRepositionMenuIndex, 'down')
+            }
+            disabled={
+              openRepositionMenuIndex === formData.activities.length - 1
+            }
+            bgColor={
+              openRepositionMenuIndex === formData.activities.length - 1
+                ? colors.greyMedium
+                : colors.blue
+            }
+            color={
+              openRepositionMenuIndex === formData.activities.length - 1
+                ? colors.blue
+                : colors.white
+            }
+            title="Mover para baixo"
+          >
+            <Icon
+              className="icon-expand_more"
+              color={colors.white}
+              fontSize="18px"
+            />
+          </ScrollBtn>
+        </RepositionMenuFloating>,
+        document.body,
+      )}
     </Container>
   );
 };

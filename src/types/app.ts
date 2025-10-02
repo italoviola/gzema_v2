@@ -10,4 +10,6 @@ export interface App {
   hasSaveStatusUpdate?: true;
   hasFormattedToolsUpdate?: true;
   hasImportedMachineDataFToolsUpdate?: true;
+  selectedElementId?: string;
+  isElementFormOpen?: boolean;
 }

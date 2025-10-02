@@ -23,15 +23,42 @@ export const colors = {
   green: '#73B566',
   greenDark: '#5E9C4F',
   orange: '#FDA403',
+  orangeDark: '#F68D00',
+  silver: '#D3D3D3',
+  silverDark: '#BEBEBE',
   yellow: '#FCEB00',
+};
+
+export const rulerColors = {
+  mainTick: '#333',
+  secondaryTick: '#666',
+  subTick: '#999',
+  subSubTick: '#CCC',
+  microTick: '#DDD',
+  text: '#333',
+  background: '#F0F0F0',
+};
+
+export const gridColors = {
+  mainLine: '#000000',
+  secondaryLine: '#7A7979',
+  intermediateLine: '#7A7979',
+  subLine: '#A8A8A8',
+  subSubLine: '#79CC79',
+  microLine: '#C7F8C7',
+  highlightedMicroLine: '#A8A8A8',
 };
 
 export const measures = {
   gutter: '15px',
-  contentToHeader: '255px',
+  contentToHeader: '273px',
+  contentBelowChartToHeader: '520px',
+  contentBelowSliderToHeader: '180px',
   contentBellowTabToHeader: '287px',
   contentBellowBtnToHeader: '308px',
   borderRadius: '4px',
+  registrationFormHeight: '200px',
+  itemListHeight: '227px',
 };
 
 export const fonts = {

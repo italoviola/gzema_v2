@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from 'styles/global.styles';
+import { colors, measures } from 'styles/global.styles';
 
 export const Container = styled.form`
   display: flex;
@@ -86,7 +86,7 @@ export const Button = styled.button`
   background-color: ${colors.blue};
   border: none;
   color: ${colors.white};
-  padding: 15px;
+  padding: ${measures.gutter};
   text-align: center;
   font-size: 18px;
   cursor: pointer;

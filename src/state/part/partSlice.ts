@@ -9,6 +9,7 @@ import {
   GrindingWheels,
   GrindingWheelsItem,
   GWDressingToolsDataItem,
+  ElementItem,
 } from 'types/part';
 
 const initialActivity: ActivitiyItem = {
@@ -30,6 +31,7 @@ export const initialState: Part = {
   ],
   operations: [],
   grindingWheels: [],
+  elements: [],
 };
 
 const partSlice = createSlice({
@@ -47,7 +49,10 @@ const partSlice = createSlice({
             Pick<ContourItem, 'name' | 'machining' | 'type' | 'dressingTool'>)
       >,
     ) => {
-      const maxId = Math.max(...state.contours.map((contour) => contour.id), 0);
+      const maxId: number = Math.max(
+        ...state.contours.map((contour) => contour.id),
+        0,
+      );
       state.contours.push({
         ...action.payload,
         id: maxId + 1,
@@ -62,7 +67,9 @@ const partSlice = createSlice({
       }>,
     ) => {
       const { id, changes } = action.payload;
-      const index = state.contours.findIndex((contour) => contour.id === id);
+      const index: number = state.contours.findIndex(
+        (contour) => contour.id === id,
+      );
       if (index !== -1) {
         state.contours[index] = {
           ...state.contours[index],
@@ -71,7 +78,7 @@ const partSlice = createSlice({
       }
     },
     removeContour: (state, action: PayloadAction<number>) => {
-      const contourIdToRemove = action.payload;
+      const contourIdToRemove: number = action.payload;
 
       state.contours = state.contours.filter(
         (contour) => contour.id !== contourIdToRemove,
@@ -88,7 +95,7 @@ const partSlice = createSlice({
       state,
       action: PayloadAction<Omit<Omit<OperationItem, 'id'>, 'contoursIds'>>,
     ) => {
-      const maxId = Math.max(
+      const maxId: number = Math.max(
         ...state.operations.map((operation) => operation.id),
         0,
       );
@@ -106,7 +113,9 @@ const partSlice = createSlice({
       }>,
     ) => {
       const { id, operation } = action.payload;
-      const operationIndex = state.operations.findIndex((op) => op.id === id);
+      const operationIndex: number = state.operations.findIndex(
+        (op) => op.id === id,
+      );
       if (operationIndex !== -1) {
         state.operations[operationIndex] = {
           ...state.operations[operationIndex],
@@ -115,8 +124,8 @@ const partSlice = createSlice({
       }
     },
     deleteOperation: (state, action: PayloadAction<number>) => {
-      const id = action.payload;
-      const index = state.operations.findIndex(
+      const id: number = action.payload;
+      const index: number = state.operations.findIndex(
         (operation) => operation.id === id,
       );
       if (index !== -1) {
@@ -127,7 +136,7 @@ const partSlice = createSlice({
       state,
       action: PayloadAction<{ operationId: number; contourId: number }>,
     ) => {
-      const operation = state.operations.find(
+      const operation: OperationItem | undefined = state.operations.find(
         (op) => op.id === action.payload.operationId,
       );
       if (
@@ -141,7 +150,7 @@ const partSlice = createSlice({
       state,
       action: PayloadAction<{ operationId: number; contourId: number }>,
     ) => {
-      const operation = state.operations.find(
+      const operation: OperationItem | undefined = state.operations.find(
         (op) => op.id === action.payload.operationId,
       );
       if (operation) {
@@ -159,7 +168,9 @@ const partSlice = createSlice({
       }>,
     ) => {
       const { operationId, contourId, direction } = action.payload;
-      const operation = state.operations.find((op) => op.id === operationId);
+      const operation: OperationItem | undefined = state.operations.find(
+        (op) => op.id === operationId,
+      );
 
       if (!operation) return;
 
@@ -167,14 +178,14 @@ const partSlice = createSlice({
       if (index < 0) return;
 
       if (direction === 'up' && index > 0) {
-        const temp = operation.contoursIds[index];
+        const temp: number = operation.contoursIds[index];
         operation.contoursIds[index] = operation.contoursIds[index - 1];
         operation.contoursIds[index - 1] = temp;
       } else if (
         direction === 'down' &&
         index < operation.contoursIds.length - 1
       ) {
-        const temp = operation.contoursIds[index];
+        const temp: number = operation.contoursIds[index];
         operation.contoursIds[index] = operation.contoursIds[index + 1];
         operation.contoursIds[index + 1] = temp;
       }
@@ -213,9 +224,10 @@ const partSlice = createSlice({
       }>,
     ) => {
       const { id, property, value, dressingToolName } = action.payload;
-      const grindingWheel = state.grindingWheels.find(
-        (wheel) => wheel.id === id,
-      );
+      const grindingWheel: GrindingWheelsItem | undefined =
+        state.grindingWheels.find(
+          (wheel: GrindingWheelsItem) => wheel.id === id,
+        );
 
       if (!grindingWheel) {
         return;
@@ -224,9 +236,10 @@ const partSlice = createSlice({
       if (property === 'xSafetyDistance' || property === 'zSafetyDistance') {
         grindingWheel[property] = value;
       } else if (property === 'bAxisAngle' && dressingToolName) {
-        const dressingTool = grindingWheel.dressingToolsData.find(
-          (item: GWDressingToolsDataItem) => item.name === dressingToolName,
-        );
+        const dressingTool: GWDressingToolsDataItem | undefined =
+          grindingWheel.dressingToolsData.find(
+            (item: GWDressingToolsDataItem) => item.name === dressingToolName,
+          );
         if (dressingTool) {
           dressingTool.bAxisAngle = value;
         } else {
@@ -237,6 +250,30 @@ const partSlice = createSlice({
           grindingWheel.dressingToolsData.push(newDressingTool);
         }
       }
+    },
+    addElement: (state, action: PayloadAction<Omit<ElementItem, 'id'>>) => {
+      const maxId: number = Math.max(
+        ...state.elements.map((element) => Number(element.id)),
+        0,
+      );
+      state.elements.push({
+        ...action.payload,
+        id: String(maxId + 1),
+        label: action.payload.label || `Novo Elemento`,
+      });
+    },
+    editElement: (state, action: PayloadAction<ElementItem>) => {
+      const index: number = state.elements.findIndex(
+        (element) => element.id === action.payload.id,
+      );
+      if (index !== -1) {
+        state.elements[index] = action.payload;
+      }
+    },
+    removeElement: (state, action: PayloadAction<string>) => {
+      state.elements = state.elements.filter(
+        (element) => element.id !== action.payload,
+      );
     },
   },
 });
@@ -255,6 +292,10 @@ export const {
   setGrindingWheelData,
   editGrindingWheelData,
   editGrindingWheelProperty,
+  // Exportando apenas as ações relacionadas a dados
+  addElement,
+  editElement,
+  removeElement,
 } = partSlice.actions;
 
 export default partSlice.reducer;
