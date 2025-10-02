@@ -566,7 +566,7 @@ export function renderShapesAndPoints({
         return null;
       })}
 
-      {/* Renderizar linhas que conectam pontos somente se os pontos estiverem visíveis */}
+      {/* Render lines that connect points only if the points are visible */}
       {showContourPoints &&
         Array.from(contourGroups.entries()).map(
           ([contourId, contourPoints]) => (
@@ -585,21 +585,19 @@ export function renderShapesAndPoints({
           ),
         )}
 
-      {/* Renderize os pontos apenas se showContourPoints for true */}
       {showContourPoints &&
         points.map((point) => {
-          // Verifique se o ponto está focado de maneira mais flexível
           const isFocused = (() => {
             if (!focusedPointId) return false;
 
-            // Verificação exata do ID
+            // exact id verification
             if (point.id === focusedPointId) return true;
 
-            // Verificação alternativa para lidar com diferentes formatos de ID
+            // alternative check to handle different ID formats
             const pointParts = point.id.split('-');
             const focusParts = focusedPointId.split('-');
 
-            // Se o ID tem o formato point-contourId-index, verifique se o índice corresponde
+            // if the ID is in the format point-contourId-index, check if the index matches
             if (pointParts.length === 3 && focusParts.length === 2) {
               return pointParts[2] === focusParts[1];
             }

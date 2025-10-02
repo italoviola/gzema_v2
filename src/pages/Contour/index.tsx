@@ -142,13 +142,12 @@ const Contour: React.FC = () => {
     number | null
   >(null);
 
-  // Coordenadas do menu flutuante
   const [repositionMenuPos, setRepositionMenuPos] = useState<{
     top: number;
     left: number;
   }>({ top: 0, left: 0 });
 
-  // Ref para medir altura real do menu
+  // ref for measuring the real height of the menu
   const repositionMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -175,7 +174,7 @@ const Contour: React.FC = () => {
     };
   }, [selectedRowIndex]);
 
-  // Helper para fechar menu + deselecionar linha
+  // helper to close menu + deselect row
   const closeRepositionMenu = useCallback(() => {
     setOpenRepositionMenuIndex(null);
     setSelectedRowIndex(null);
@@ -230,8 +229,7 @@ const Contour: React.FC = () => {
           !Number.isNaN(Number(zValue))
         ) {
           newPoints.push({
-            // antes: point-${activityIndex}
-            // agora inclui o id do contorno para permitir agrupar e desenhar a linha
+            // includes contour id to allow grouping and drawing the line
             id: `point-${formData.id}-${activityIndex}`,
             x: Number(zValue),
             y: Number(xValue),
@@ -342,7 +340,7 @@ const Contour: React.FC = () => {
     });
   }, [formData.activities]);
 
-  // Atualiza os pontos do contorno sempre que as atividades mudarem
+  // update contour points whenever activities change
   useEffect(() => {
     updateContourPoints();
   }, [updateContourPoints]);
@@ -368,7 +366,7 @@ const Contour: React.FC = () => {
             const newActionParams: ActionParamsValidation =
               defineActionParams(value);
 
-            // Remove props to prevent user error
+            // remove props to prevent user error
             const updatedItem = { ...item };
             Object.keys(updatedItem).forEach((key) => {
               if (key.startsWith('adtParam')) {
@@ -537,9 +535,9 @@ const Contour: React.FC = () => {
   ): { top: number; left: number } => {
     const rect = btnEl.getBoundingClientRect();
     const gapX = 6;
-    const estimatedHeight = menuHeight || 34 * 2 + 12; // 2 botões + padding
+    const estimatedHeight = menuHeight || 34 * 2 + 12; // 2 buttons + padding
     const viewportH = window.innerHeight;
-    let top = rect.top + rect.height / 2 - estimatedHeight / 2; // centraliza vertical
+    let top = rect.top + rect.height / 2 - estimatedHeight / 2; // vertical centralized
     const left = rect.right + gapX;
 
     const margin = 8;
@@ -555,10 +553,9 @@ const Contour: React.FC = () => {
     index: number,
   ) => {
     e.stopPropagation();
-    // Seleciona a linha do botão
     setSelectedRowIndex(index);
 
-    // Se já está aberto neste índice: fecha e deseleciona
+    // if already open at this index: close and deselect
     if (openRepositionMenuIndex === index) {
       closeRepositionMenu();
       return;
@@ -570,7 +567,7 @@ const Contour: React.FC = () => {
     setOpenRepositionMenuIndex(index);
   };
 
-  // Recalcula posição após render do menu aberto (para usar altura real)
+  // re-calculate position after rendering the open menu (to use real height)
   useEffect(() => {
     if (openRepositionMenuIndex !== null && repositionMenuRef.current) {
       const table = tableRef.current;
@@ -592,7 +589,7 @@ const Contour: React.FC = () => {
     const total = formData.activities.length;
     if (targetIndex < 0 || targetIndex >= total) return;
 
-    // Reordena atividades
+    // reorder activities
     setFormData((prev) => {
       const activities = [...prev.activities];
       const temp = activities[index];
@@ -602,7 +599,7 @@ const Contour: React.FC = () => {
       return { ...prev, activities: reIdActivities };
     });
 
-    // Reordena estruturas auxiliares
+    // reorder auxiliary structures
     const swapInPlace = <T,>(arr: T[]) => {
       const clone = [...arr];
       [clone[index], clone[targetIndex]] = [clone[targetIndex], clone[index]];
@@ -612,19 +609,19 @@ const Contour: React.FC = () => {
     setCanNavigateNext((prev) => swapInPlace(prev));
     setCanNavigatePrev((prev) => swapInPlace(prev));
 
-    // Seleção acompanha SEMPRE a linha movimentada
+    // selection always follows the moved row
     setSelectedRowIndex((prevSel) => {
       if (prevSel === index) return targetIndex;
-      // Caso a seleção não estivesse na linha, mas o menu aberto indica intenção de mover essa linha,
-      // garantimos que a seleção acompanhe a mesma "entidade" manipulada.
+      // if the selection was not on the row, but the open menu indicates intention to move this row,
+      // we ensure that the selection follows the same manipulated "entity".
       if (openRepositionMenuIndex === index) return targetIndex;
       return prevSel;
     });
 
-    // Menu acompanha a mesma linha (se estiver aberto nela)
+    // menu follows the same row (if it was open on it)
     setOpenRepositionMenuIndex((prev) => (prev === index ? targetIndex : prev));
 
-    // Reposiciona o menu (apenas se ele estava aberto na linha movida)
+    // reposition the menu (only if it was open on the moved row)
     requestAnimationFrame(() => {
       if (openRepositionMenuIndex !== index) return;
       const table = tableRef.current;
@@ -678,16 +675,16 @@ const Contour: React.FC = () => {
     }
   }, [isEditingName]);
 
-  // Determinar qual ponto deve ser destacado com base no campo focado
+  // determine which point should be highlighted based on the focused field
   const getFocusedPointId = useCallback(() => {
-    // Se houver um campo com foco, usar essa informação
+    // if there is a focused field, use that information
     if (focusedField) {
       if (focusedField.fieldId === 'X' || focusedField.fieldId === 'Z') {
         return `point-${focusedField.index}`;
       }
     }
 
-    // Se não houver campo com foco, mas houver uma linha selecionada, usar o índice da linha
+    // if there is no focused field, but there is a selected row, use the row index
     if (selectedRowIndex !== null) {
       return `point-${selectedRowIndex}`;
     }
@@ -732,12 +729,12 @@ const Contour: React.FC = () => {
     return null;
   };
 
-  // Carregando os dados de máquina do electron store
+  // loading machine data from electron store
   useEffect(() => {
     async function fetchMachineData() {
       const cncData: StoredCncData = await loadCncData();
 
-      // Convertendo strings para números e usando valores padrão caso não existam
+      // converting strings to numbers and using default values if they don't exist
       const maxLength =
         Number(cncData.maxRectifiableLength) || MAX_RECT_LEN_DEFAULT;
       const maxDiameter =

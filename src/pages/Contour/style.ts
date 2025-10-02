@@ -346,7 +346,6 @@ export const StackFloat = styled.div`
   }
 `;
 
-// NOVOS ESTILOS
 export const RowActionsInline = styled.div`
   display: flex;
   flex-flow: row nowrap;
@@ -390,7 +389,6 @@ export const MenuToggleBtn = styled.button<{ $active?: boolean }>`
     `}
 `;
 
-// Menu flutuante via portal (fora do fluxo da tabela)
 export const RepositionMenuFloating = styled.div<{
   open: boolean;
   top: number;
@@ -399,7 +397,6 @@ export const RepositionMenuFloating = styled.div<{
   position: fixed;
   top: ${({ top }) => top}px;
   left: ${({ left }) => left}px;
-  /* Não centralizamos mais pelo X */
   display: ${({ open }) => (open ? 'flex' : 'none')};
   transform: translateX(-6px);
   flex-direction: column;
