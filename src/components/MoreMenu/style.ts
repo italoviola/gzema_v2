@@ -27,7 +27,6 @@ export const DropDown = styled.nav`
   z-index: 9999;
   border: 1px solid ${colors.greyDark};
   box-shadow: ${shadows.std};
-  border-bottom: none;
 `;
 
 export const Button = styled.button`
@@ -64,4 +63,20 @@ export const SubButton = styled(Button)`
     background-color: ${colors.grey};
     color: ${colors.blue};
   }
+`;
+
+export const FloatingDropDown = styled(DropDown)<{ top: number; left: number }>`
+  width: 150px;
+  position: fixed;
+  top: ${({ top }) => top}px;
+  left: ${({ left }) => left}px;
+  display: flex;
+  flex-flow: column nowrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: ${colors.white};
+  z-index: 99999;
+  border: 1px solid ${colors.greyDark};
+  box-shadow: ${shadows.std};
 `;
