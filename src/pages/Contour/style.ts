@@ -409,9 +409,6 @@ export const RepositionMenuFloating = styled.div<{
   z-index: 9999;
   pointer-events: ${({ open }) => (open ? 'auto' : 'none')};
 
-  &[data-reposition-menu='true'] {
-  }
-
   button {
     width: 34px;
     height: 34px;
