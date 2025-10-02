@@ -59,6 +59,7 @@ const Chart: React.FC<ChartProps> = ({
   focusedPointId,
   worldLimitX = MAX_RECT_LEN_DEFAULT,
   worldLimitY = MAX_RECT_DIAM_DEFAULT,
+  disableShapeSelection = false,
 }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,12 +74,18 @@ const Chart: React.FC<ChartProps> = ({
     (state: { app: App }) => state.app.selectedElementId,
   );
 
+  // if disable and something was selected, clear it
+  useEffect(() => {
+    if (disableShapeSelection && selectedElementId) {
+      dispatch(deselectElement());
+    }
+  }, [disableShapeSelection, selectedElementId, dispatch]);
+
   const [stageSize] = useState({ width: 872, height: 200 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const [strokeWidth, setStrokeWidth] = useState(1);
-  const [showAllContourPoints, setShowAllContourPoints] =
-    useState<boolean>(false);
+  const [showContourPoints, setShowContourPoints] = useState<boolean>(true);
   const [allContourPoints, setAllContourPoints] = useState<any[]>([]);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
@@ -178,7 +185,7 @@ const Chart: React.FC<ChartProps> = ({
 
   // extract all contour points
   useEffect(() => {
-    if (showAllContourPoints) {
+    if (showContourPoints) {
       const newPoints: any[] = [];
 
       contours.forEach((contour) => {
@@ -212,7 +219,7 @@ const Chart: React.FC<ChartProps> = ({
 
       setAllContourPoints(newPoints);
     }
-  }, [contours, showAllContourPoints]);
+  }, [contours, showContourPoints]);
 
   useEffect(() => {
     if (zoomLevel >= 4096) setStrokeWidth(0.0005);
@@ -260,6 +267,7 @@ const Chart: React.FC<ChartProps> = ({
   };
 
   const handleShapeClick = (id: string) => {
+    if (disableShapeSelection) return;
     const clickedElement: ElementItem | undefined = elements.find(
       (element: ElementItem) => element.id === id,
     );
@@ -343,7 +351,7 @@ const Chart: React.FC<ChartProps> = ({
   );
 
   // decide which points to render based on the toggle state
-  const pointsToRender = showAllContourPoints ? allContourPoints : points || [];
+  const pointsToRender = showContourPoints ? allContourPoints : points || [];
 
   const renderControls = () => (
     <ControlsContainer isFullScreen={isFullScreen}>
@@ -385,14 +393,16 @@ const Chart: React.FC<ChartProps> = ({
       )}
       <TopLeftControlsBtn
         type="button"
-        onClick={() => setShowAllContourPoints(!showAllContourPoints)}
+        onClick={() => {
+          setShowContourPoints(!showContourPoints);
+        }}
         color={colors.blueLight}
         bgColor={colors.blueLighter}
         borderColor={colors.blueLight}
       >
         <StyledIcon
           className={
-            showAllContourPoints ? 'icon-remove_red_eye' : 'icon-visibility_off'
+            showContourPoints ? 'icon-visibility_off' : 'icon-remove_red_eye'
           }
           color={colors.blueLight}
           fontSize="18px"
@@ -426,12 +436,16 @@ const Chart: React.FC<ChartProps> = ({
           {renderShapesAndPoints({
             points: pointsToRender,
             elementItems: elements,
-            selectedShape: selectedElementId,
+            selectedShape: disableShapeSelection
+              ? undefined
+              : selectedElementId,
             strokeWidth,
             colors,
             handleShapeClick,
             zoomLevel,
             focusedPointId,
+            showContourPoints,
+            shapesClickable: !disableShapeSelection,
           })}
         </Layer>
       </Stage>
