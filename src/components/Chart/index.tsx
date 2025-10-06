@@ -67,6 +67,7 @@ const Chart: React.FC<ChartProps> = ({
   worldLimitY = MAX_RECT_DIAM_DEFAULT,
   disableShapeSelection = false,
   origin,
+  onPointClick,
 }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -275,18 +276,28 @@ const Chart: React.FC<ChartProps> = ({
   };
 
   const handleShapeClick = (id: string) => {
-    if (disableShapeSelection) return;
-
     if (id.startsWith('point-')) {
-      if (selectedElementId === id) dispatch(deselectElement());
-      else dispatch(selectElement(id));
+      if (onPointClick) {
+        const parts = id.split('-'); // point-contourId-activityIndex
+        if (parts.length === 3) {
+          const activityIndex = Number(parts[2]);
+          if (!Number.isNaN(activityIndex)) {
+            onPointClick(activityIndex);
+          }
+        }
+      }
+      if (!disableShapeSelection) {
+        if (selectedElementId === id) dispatch(deselectElement());
+        else dispatch(selectElement(id));
+      }
       return;
     }
+
+    if (disableShapeSelection) return;
 
     const clickedElement: ElementItem | undefined = elements.find(
       (element: ElementItem) => element.id === id,
     );
-
     if (clickedElement) {
       if (selectedElementId === id) dispatch(deselectElement());
       else dispatch(selectElement(id));
@@ -511,7 +522,7 @@ const Chart: React.FC<ChartProps> = ({
             zoomLevel,
             focusedPointId,
             showContourPoints,
-            shapesClickable: true, // sempre true
+            shapesClickable: !disableShapeSelection,
           })}
         </Layer>
       </Stage>

@@ -5,6 +5,7 @@ export interface ChartProps {
   worldLimitY?: number;
   disableShapeSelection?: boolean;
   origin?: 'visualization' | 'workgroup';
+  onPointClick?: (activityIndex: number) => void;
 }
 
 export interface Points extends Array<PointItem> {}

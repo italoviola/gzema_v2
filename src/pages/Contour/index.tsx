@@ -844,6 +844,19 @@ const Contour: React.FC = () => {
                       focusedPointId={getFocusedPointId()}
                       worldLimitX={machineData.maxRectifiableLength}
                       worldLimitY={machineData.maxRectifiableDiameter}
+                      onPointClick={(activityIndex) => {
+                        setSelectedRowIndex(activityIndex);
+                        const table = tableRef.current;
+                        if (table) {
+                          const rows = table.querySelectorAll('tr');
+                          const row = rows[activityIndex];
+                          if (row)
+                            row.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'center',
+                            });
+                        }
+                      }}
                       disableShapeSelection
                     />
                   </div>
