@@ -484,6 +484,7 @@ export function renderShapesAndPoints({
   focusedPointId?: string;
   showContourPoints?: boolean;
   shapesClickable?: boolean;
+  allowPointSelection?: boolean;
 }) {
   const elementShapes = elementItems
     ? convertElementsToPolygons(elementItems, colors.silver)

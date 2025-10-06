@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import Button from 'components/Button';
-import { colors, measures, rulerColors } from 'styles/global.styles';
+import { colors, measures, rulerColors, shadows } from 'styles/global.styles';
 
 export const Container = styled.div`
   width: 100%;
@@ -120,6 +120,15 @@ export const TopLeftControls = styled.div`
   z-index: 10;
 `;
 
+export const TopCenterControls = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  transform: translateX(-50%) translateY(8px);
+`;
+
 export const TopLeftControlsBtn = styled(Button)`
   box-sizing: border-box;
   width: 35px;
@@ -128,6 +137,32 @@ export const TopLeftControlsBtn = styled(Button)`
   align-items: center;
   justify-content: center;
   opacity: 0.8;
+`;
+
+export const ShowContourBtn = styled(Button)`
+  box-sizing: border-box;
+  width: auto;
+  padding: 0;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: ${shadows.std};
+`;
+
+export const ShowContourBtnText = styled.div`
+  padding: 8px;
+`;
+
+export const ShowContourBtnIcon = styled.div`
+  background: ${colors.blue};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 0 ${measures.borderRadius} ${measures.borderRadius} 0;
 `;
 
 export const FullScreenModal = styled.div`

@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Stage, Layer } from 'react-konva';
+import { useNavigate } from 'react-router-dom';
 
 import { useExplosionEasterEgg } from 'hooks/useExplosionEasterEgg';
 import { selectElement, deselectElement } from 'state/app/appSlice';
@@ -24,6 +25,7 @@ import { MAX_RECT_LEN_DEFAULT, MAX_RECT_DIAM_DEFAULT } from 'utils/constants';
 import { App } from 'types/app';
 import { ElementItem, ElementItems, ContourItem } from 'types/part';
 
+import { RotatedIcon } from 'pages/Contour/style';
 import { colors } from 'styles/global.styles';
 import { StyledIcon } from 'components/SideMenu/styles';
 import { ChartProps } from './interface';
@@ -41,6 +43,10 @@ import {
   FullScreenContent,
   TopLeftControls,
   TopLeftControlsBtn,
+  TopCenterControls,
+  ShowContourBtn,
+  ShowContourBtnText,
+  ShowContourBtnIcon,
   CenteredElement,
 } from './styles';
 
@@ -63,6 +69,7 @@ const Chart: React.FC<ChartProps> = ({
 }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const elements = useSelector(
     (state: { part: { elements: ElementItems } }) => state.part.elements,
@@ -268,6 +275,13 @@ const Chart: React.FC<ChartProps> = ({
 
   const handleShapeClick = (id: string) => {
     if (disableShapeSelection) return;
+
+    if (id.startsWith('point-')) {
+      if (selectedElementId === id) dispatch(deselectElement());
+      else dispatch(selectElement(id));
+      return;
+    }
+
     const clickedElement: ElementItem | undefined = elements.find(
       (element: ElementItem) => element.id === id,
     );
@@ -322,6 +336,31 @@ const Chart: React.FC<ChartProps> = ({
     }
   };
 
+  // decide which points to render based on the toggle state
+  const pointsToRender = showContourPoints ? allContourPoints : points || [];
+
+  // Identifica o ponto selecionado
+  const selectedPoint =
+    selectedElementId && selectedElementId.startsWith('point-')
+      ? pointsToRender.find((p: any) => p.id === selectedElementId)
+      : null;
+
+  const selectedContourId = React.useMemo(() => {
+    if (!selectedPoint) return null;
+    const idParts = selectedPoint.id.split('-');
+    if (idParts.length < 3) return null;
+    return idParts[1];
+  }, [selectedPoint]);
+
+  const selectedContourName = React.useMemo(() => {
+    if (!selectedPoint) return '';
+    const idParts = selectedPoint.id.split('-');
+    if (idParts.length < 3) return '';
+    const contourId = Number(idParts[1]);
+    const contour = contours.find((c) => c.id === contourId);
+    return contour ? contour.name : '';
+  }, [selectedPoint, contours]);
+
   const cartesianGrid = useMemo(
     () => (
       <CartesianGrid
@@ -350,10 +389,7 @@ const Chart: React.FC<ChartProps> = ({
     ],
   );
 
-  // decide which points to render based on the toggle state
-  const pointsToRender = showContourPoints ? allContourPoints : points || [];
-
-  const renderControls = () => (
+  const renderZoomControls = () => (
     <ControlsContainer isFullScreen={isFullScreen}>
       <SButton
         onClick={handleZoomOut}
@@ -374,46 +410,72 @@ const Chart: React.FC<ChartProps> = ({
     </ControlsContainer>
   );
 
-  const renderTopLeftControls = () => (
-    <TopLeftControls>
-      {!isFullScreen && (
+  const renderControls = () => (
+    <>
+      <TopLeftControls>
+        {!isFullScreen && (
+          <TopLeftControlsBtn
+            type="button"
+            onClick={() => setIsFullScreen(true)}
+            color={colors.blueLight}
+            bgColor={colors.blueLighter}
+            borderColor={colors.blueLight}
+          >
+            <StyledIcon
+              className="icon-enlarge2"
+              color={colors.blueLight}
+              fontSize="18px"
+            />
+          </TopLeftControlsBtn>
+        )}
         <TopLeftControlsBtn
           type="button"
-          onClick={() => setIsFullScreen(true)}
+          onClick={() => {
+            setShowContourPoints(!showContourPoints);
+          }}
           color={colors.blueLight}
           bgColor={colors.blueLighter}
           borderColor={colors.blueLight}
         >
           <StyledIcon
-            className="icon-enlarge2"
+            className={
+              showContourPoints ? 'icon-visibility_off' : 'icon-remove_red_eye'
+            }
             color={colors.blueLight}
             fontSize="18px"
           />
         </TopLeftControlsBtn>
+      </TopLeftControls>
+      {selectedPoint && (
+        <TopCenterControls>
+          <ShowContourBtn
+            type="button"
+            color={colors.blue}
+            bgColor={colors.grey}
+            borderColor={colors.blue}
+            onClick={() => {
+              if (selectedContourId) navigate(`/contour/${selectedContourId}`);
+            }}
+          >
+            <ShowContourBtnText>
+              {selectedContourName && selectedContourName}
+            </ShowContourBtnText>
+            <ShowContourBtnIcon>
+              <RotatedIcon
+                className="icon-expand_more"
+                color={colors.white}
+                fontSize="22px"
+              />
+            </ShowContourBtnIcon>
+          </ShowContourBtn>
+        </TopCenterControls>
       )}
-      <TopLeftControlsBtn
-        type="button"
-        onClick={() => {
-          setShowContourPoints(!showContourPoints);
-        }}
-        color={colors.blueLight}
-        bgColor={colors.blueLighter}
-        borderColor={colors.blueLight}
-      >
-        <StyledIcon
-          className={
-            showContourPoints ? 'icon-visibility_off' : 'icon-remove_red_eye'
-          }
-          color={colors.blueLight}
-          fontSize="18px"
-        />
-      </TopLeftControlsBtn>
-    </TopLeftControls>
+    </>
   );
 
   const renderChartWithControls = (width: number, height: number) => (
     <>
-      {renderTopLeftControls()}
+      {renderControls()}
       <Stage
         width={width}
         height={height}
@@ -445,7 +507,7 @@ const Chart: React.FC<ChartProps> = ({
             zoomLevel,
             focusedPointId,
             showContourPoints,
-            shapesClickable: !disableShapeSelection,
+            shapesClickable: true, // sempre true
           })}
         </Layer>
       </Stage>
@@ -458,7 +520,7 @@ const Chart: React.FC<ChartProps> = ({
           <Crosshair />
         </CenteredElement>
       )}
-      {renderControls()}
+      {renderZoomControls()}
       <SliderContainer
         style={isFullScreen ? { marginTop: '-25px' } : undefined}
       >
