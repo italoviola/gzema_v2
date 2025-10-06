@@ -152,6 +152,7 @@ const Contour: React.FC = () => {
 
   // ref for measuring the real height of the menu
   const repositionMenuRef = useRef<HTMLDivElement | null>(null);
+  const hasAppliedActivityParam = useRef(false);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -751,6 +752,29 @@ const Contour: React.FC = () => {
 
     fetchMachineData();
   }, []);
+
+  useEffect(() => {
+    // apply initial selection coming from Visualization (?activity=N)
+    if (hasAppliedActivityParam.current) return;
+    const activityParam = searchParams.get('activity');
+    if (activityParam !== null) {
+      const idx = Number(activityParam);
+      if (!Number.isNaN(idx) && formData.activities[idx]) {
+        setSelectedRowIndex(idx);
+        hasAppliedActivityParam.current = true;
+        requestAnimationFrame(() => {
+          const table = tableRef.current;
+          if (table) {
+            const rows = table.querySelectorAll('tr');
+            const row = rows[idx];
+            if (row) {
+              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        });
+      }
+    }
+  }, [searchParams, formData.activities]);
 
   return (
     <Container>

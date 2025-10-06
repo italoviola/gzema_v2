@@ -467,7 +467,14 @@ const Chart: React.FC<ChartProps> = ({
             borderColor={colors.blue}
             onClick={() => {
               if (selectedContourId) {
-                const suffix = origin ? `?from=${origin}` : '';
+                const parts = selectedPoint?.id.split('-');
+                const activityIdx =
+                  parts && parts.length === 3 ? parts[2] : undefined;
+                const qp: string[] = [];
+                if (origin) qp.push(`from=${origin}`);
+                if (activityIdx !== undefined)
+                  qp.push(`activity=${activityIdx}`);
+                const suffix = qp.length ? `?${qp.join('&')}` : '';
                 navigate(`/contour/${selectedContourId}${suffix}`);
               }
             }}
