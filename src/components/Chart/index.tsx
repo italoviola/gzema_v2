@@ -66,6 +66,7 @@ const Chart: React.FC<ChartProps> = ({
   worldLimitX = MAX_RECT_LEN_DEFAULT,
   worldLimitY = MAX_RECT_DIAM_DEFAULT,
   disableShapeSelection = false,
+  origin,
 }) => {
   const dispatch = useDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -454,7 +455,10 @@ const Chart: React.FC<ChartProps> = ({
             bgColor={colors.grey}
             borderColor={colors.blue}
             onClick={() => {
-              if (selectedContourId) navigate(`/contour/${selectedContourId}`);
+              if (selectedContourId) {
+                const suffix = origin ? `?from=${origin}` : '';
+                navigate(`/contour/${selectedContourId}${suffix}`);
+              }
             }}
           >
             <ShowContourBtnText>

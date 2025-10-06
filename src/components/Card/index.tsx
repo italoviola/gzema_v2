@@ -216,7 +216,7 @@ const Card: React.FC<CardProps> = ({
         />
         {variation === 'contour' && (
           <Edit>
-            <LinkStyled to={`/contour/${content.id}`}>
+            <LinkStyled to={`/contour/${content.id}?from=workgroup`}>
               <Icon
                 className="icon-create"
                 color={colors.white}

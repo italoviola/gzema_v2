@@ -4,6 +4,7 @@ export interface ChartProps {
   worldLimitX?: number;
   worldLimitY?: number;
   disableShapeSelection?: boolean;
+  origin?: 'visualization' | 'workgroup';
 }
 
 export interface Points extends Array<PointItem> {}

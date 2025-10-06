@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 
 import { editContour } from 'state/part/partSlice';
@@ -103,6 +103,9 @@ interface ContourPoint {
 const Contour: React.FC = () => {
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const from = searchParams.get('from');
+  const backPath = from === 'visualization' ? '/visualization' : '/workgroup';
   const initialState: ContourItem = useSelector((state: { part: Part }) => {
     const contour = state.part.contours.find((c) => c.id === Number(id));
     return contour || defaultValue;
@@ -251,8 +254,8 @@ const Contour: React.FC = () => {
 
   const breadcrumbsItems = [
     {
-      label: 'Grupo de Trabalho',
-      url: '/workgroup',
+      label: from === 'visualization' ? 'Visualização' : 'Grupo de Trabalho',
+      url: backPath,
       isActive: false,
     },
     {
@@ -756,7 +759,7 @@ const Contour: React.FC = () => {
           <Breadcrumbs items={breadcrumbsItems} />
           <PageContent>
             <form name="activity-items-table" className="activity-items-table">
-              <BackBtn to="/workgroup">
+              <BackBtn to={backPath}>
                 <BackBtnContent>
                   <IconBack
                     className="icon-expand_less"

@@ -58,6 +58,7 @@ const Visualization: React.FC = () => {
         <Chart
           worldLimitX={machineData.maxRectifiableLength}
           worldLimitY={machineData.maxRectifiableDiameter}
+          origin="visualization"
         />
         <ElementRegistration />
       </Content>
