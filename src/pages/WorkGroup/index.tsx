@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 
 import Breadcrumbs from 'components/Breadcrumbs';
 import Card from 'components/Card';
@@ -12,7 +13,11 @@ import ConfirmAction from 'components/ConfirmAction';
 import GrindingData from 'components/GrindingData';
 import DescriptionText from 'components/DescriptionText';
 
-import { B_AXIS_NO_SPIN } from 'utils/constants';
+import {
+  B_AXIS_NO_SPIN,
+  MACHINING_DRESSING,
+  MACHINING_GRINDING,
+} from 'utils/constants';
 import { loadCncData } from 'utils/loadCncData';
 
 import useFormattedTools from 'hooks/useFormattedTools';
@@ -69,6 +74,7 @@ const breadcrumbsItems = [
 const WorkGroup: React.FC = () => {
   const dispatch = useDispatch();
   const formattedTools = useFormattedTools();
+  const [searchParams] = useSearchParams();
 
   const contours = useSelector(
     (state: { part: { contours: Contours } }) => state.part.contours,
@@ -80,9 +86,16 @@ const WorkGroup: React.FC = () => {
     (state: { app: App }) => state.app.hasImportedMachineDataChange,
   );
 
+  const machiningParam = searchParams.get('machining');
+  const defaultMachining =
+    machiningParam && machiningParam === String(MACHINING_DRESSING)
+      ? MACHINING_DRESSING
+      : MACHINING_GRINDING;
+
   const [cncData, setCncData] = useState<StoredCncData>({} as StoredCncData);
   const [isModalContourOpen, setIsModalContourOpen] = useState<boolean>(false);
-  const [selectedMachining, setSelectedMachining] = useState<Machining>(1);
+  const [selectedMachining, setSelectedMachining] =
+    useState<Machining>(defaultMachining);
   const [isModalOperationOpen, setIsModalOperationOpen] =
     useState<boolean>(false);
   const [isModalEditOperationOpen, setIsModalEditOperationOpen] =
@@ -163,18 +176,26 @@ const WorkGroup: React.FC = () => {
           <BtnsWrapper>
             <IconBtn>
               <IconButton
-                onClick={() => setSelectedMachining(1)}
-                bgColor={selectedMachining === 1 ? colors.yellow : colors.white}
-                shadow={selectedMachining === 1}
+                onClick={() => setSelectedMachining(MACHINING_GRINDING)}
+                bgColor={
+                  selectedMachining === MACHINING_GRINDING
+                    ? colors.yellow
+                    : colors.white
+                }
+                shadow={selectedMachining === MACHINING_GRINDING}
               >
                 <img src={partImg} height={34} alt="Part Icon" />
               </IconButton>
             </IconBtn>
             <IconBtn>
               <IconButton
-                onClick={() => setSelectedMachining(2)}
-                bgColor={selectedMachining === 2 ? colors.yellow : colors.white}
-                shadow={selectedMachining === 2}
+                onClick={() => setSelectedMachining(MACHINING_DRESSING)}
+                bgColor={
+                  selectedMachining === MACHINING_DRESSING
+                    ? colors.yellow
+                    : colors.white
+                }
+                shadow={selectedMachining === MACHINING_DRESSING}
               >
                 <img src={dresserImg} height={34} alt="Dressing Icon" />
               </IconButton>

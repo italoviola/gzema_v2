@@ -759,7 +759,13 @@ const Contour: React.FC = () => {
           <Breadcrumbs items={breadcrumbsItems} />
           <PageContent>
             <form name="activity-items-table" className="activity-items-table">
-              <BackBtn to={backPath}>
+              <BackBtn
+                to={
+                  from === 'workgroup'
+                    ? `/workgroup?machining=${formData.machining}`
+                    : backPath
+                }
+              >
                 <BackBtnContent>
                   <IconBack
                     className="icon-expand_less"
