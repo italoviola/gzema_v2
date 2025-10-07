@@ -348,8 +348,16 @@ const Chart: React.FC<ChartProps> = ({
     }
   };
 
-  // decide which points to render based on the toggle state
-  const pointsToRender = showContourPoints ? allContourPoints : points || [];
+  // decide with points to render: if they come from props, always prioritize them
+  const pointsToRender = useMemo(() => {
+    if (points && points.length > 0) {
+      return points;
+    }
+    if (showContourPoints) {
+      return allContourPoints;
+    }
+    return [];
+  }, [points, showContourPoints, allContourPoints]);
 
   // Identifica o ponto selecionado
   const selectedPoint =
