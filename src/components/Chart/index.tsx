@@ -359,7 +359,7 @@ const Chart: React.FC<ChartProps> = ({
     return [];
   }, [points, showContourPoints, allContourPoints]);
 
-  // Identifica o ponto selecionado
+  // indentify selected point (if any)
   const selectedPoint =
     selectedElementId && selectedElementId.startsWith('point-')
       ? pointsToRender.find((p: any) => p.id === selectedElementId)
