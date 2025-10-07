@@ -32,17 +32,15 @@ import {
 
 const ProgramsToSendList: React.FC = () => {
   const formattedTools = useFormattedTools();
-  const [selectedContourId, setSelectedContourId] = useState<number | null>(
-    null,
-  );
+  const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const [loadedCncData, setLoadedCncData] = useState<StoredCncData>(
     {} as StoredCncData,
   );
   const [rangeStart, setRangeStart] = useState<number>(0);
   const part = useSelector((state: { part: Part }) => state.part);
 
-  const handleContourClick = (contourId: number) => {
-    setSelectedContourId(contourId === selectedContourId ? null : contourId);
+  const handleItemClick = (key: string) => {
+    setSelectedItemKey((prev) => (prev === key ? null : key));
   };
 
   useEffect(() => {
@@ -60,7 +58,7 @@ const ProgramsToSendList: React.FC = () => {
     const toolId = getOperationData(part, contour.id, (op) => op.toolId);
     return mountGCodeWithProgramNumber(
       contour,
-      Number(rangeStart) + Number(index),
+      Number(rangeStart) + index + 1,
       toolId,
       formattedTools.find((t: ToolOptionItem) => t.id === toolId)?.value ?? 0,
       loadedCncData,
@@ -71,8 +69,8 @@ const ProgramsToSendList: React.FC = () => {
     <Container>
       <List>
         <ListItem key="map-program">
-          <DropdownButton onClick={() => handleContourClick(-1)}>
-            <IconWrapper isOpen={selectedContourId === -1}>
+          <DropdownButton onClick={() => handleItemClick('map-program')}>
+            <IconWrapper isOpen={selectedItemKey === 'map-program'}>
               <IconExpand
                 className="icon-expand_less"
                 color={colors.black}
@@ -85,7 +83,7 @@ const ProgramsToSendList: React.FC = () => {
               Map Program
             </DropdownButtonText>
           </DropdownButton>
-          {selectedContourId === -1 && (
+          {selectedItemKey === 'map-program' && (
             <DropdownContent>
               <SCodeBlock>
                 {generateMapProgram(part, rangeStart, loadedCncData)}
@@ -93,31 +91,34 @@ const ProgramsToSendList: React.FC = () => {
             </DropdownContent>
           )}
         </ListItem>
-        {orderedContours(part).map((contour: ContourItem, index: number) => (
-          <ListItem key={contour.id}>
-            <DropdownButton onClick={() => handleContourClick(contour.id)}>
-              <IconWrapper isOpen={selectedContourId === contour.id}>
-                <IconExpand
-                  className="icon-expand_less"
-                  color={colors.black}
-                  fontSize="18px"
-                />
-              </IconWrapper>
-              <DropdownButtonText>
-                <ProgramNumber>
-                  {Number(rangeStart) + Number(index) + 1}
-                </ProgramNumber>
-                {': '}
-                {contour.name}
-              </DropdownButtonText>
-            </DropdownButton>
-            {selectedContourId === contour.id && (
-              <DropdownContent>
-                <SCodeBlock>{mountCodeBlock(contour, index)}</SCodeBlock>
-              </DropdownContent>
-            )}
-          </ListItem>
-        ))}
+        {orderedContours(part).map((contour: ContourItem, index: number) => {
+          const itemKey = `${contour.id}-${index}`;
+          return (
+            <ListItem key={itemKey}>
+              <DropdownButton onClick={() => handleItemClick(itemKey)}>
+                <IconWrapper isOpen={selectedItemKey === itemKey}>
+                  <IconExpand
+                    className="icon-expand_less"
+                    color={colors.black}
+                    fontSize="18px"
+                  />
+                </IconWrapper>
+                <DropdownButtonText>
+                  <ProgramNumber>
+                    {Number(rangeStart) + index + 1}
+                  </ProgramNumber>
+                  {': '}
+                  {contour.name}
+                </DropdownButtonText>
+              </DropdownButton>
+              {selectedItemKey === itemKey && (
+                <DropdownContent>
+                  <SCodeBlock>{mountCodeBlock(contour, index)}</SCodeBlock>
+                </DropdownContent>
+              )}
+            </ListItem>
+          );
+        })}
       </List>
     </Container>
   );
